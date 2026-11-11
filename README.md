@@ -20,7 +20,14 @@ This repository ships software and a small **synthetic** example. It does not sh
 
 ## Try it locally
 
-Use Node.js **24.18.x** and npm. The package is built from this repository; no npm publication is assumed.
+Use Node.js **24.18.x** and npm. Install the compiled package in your project:
+
+```sh
+npm install georeference
+npx --no-install georeference --help
+```
+
+To build from source and try the included synthetic example:
 
 ```sh
 git clone https://github.com/Osiris-Balonga/georeference.git

@@ -34,7 +34,7 @@ This application-level example exports one stable ID per line and refuses tree o
 ```ts
 import { open } from 'node:fs/promises';
 import { join } from 'node:path';
-import { Snapshot, exportSnapshot, registerExportAdapter } from '@osiris-balonga/georeference';
+import { Snapshot, exportSnapshot, registerExportAdapter } from 'georeference';
 
 registerExportAdapter({
   format: 'entity-ids',
@@ -73,7 +73,7 @@ Return relative filenames after closing resources. The coordinator supplies mani
 `Snapshot.select()` returns a plan whose `entities()` iterator can be read repeatedly until disposal. Lower-level callers must release the plan's temporary selection resources after use:
 
 ```ts
-import { Snapshot } from '@osiris-balonga/georeference';
+import { Snapshot } from 'georeference';
 
 const snapshot = Snapshot.open('data/example.sqlite');
 try {
