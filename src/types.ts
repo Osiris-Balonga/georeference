@@ -36,7 +36,7 @@ export interface Selection {
   coordinates?: boolean;
   boundaries?: boolean;
 }
-export type ExportFormat = 'json' | 'ndjson' | 'csv' | 'sql-postgres' | 'sqlite' | 'geojson';
+export type ExportFormat = 'json' | 'ndjson' | 'csv' | 'sql-postgres' | 'sqlite' | 'geojson' | (string & {});
 export interface ExportRequest extends Selection {
   format: ExportFormat;
   layout?: 'flat' | 'hierarchical';
@@ -53,6 +53,8 @@ export interface ExportPlan {
   externalReferences: string[];
   /** Repeatable iterator; each call starts at the beginning, in dependency order. */
   entities(): Iterable<Entity>;
+  identityEntities?(): Iterable<Entity>;
+  dispose?(): void;
 }
 export interface AdapterContext {
   plan: ExportPlan;

@@ -5,12 +5,31 @@
   "type": "module",
   "license": "MIT",
   "author": "Osiris Balonga",
-  "engines": { "node": ">=24.18.0 <25" },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": "./dist/index.js", "./seeding": "./dist/seeding/index.js" },
-  "bin": { "georeference": "./dist/cli.js" },
-  "files": ["dist", "README.md", "README.fr.md", "LICENSE", "docs", "examples"],
+  "exports": {
+    ".": "./dist/index.js",
+    "./seeding": "./dist/seeding/index.js"
+  },
+  "bin": {
+    "georeference": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.fr.md",
+    "CONTRIBUTING.md",
+    "CONTRIBUTING.fr.md",
+    "SECURITY.md",
+    "SECURITY.fr.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "docs",
+    "examples"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -19,9 +38,25 @@
     "check": "npm run typecheck && npm test && npm run build",
     "prepack": "npm run build"
   },
-  "dependencies": { "csv-parse": "^6.1.0", "csv-stringify": "^6.6.0", "pg": "^8.16.3", "yazl": "^3.3.1" },
-  "devDependencies": { "@types/node": "^24.10.0", "@types/pg": "^8.15.6", "@types/yazl": "^3.3.0", "typescript": "^5.9.3", "@electric-sql/pglite": "^0.3.14" },
-  "repository": { "type": "git", "url": "https://github.com/Osiris-Balonga/georeference.git" },
-  "bugs": { "url": "https://github.com/Osiris-Balonga/georeference/issues" },
+  "dependencies": {
+    "csv-parse": "^7.0.3",
+    "csv-stringify": "^6.6.0",
+    "pg": "^8.16.3",
+    "yazl": "^3.3.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.15.6",
+    "@types/yazl": "^3.3.0",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Osiris-Balonga/georeference.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Osiris-Balonga/georeference/issues"
+  },
   "homepage": "https://github.com/Osiris-Balonga/georeference#readme"
 }
