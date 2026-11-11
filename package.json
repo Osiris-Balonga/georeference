@@ -1,9 +1,13 @@
 {
-  "name": "@osiris-balonga/georeference",
+  "name": "georeference",
   "version": "1.0.0",
   "description": "Versioned geographic datasets, portable exports and repeatable database seeding.",
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "author": "Osiris Balonga",
   "engines": {
     "node": ">=24.18.0 <25"

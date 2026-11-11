@@ -34,7 +34,7 @@ Cet exemple applicatif exporte un ID stable par ligne et refuse les demandes d'a
 ```ts
 import { open } from 'node:fs/promises';
 import { join } from 'node:path';
-import { Snapshot, exportSnapshot, registerExportAdapter } from '@osiris-balonga/georeference';
+import { Snapshot, exportSnapshot, registerExportAdapter } from 'georeference';
 
 registerExportAdapter({
   format: 'entity-ids',
@@ -73,7 +73,7 @@ Renvoyez les noms relatifs après fermeture des ressources. Le coordinateur four
 `Snapshot.select()` renvoie un plan dont l'itérateur `entities()` peut être relu jusqu'à sa libération. Les utilisateurs de cette API doivent libérer les ressources temporaires après usage :
 
 ```ts
-import { Snapshot } from '@osiris-balonga/georeference';
+import { Snapshot } from 'georeference';
 
 const snapshot = Snapshot.open('data/example.sqlite');
 try {
