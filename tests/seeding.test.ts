@@ -165,3 +165,77 @@ test('mapped external parents cannot silently attach a child to a different coun
     assert.equal((await db.query('SELECT count(*)::int AS total FROM places')).rows[0]?.total, 3);
   } finally { await db.close(); }
 });
+
+test('an interrupted import must finish before another package can invalidate its checkpoint', async () => {
+  const db = new PGlite();
+  try {
+    let inserted = 0;
+    const interrupted = { query: async (text: string, values?: unknown[]) => {
+      if (text.startsWith('INSERT INTO "public"."georeference_entities"') && ++inserted === 2) throw new Error('interruption');
+      return db.query(text, values);
+    } };
+    await assert.rejects(seedEntities(interrupted, input(), { dryRun: false, createSchema: true, batchSize: 1 }), /interruption/);
+    const other = input(rows.map(entity => ({ ...entity, name: 'Other package' })), 'b'.repeat(64));
+    await assert.rejects(seedEntities(db, other, { dryRun: false, revision: 1 }), /unfinished|in-progress|resume/i);
+    assert.equal((await db.query("SELECT name FROM georeference_entities WHERE id='demo:country'")).rows[0]?.name, 'Example Land');
+    const recovered = await seedEntities(db, input(), { dryRun: false, batchSize: 1 });
+    assert.equal(recovered.resumedBatches, 1);
+    assert.equal((await db.query('SELECT count(*)::int AS total FROM georeference_entities')).rows[0]?.total, 3);
+  } finally { await db.close(); }
+});
+
+test('existing stable identifiers require a single-column unique key before any writes', async () => {
+  const db = new PGlite();
+  try {
+    await db.exec(`CREATE TABLE georeference_entities (id TEXT,entity_type TEXT,name TEXT,country_id TEXT,parent_id TEXT,codes JSONB,names JSONB,level INTEGER,coordinates JSONB,boundary JSONB);
+      INSERT INTO georeference_entities (id,entity_type,name,country_id) VALUES ('demo:country','country','First','demo:country'),('demo:country','country','Second','demo:country')`);
+    const data = input([rows[0]!]);
+    data.manifest.count = 1;
+    await assert.rejects(seedEntities(db, data, { dryRun: false }), /unique|primary/i);
+    assert.deepEqual((await db.query('SELECT name FROM georeference_entities ORDER BY name')).rows, [{ name: 'First' }, { name: 'Second' }]);
+  } finally { await db.close(); }
+});
+
+test('insert-only dependent inserts use actual target parent relationships when a parent update is skipped', async () => {
+  const db = new PGlite();
+  try {
+    const initial: Entity[] = [
+      { id: 'a', entityType: 'country', name: 'A', countryId: 'a', parentId: null },
+      { id: 'b', entityType: 'country', name: 'B', countryId: 'b', parentId: null },
+      { id: 'r', entityType: 'subdivision', name: 'Region', countryId: 'b', parentId: 'b' },
+    ];
+    await seedEntities(db, input(initial), { dryRun: false, createSchema: true });
+    const conflicting = input([
+      { ...initial[2]!, countryId: 'a', parentId: 'a' },
+      { id: 'c', entityType: 'locality', name: 'C', countryId: 'a', parentId: 'r' },
+    ], 'b'.repeat(64));
+    conflicting.manifest.count = 2;
+    await assert.rejects(seedEntities(db, conflicting, { dryRun: false, mode: 'insert-only', revision: 1 }), /country|parent|conflict/i);
+    assert.equal((await db.query('SELECT count(*)::int AS total FROM georeference_entities')).rows[0]?.total, 3);
+  } finally { await db.close(); }
+});
+
+test('external target localities cannot become administrative parents', async () => {
+  const db = new PGlite();
+  try {
+    await seedEntities(db, input(), { dryRun: false, createSchema: true });
+    const data = input([{ id: 'new:child', entityType: 'locality', name: 'Child', countryId: 'demo:country', parentId: 'demo:city' }], 'b'.repeat(64));
+    data.manifest.count = 1;
+    await assert.rejects(seedEntities(db, data, { dryRun: false, revision: 1 }), /parent|locality/i);
+    assert.equal((await db.query('SELECT count(*)::int AS total FROM georeference_entities')).rows[0]?.total, 3);
+  } finally { await db.close(); }
+});
+
+test('partial updates cannot move a parent across countries while retaining incompatible descendants', async () => {
+  const db = new PGlite();
+  try {
+    await seedEntities(db, input(), { dryRun: false, createSchema: true });
+    const moved = input([
+      { id: 'other:country', entityType: 'country', name: 'Other', countryId: 'other:country', parentId: null },
+      { ...rows[1]!, countryId: 'other:country', parentId: 'other:country' },
+    ], 'b'.repeat(64));
+    moved.manifest.count = 2;
+    await assert.rejects(seedEntities(db, moved, { dryRun: false, revision: 1 }), /child|descendant|subtree/i);
+    assert.equal((await db.query("SELECT country_id FROM georeference_entities WHERE id='demo:region'")).rows[0]?.country_id, 'demo:country');
+  } finally { await db.close(); }
+});

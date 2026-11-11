@@ -48,6 +48,12 @@ export function validateInput(input: SeedInput, options: SeedOptions): Entity[] 
 export async function existingRows(client: QueryClient, mapping: ResolvedMapping, entities: Entity[], input: SeedInput, exists: boolean) {
   const result = new Map<string, Record<string, unknown>>();
   if (!exists) return result;
+  const unique = (await client.query(`SELECT EXISTS (
+    SELECT 1 FROM pg_index i JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attname=$2
+    WHERE i.indrelid=$1::regclass AND i.indisunique AND i.indisvalid AND i.indisready
+      AND i.indpred IS NULL AND i.indexprs IS NULL AND i.indnkeyatts=1 AND i.indkey[0]=a.attnum
+  ) AS stable_unique`, [mapping.tableSql, mapping.columns.id])).rows[0]?.stable_unique;
+  if (unique !== true) throw new Error('Stable identifier column requires a single-column UNIQUE or PRIMARY KEY');
   const available = new Set((await client.query('SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name=$2', [mapping.schema, mapping.table])).rows.map(row => row.column_name));
   const needed = new Set<keyof Entity>(['id', 'entityType', 'name', 'countryId', 'parentId']);
   for (const entity of entities) for (const field of entityFields(entity, input.manifest.request.coordinates ?? false, input.manifest.request.boundaries ?? false)) needed.add(field);
@@ -63,16 +69,21 @@ export async function existingRows(client: QueryClient, mapping: ResolvedMapping
   return result;
 }
 
-export function validateReferences(entities: Entity[], existing: Map<string, Record<string, unknown>>) {
+export function validateReferences(entities: Entity[], existing: Map<string, Record<string, unknown>>, options: SeedOptions) {
   const byId = new Map(entities.map(entity => [entity.id, entity]));
+  const effective = (id: string) => options.mode === 'insert-only' && existing.has(id) ? existing.get(id) : byId.get(id) ?? existing.get(id);
   for (const entity of entities) {
+    // Existing rows are deliberately not modified in insert-only mode. Dependent new
+    // rows must therefore be checked against those actual rows, not skipped updates.
+    if (options.mode === 'insert-only' && existing.has(entity.id)) continue;
     for (const id of [entity.countryId, ...(entity.parentId ? [entity.parentId] : [])]) {
       if (!byId.has(id) && !existing.has(id)) throw new Error(`Unresolved reference ${id} from ${entity.id}`);
     }
-    const country = byId.get(entity.countryId) ?? existing.get(entity.countryId);
+    const country = effective(entity.countryId);
     if (country?.entityType !== 'country') throw new Error(`Country reference is not a country: ${entity.countryId}`);
-    const parent = entity.parentId ? byId.get(entity.parentId) ?? existing.get(entity.parentId) : undefined;
+    const parent = entity.parentId ? effective(entity.parentId) : undefined;
     if (parent) {
+      if (parent.entityType === 'locality') throw new Error(`Administrative parent cannot be a locality: ${entity.parentId}`);
       const expectedCountry = '_localId' in parent ? existing.get(entity.countryId)?._localId : entity.countryId;
       if (expectedCountry == null || stable(parent.countryId) !== stable(expectedCountry)) throw new Error(`Parent country mismatch: ${entity.id}`);
     }

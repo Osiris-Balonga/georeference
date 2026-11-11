@@ -4,6 +4,13 @@ import type { ResolvedMapping } from './mapping.ts';
 
 export interface ImportState { importKey: string; revision: number; offset: number }
 
+export async function assertCanStart(client: QueryClient, mapping: ResolvedMapping, importKey: string): Promise<void> {
+  const exists = (await client.query('SELECT to_regclass($1) AS relation', [mapping.ledgerSql])).rows[0]?.relation != null;
+  if (!exists) return;
+  const active = (await client.query(`SELECT import_key FROM ${mapping.ledgerSql} WHERE target_key=$1 AND status='in-progress' AND import_key<>$2 LIMIT 1`, [mapping.targetKey, importKey])).rows[0];
+  if (active) throw new Error('An unfinished import must resume with the same package, mapping, mode and batchSize before another import can start');
+}
+
 export async function revisionFor(client: QueryClient, mapping: ResolvedMapping, input: SeedInput, options: SeedOptions): Promise<number> {
   const exists = (await client.query('SELECT to_regclass($1) AS relation', [mapping.ledgerSql])).rows[0]?.relation != null;
   if (!exists) return options.revision ?? 0;

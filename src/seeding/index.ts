@@ -1,8 +1,9 @@
 import type { QueryClient, SeedInput, SeedOptions, SeedReport } from './types.ts';
 import { hash, resolveMapping } from './mapping.ts';
 import { existingRows, localIds, summarize, targetExists, validateInput, validateReferences } from './preflight.ts';
-import { beginImport, checkpoint, revisionFor, setup } from './ledger.ts';
+import { assertCanStart, beginImport, checkpoint, revisionFor, setup } from './ledger.ts';
 import { writeEntity } from './write.ts';
+import { validateRetainedChildren } from './retained.ts';
 
 export type { QueryClient, SeedInput, SeedMapping, SeedOptions, SeedReport } from './types.ts';
 
@@ -28,13 +29,15 @@ export async function seedEntities(client: QueryClient, input: SeedInput, option
     const exists = await targetExists(client, mapping);
     if (!exists && (!options.createSchema || mapping.localIdColumn)) throw new Error('Target table is missing; use createSchema for standard tables or create a compatible mapped table first');
     const existing = await existingRows(client, mapping, entities, input, exists);
-    validateReferences(entities, existing);
+    validateReferences(entities, existing, options);
+    await validateRetainedChildren(client, mapping, entities, existing, options);
+    const batchSize = options.batchSize ?? 500;
+    const importKey = hash({ contentId: input.manifest.contentId, mappingId: mapping.mappingId, batchSize, mode: options.mode ?? 'upsert' });
+    await assertCanStart(client, mapping, importKey);
     const revision = await revisionFor(client, mapping, input, options);
     const report = summarize(input, entities, existing, mapping, { ...options, revision });
     if (dryRun) return report;
     await setup(client, mapping, exists);
-    const batchSize = options.batchSize ?? 500;
-    const importKey = hash({ contentId: input.manifest.contentId, mappingId: mapping.mappingId, batchSize, mode: options.mode ?? 'upsert' });
     const state = await beginImport(client, mapping, input, importKey, revision);
     if (state.offset > entities.length || state.offset % batchSize !== 0 && state.offset !== entities.length) throw new Error('Invalid import checkpoint');
     report.resumedBatches = Math.ceil(state.offset / batchSize);
