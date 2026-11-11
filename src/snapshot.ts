@@ -70,10 +70,12 @@ export class Snapshot {
     for (const row of this.db.prepare('SELECT data FROM entities ORDER BY depth,id').iterate()) yield JSON.parse(row.data as string) as Entity;
   }
   select(selection: Selection): ExportPlan {
+    selection=structuredClone(selection);
     const request = {format:'json',...selection} as ExportRequest;
     if (selection.entityTypes && (selection.entityTypes.length===0 || selection.entityTypes.some(type=>!['country','subdivision','locality'].includes(type)))) throw new Error('Invalid entityTypes selection');
     const table = `selected_${this.nextPlan++}`;
     this.db.exec(`CREATE TEMP TABLE ${table} (id TEXT PRIMARY KEY, context INTEGER NOT NULL DEFAULT 0)`);
+    try {
     const insert = this.db.prepare(`INSERT OR IGNORE INTO ${table}(id) SELECT id FROM entities WHERE country_id=?`);
     const scoped = Boolean(selection.countries?.length || selection.subdivisions?.length);
     for (const country of selection.countries ?? []) {
@@ -99,17 +101,21 @@ export class Snapshot {
       SELECT e.parent_id AS ref FROM entities e JOIN ${table} s ON s.id=e.id UNION
       SELECT e.country_id AS ref FROM entities e JOIN ${table} s ON s.id=e.id)
       WHERE ref IS NOT NULL AND ref NOT IN (SELECT id FROM ${table}) ORDER BY ref`).all().map(row=>row.ref as string);
-    const db=this.db;
-    return {request, metadata:this.metadata, count:Number(db.prepare(`SELECT count(*) AS count FROM ${table}`).get()!.count),contextIds,externalReferences,
-      *entities() {
-        for (const row of db.prepare(`SELECT e.data FROM entities e JOIN ${table} s ON s.id=e.id ORDER BY e.depth,e.id`).iterate()) {
+    const db=this.db;let disposed=false;
+    function* iterate(order:string):IterableIterator<Entity> {
+        if(disposed) throw new Error('Selection plan is disposed');
+        for (const row of db.prepare(`SELECT e.data FROM entities e JOIN ${table} s ON s.id=e.id ORDER BY ${order}`).iterate()) {
           const entity=JSON.parse(row.data as string) as Entity;
           if (!selection.coordinates) delete entity.coordinates;
           if (!selection.boundaries) delete entity.boundary;
           yield entity;
         }
-      }
+    }
+    return {request, metadata:this.metadata, count:Number(db.prepare(`SELECT count(*) AS count FROM ${table}`).get()!.count),contextIds,externalReferences,
+      entities:()=>iterate('e.depth,e.id'),identityEntities:()=>iterate('e.id'),
+      dispose(){ if(!disposed) {db.exec(`DROP TABLE ${table}`);disposed=true;} }
     };
+    } catch(error) {this.db.exec(`DROP TABLE IF EXISTS ${table}`);throw error;}
   }
   close(): void { this.db.close(); }
 }
