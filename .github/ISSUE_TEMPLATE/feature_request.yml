@@ -1,0 +1,14 @@
+name: Feature request / Proposer une fonctionnalité
+description: Describe an integration need / Décrire un besoin d'intégration
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: User need / Besoin utilisateur
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Target tools, volumes, and compatibility / Outils cibles, volumes et compatibilité
+      description: For a new format, identify the intended reader and license constraints. / Pour un format, préciser le lecteur et les contraintes de licence.

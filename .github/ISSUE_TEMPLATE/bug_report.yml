@@ -1,0 +1,22 @@
+name: Bug report / Signaler un bug
+description: Report reproducible incorrect behavior / Signaler un comportement incorrect reproductible
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior / Comportements attendu et observé
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction / Reproduction fictive minimale
+      description: Do not include credentials or private data. / Aucun identifiant de connexion ni donnée privée.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Git revision, Node version, operating system / Révision Git, version Node, système
+    validations:
+      required: true

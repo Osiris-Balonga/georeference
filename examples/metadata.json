@@ -1,0 +1,13 @@
+{
+  "contractVersion": "1.0",
+  "datasetVersion": "example-1",
+  "sources": [
+    {
+      "name": "GeoReference synthetic example",
+      "url": "https://example.invalid/georeference-fixture",
+      "license": "MIT",
+      "attribution": "Synthetic example by GeoReference contributors; not real geographic data.",
+      "revision": "fixture-1"
+    }
+  ]
+}
