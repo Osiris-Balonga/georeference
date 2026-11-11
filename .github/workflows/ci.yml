@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev, 'feature/**', 'feat/**', 'fix/**', 'chore/**', 'docs/**', 'refactor/**', 'test/**', 'ci/**']
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.18.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm pack --dry-run
+
+  postgres:
+    name: PostgreSQL integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: georeference_test
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: georeference_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U georeference_test -d georeference_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      DATABASE_URL: postgres://georeference_test:local_test_only@localhost:5432/georeference_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.18.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:postgres
