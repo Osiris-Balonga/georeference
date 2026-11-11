@@ -21,7 +21,8 @@ Sans `--apply`, la commande produit un plan en lecture seule. `--create-schema` 
 - Les champs facultatifs absents sont préservés. Coordonnées/frontières ne sont gérées que si le paquet les demandait. Un null explicite n'a pas le même sens qu'un champ absent.
 - `--mode insert-only` ajoute les nouvelles entités, ignore les modifications des lignes existantes et signale les conflits. Aucun de ces modes ne supprime une entité absente du paquet.
 - Rejouer le même contenu laisse les lignes inchangées intactes, sans doublons ni mises à jour artificielles simplement parce qu'un nouvel import est lancé.
-- Les relations se résolvent par identité stable ; les parents nécessaires doivent être présents dans le paquet ou dans la cible. Un export géographique partiel ne prouve jamais qu'une entité absente doit être supprimée.
+- Les relations se résolvent par identité stable ; les parents nécessaires doivent être présents dans le paquet ou dans la cible. Un parent externe doit être un pays/une subdivision compatible, jamais une localité. Un export géographique partiel ne prouve jamais qu'une entité absente doit être supprimée.
+- En insert-only, les nouveaux enfants sont validés contre les parents réellement conservés en cible lorsque leurs mises à jour sont ignorées. Un UPSERT partiel ne peut déplacer un parent vers un autre pays ou changer son type si des enfants conservés deviennent incohérents ; incluez le sous-arbre concerné dans la mise à jour.
 
 Le seeder applique la priorité à la source pour les champs gérés. Fusion automatique des modifications locales, migrations, synchronisation destructive et mappings universels d'ORM restent hors V1.
 
@@ -53,11 +54,13 @@ Utilisez `--mapping path/to/mapping.json` pour mapper les champs canoniques vers
 }
 ```
 
-Ici, `id` est une clé primaire entière serial/identity existante, et `georeference_id` l'identifiant stable unique sous forme de chaîne. Le seeder préserve les IDs locaux et les utilise pour les relations ; il ne remplace pas les clés de l'application. Les autres colonnes gérées doivent avoir des noms/types compatibles ou un mapping explicite. Préservez les champs métier et fournissez leurs valeurs par défaut obligatoires. Le mapping V1 couvre les clés entières serial/identity, pas tous les schémas personnalisés/composites.
+Ici, `id` est une clé primaire entière serial/identity existante, et `georeference_id` l'identifiant stable sous forme de chaîne. Son unicité doit être imposée par une vraie clé primaire ou contrainte/index UNIQUE non partiel à une seule colonne ; une déclaration de mapping ou une clé unique composite ne suffit pas. Le seeder préserve les IDs locaux et les utilise pour les relations ; il ne remplace pas les clés de l'application. Les autres colonnes gérées doivent avoir des noms/types compatibles ou un mapping explicite. Préservez les champs métier et fournissez leurs valeurs par défaut obligatoires. Le mapping V1 couvre les clés entières serial/identity, pas tous les schémas personnalisés/composites.
 
 ## Transactions, reprise et visibilité
 
 `--batch-size` borne chaque lot (`500` par défaut). Un lot et son curseur de reprise sont commités ensemble. Une erreur ultérieure peut laisser visibles des lots précédents ; l'import entier ne constitue pas une publication atomique. Relancez le même paquet avec les mêmes mapping, mode, révision et taille de lot pour reprendre. Un import terminé rejoué compare à nouveau les lignes et préserve les valeurs inchangées.
+
+Un import interrompu doit se terminer avec les mêmes paquet, mapping, mode et taille de lot avant qu'un autre import commence sur cette cible. Ne changez pas de paquet ou de mapping pour contourner un curseur de reprise en attente.
 
 Un verrou consultatif sérialise les imports vers la même cible. Les utilisateurs de la bibliothèque doivent fournir une **connexion/session dédiée**, pas un pool susceptible de changer de session entre les requêtes. La CLI ouvre un client PostgreSQL dédié. Un point de reprise n'est valable qu'après commit de sa transaction.
 

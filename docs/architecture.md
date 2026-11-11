@@ -25,7 +25,70 @@ The shared contract lives in `src/types.ts`. Core rules own identifiers, graph i
 
 The `ExportAdapter` contract declares `format`, `version`, `validate(request)`, and `write(context)`. Its context includes a repeatable canonical entity iterator, resolved plan, output directory, and optional cancellation signal. A writer returns relative filenames after closing its handles. It must reject unsupported combinations before producing output and preserve stable IDs.
 
-Adding a format means implementing that contract, registering it, and writing behavior/reader compatibility tests. Geographic filtering and identifier allocation do not move into the new writer. Adapter registration is static in V1; there is no arbitrary plugin execution or marketplace. Heavy native geospatial dependencies are not required for existing formats.
+Adding a format means implementing that contract, registering it, and writing behavior/reader compatibility tests. Geographic filtering and identifier allocation do not move into the new writer. The library's `registerExportAdapter(adapter)` accepts a custom format string for the current process; duplicate registrations and overriding built-in formats are rejected. The CLI lists the built-in formats; custom writers are registered by application code. Heavy native geospatial dependencies are not required for existing formats.
+
+## Register a custom writer
+
+This application-level example exports one stable ID per line and refuses tree or geometry requests, since this format deliberately contains IDs only:
+
+```ts
+import { open } from 'node:fs/promises';
+import { join } from 'node:path';
+import { Snapshot, exportSnapshot, registerExportAdapter } from '@osiris-balonga/georeference';
+
+registerExportAdapter({
+  format: 'entity-ids',
+  version: '1.0.0',
+  validate(request) {
+    if (request.layout === 'hierarchical' || request.coordinates || request.boundaries) {
+      throw new Error('entity-ids supports flat IDs without geometry');
+    }
+  },
+  async write({ plan, directory, signal }) {
+    const file = await open(join(directory, 'ids.txt'), 'wx');
+    try {
+      for (const entity of plan.entities()) {
+        signal?.throwIfAborted();
+        await file.write(entity.id + '\n');
+      }
+    } finally {
+      await file.close();
+    }
+    return ['ids.txt'];
+  },
+});
+
+const snapshot = Snapshot.open('data/example.sqlite');
+try {
+  await exportSnapshot(snapshot, 'exports/entity-ids', { format: 'entity-ids' });
+} finally {
+  snapshot.close();
+}
+```
+
+Return relative filenames after closing resources. The coordinator supplies manifest generation, integrity checks, compression, cancellation, and atomic publication to the custom format too. A custom format is not automatically a supported seeder input.
+
+## Release selection plans
+
+`Snapshot.select()` returns a plan whose `entities()` iterator can be read repeatedly until disposal. Lower-level callers must release the plan's temporary selection resources after use:
+
+```ts
+import { Snapshot } from '@osiris-balonga/georeference';
+
+const snapshot = Snapshot.open('data/example.sqlite');
+try {
+  const plan = snapshot.select({ countries: ['XZ'] });
+  try {
+    for (const entity of plan.entities()) console.log(entity.id);
+  } finally {
+    plan.dispose?.();
+  }
+} finally {
+  snapshot.close();
+}
+```
+
+Keep the snapshot open while using the plan. The export coordinator and read SDK release their own plans automatically; consumers directly calling `select()` own that lifecycle.
 
 ## Resource behavior
 

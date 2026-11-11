@@ -21,7 +21,8 @@ Without `--apply`, the command produces a read-only plan. `--create-schema` allo
 - Optional fields absent from input are preserved. Coordinates/boundaries are managed only when the package requested them. An explicit null and an absent field have different meanings.
 - `--mode insert-only` creates new records, skips changes to existing records, and reports conflicts. Neither mode deletes entities absent from the package.
 - Replaying identical content leaves unchanged rows unchanged. It must not produce duplicates or artificial updates merely because a new import run occurred.
-- Foreign keys are resolved through stable identities; required parents must be in the package or already present in the target. A partial geographic export is never evidence that absent entities should be removed.
+- Foreign keys are resolved through stable identities; required parents must be in the package or already present in the target. An external parent must be a compatible country/subdivision, never a locality. A partial geographic export is never evidence that absent entities should be removed.
+- Insert-only validates new children against the existing parents actually retained when incoming parent updates are skipped. A partial UPSERT cannot move a parent to another country or change its type if retained target children would become inconsistent; include the affected subtree in the update.
 
 The seeder uses **source-wins** for managed fields. Automatic merging of local edits, migrations, destructive synchronization, and universal ORM mappings are outside V1.
 
@@ -53,11 +54,13 @@ Use `--mapping path/to/mapping.json` for a supported mapping of canonical fields
 }
 ```
 
-Here `id` is an existing integer serial/identity primary key, while `georeference_id` is the unique stable string identifier. The seeder preserves local IDs and maps relationships to them; it does not replace the application's primary keys. Other managed columns must have compatible names/types or explicit mappings. Preserve unrelated business columns and supply their required defaults yourself. V1's local-key mapping supports integer serial/identity keys, not every custom/composite key design.
+Here `id` is an existing integer serial/identity primary key, while `georeference_id` is the stable string identifier. Its uniqueness must be enforced by a real, non-partial, single-column PRIMARY KEY or UNIQUE constraint/index; a mapping declaration or a composite unique key does not suffice. The seeder preserves local IDs and maps relationships to them; it does not replace the application's primary keys. Other managed columns must have compatible names/types or explicit mappings. Preserve unrelated business columns and supply their required defaults yourself. V1's local-key mapping supports integer serial/identity keys, not every custom/composite key design.
 
 ## Transactions, recovery, and visibility
 
 `--batch-size` bounds each batch (default `500`). Each batch and its recovery cursor commit together. A later failure may leave earlier batches visible; the entire import is not one atomic publication. Rerun the same package, mapping, mode, revision, and batch size to resume. A completed replay performs comparisons again so unchanged records remain unchanged.
+
+An interrupted import must finish with the same package, mapping, mode, and batch size before a different import can start on that target. Do not switch packages or mappings to bypass a pending recovery cursor.
 
 An advisory lock serializes imports for the same target. Library callers must supply a **dedicated connection/session**, not a pool that can switch sessions between queries. The CLI opens a dedicated PostgreSQL client. A checkpoint is useful only after its transaction has committed.
 
