@@ -60,7 +60,7 @@ Définissez `DATABASE_URL` dans votre terminal ou gestionnaire de secrets avant 
 Après compilation, utilisez la bibliothèque depuis le dépôt ou depuis un paquet construit et installé localement :
 
 ```ts
-import { Snapshot, createClient } from '@osiris-balonga/georeference';
+import { Snapshot, createClient } from 'georeference';
 
 const snapshot = Snapshot.open('data/example.sqlite');
 try {
@@ -72,4 +72,4 @@ try {
 }
 ```
 
-Le SDK lit l'instantané local ; il ne synchronise pas une base applicative. Gardez l'instantané ouvert pendant les itérations et fermez-le après usage. La publication sur npm n'est pas présupposée : construisez/installez le paquet depuis ce dépôt.
+Le SDK lit l'instantané local ; il ne synchronise pas une base applicative. Gardez l'instantané ouvert pendant les itérations et fermez-le après usage. Installez le paquet compilé avec `npm install georeference`, ou construisez/installez-le depuis ce dépôt.

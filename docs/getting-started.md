@@ -60,7 +60,7 @@ Set `DATABASE_URL` in your shell or secret manager before running the seed comma
 After building, use the library from the repository or a locally packed/installed package:
 
 ```ts
-import { Snapshot, createClient } from '@osiris-balonga/georeference';
+import { Snapshot, createClient } from 'georeference';
 
 const snapshot = Snapshot.open('data/example.sqlite');
 try {
@@ -72,4 +72,4 @@ try {
 }
 ```
 
-The SDK reads the local snapshot and does not synchronize an application database. Keep the snapshot open while iterating and close it when finished. The package is not assumed to be published on npm; build/install from this repository.
+The SDK reads the local snapshot and does not synchronize an application database. Keep the snapshot open while iterating and close it when finished. Install the compiled package with `npm install georeference`, or build/install it from this repository.

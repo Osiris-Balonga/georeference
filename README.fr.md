@@ -20,7 +20,14 @@ Ce dépôt contient le logiciel et un petit exemple **fictif**. Il ne contient p
 
 ## Essayer en local
 
-Utilisez Node.js **24.18.x** et npm. Le paquet se construit depuis ce dépôt ; sa publication sur npm n'est pas présupposée.
+Utilisez Node.js **24.18.x** et npm. Installez le paquet compilé dans votre projet :
+
+```sh
+npm install georeference
+npx --no-install georeference --help
+```
+
+Pour construire depuis les sources et essayer l'exemple fictif fourni :
 
 ```sh
 git clone https://github.com/Osiris-Balonga/georeference.git
