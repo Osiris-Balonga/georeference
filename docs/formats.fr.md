@@ -4,6 +4,8 @@
 
 Tous les exports utilisent la même sélection et les mêmes IDs stables. Le manifeste précise version des données, provenance, options, ancêtres de contexte, références externes, couverture géométrique et sommes de contrôle. Voici les valeurs de `--format`.
 
+Pour les usages, complexités, dépendances, limites et priorités de tous les formats évalués, consultez [les choix des formats](format-decisions.fr.md).
+
 | Format | Usage en V1 | Organisation et géométries | Limites |
 |---|---|---|---|
 | `json` | Échange applicatif général | Entités plates ou `--layout hierarchical` ; coordonnées/frontières facultatives | Sortie hiérarchique limitée à 50 000 entités ; beaucoup de lecteurs chargent tout le document |

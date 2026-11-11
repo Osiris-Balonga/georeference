@@ -4,6 +4,8 @@
 
 Every export uses the same selected entities and stable IDs. Its manifest records the data version, provenance, options, context ancestors, external references, geometry coverage, and checksums. `--format` names are listed below.
 
+For the uses, complexity, dependencies, limits, and priorities of all evaluated formats, read [format decisions](format-decisions.md).
+
 | Format | V1 purpose | Layout and geometry | Limitations |
 |---|---|---|---|
 | `json` | General application exchange | Flat records or `--layout hierarchical`; optional coordinates/boundaries | Hierarchical output is limited to 50,000 entities; many consumers load the whole document |
