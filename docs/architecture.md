@@ -3,6 +3,8 @@
 [Français](architecture.fr.md) · [Home](../README.md)
 
 ```text
+One-shot CLI → GeoNames download / retained source file
+              ↓
 Canonical input / GeoNames text
               ↓
         validation → versioned SQLite snapshot
@@ -22,6 +24,8 @@ Local snapshot → read SDK → application lookups/iteration
 ```
 
 The shared contract lives in `src/types.ts`. Core rules own identifiers, graph integrity, selection, and projected geometry. Adapters own encoding and format-specific validation. The export coordinator owns temporary output, packaging, checksums, and publication. The seeder owns database update semantics; the SDK owns read access, not database synchronization.
+
+The one-shot CLI orchestrator (`src/generate.ts`) downloads a bounded countryInfo source or reads a local file, derives a source-hash version, creates a temporary snapshot and delegates to the existing export coordinator. With `--snapshot`, it uses the supplied snapshot directly. It owns cleanup, not a persistent project installation. Generated data files are standalone; importing the SDK remains optional. See [generation](generation.md).
 
 The `ExportAdapter` contract declares `format`, `version`, `validate(request)`, and `write(context)`. Its context includes a repeatable canonical entity iterator, resolved plan, output directory, and optional cancellation signal. A writer returns relative filenames after closing its handles. It must reject unsupported combinations before producing output and preserve stable IDs.
 

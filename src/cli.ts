@@ -7,12 +7,25 @@ import { Snapshot, createSnapshot } from './snapshot.ts';
 import { exportSnapshot } from './export.ts';
 import { verifyPackage } from './package.ts';
 import { importGeoNames } from './sources/geonames.ts';
+import { generateFiles } from './generate.ts';
 import type { Entity, ExportRequest, SnapshotMetadata } from './types.ts';
 import type { SeedMapping, SeedOptions } from './seeding/types.ts';
 
-const HELP=`GeoReference 1.0 — geographic snapshots, exports and database seeding
+const HELP=`GeoReference 1.0 — generate geographic files in your project
+
+Quick start (no permanent project dependency):
+  npx georeference
+  npx georeference countries --country FR,CG --format csv --output ./data/countries
+  npx georeference generate --snapshot FILE --types locality --output ./data/places
+
+Without a command, generate countries as JSON in ./data/georeference.
+Country data is downloaded from GeoNames (CC BY 4.0). Use --source-file FILE
+for offline countryInfo.txt input. Output is a NEW directory of standalone
+files plus manifest.json; existing destinations are never overwritten.
 
 Commands:
+  countries [--source-file FILE | --snapshot FILE] [export options]
+  generate  [--source-file FILE | --snapshot FILE] [export options]
   snapshot --input FILE --metadata FILE --output SNAPSHOT.sqlite
   geonames --countries countryInfo.txt --version LABEL --output SNAPSHOT.sqlite
            [--admin1 FILE] [--admin2 FILE] [--places FILE]
@@ -31,13 +44,15 @@ Seed:   --mode upsert|insert-only --batch-size N --schema NAME --table NAME
 Seeding is a read-only preview unless --apply is supplied.
 See README.md / README.fr.md for data licensing and full guides.
 `;
-const stringOptions=['input','metadata','output','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping'];
+const stringOptions=['input','metadata','output','source-file','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping'];
 const booleanOptions=['help','coordinates','boundaries','no-ancestors','spreadsheet-safe','apply','create-schema','allow-downgrade'];
 const supported:Record<string,string[]>={
   snapshot:['input','metadata','output'],geonames:['countries','admin1','admin2','places','version','output'],inspect:['snapshot'],verify:['package'],
   export:['snapshot','output','format','country','subdivision','types','coordinates','boundaries','no-ancestors','layout','compression','schema-mode','sql-mode','spreadsheet-safe'],
   seed:['package','apply','create-schema','revision','mode','batch-size','schema','table','mapping','allow-downgrade']
 };
+supported.generate=[...supported.export!,'source-file'];
+supported.countries=supported.generate.filter(key=>key!=='types'&&key!=='subdivision');
 async function* inputEntities(path:string,signal:AbortSignal):AsyncIterable<Entity> {
   if(path.endsWith('.json')) {
     const parsed=JSON.parse(await readFile(path,'utf8')) as unknown;
@@ -53,8 +68,8 @@ async function* inputEntities(path:string,signal:AbortSignal):AsyncIterable<Enti
 }
 async function main():Promise<void> {
   const args=process.argv.slice(2);
-  if(!args.length||args[0]==='--help'||args[0]==='help') {console.log(HELP);return;}
-  const command=args.shift()!;
+  if(args[0]==='--help'||args[0]==='help') {console.log(HELP);return;}
+  const command=!args.length||args[0]!.startsWith('-')?'countries':args.shift()!;
   if(!supported[command]) throw new Error(`Unknown command: ${command}`);
   const options:Record<string,{type:'string'|'boolean'}>={};
   for(const key of stringOptions) options[key]={type:'string'};
@@ -69,10 +84,22 @@ async function main():Promise<void> {
   };
   const list=(key:string)=>string(key)?.split(',').map(item=>item.trim()).filter(Boolean);
   const number=(key:string)=>{const value=string(key);if(value===undefined)return undefined;if(!/^\d+$/.test(value)||!Number.isSafeInteger(Number(value))) throw new Error(`--${key} requires a nonnegative integer`);return Number(value);};
+  const exportRequest=(format:string):ExportRequest=>{
+    const request:ExportRequest={format};
+    for(const [flag,key] of [['country','countries'],['subdivision','subdivisions'],['types','entityTypes']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=list(flag);
+    for(const [flag,key] of [['layout','layout'],['compression','compression'],['schema-mode','schemaMode'],['sql-mode','sqlMode']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=string(flag);
+    if(values.coordinates)request.coordinates=true;if(values.boundaries)request.boundaries=true;if(values['no-ancestors'])request.includeAncestors=false;if(values['spreadsheet-safe'])request.spreadsheetSafe=true;
+    return request;
+  };
   const controller=new AbortController();const abort=()=>controller.abort();process.once('SIGINT',abort);
   try {
     let result:unknown;
-    if(command==='snapshot') {
+    if(command==='countries'||command==='generate') {
+      const request=exportRequest(string('format')??'json');
+      if(command==='countries') request.entityTypes=['country'];
+      result=await generateFiles({output:string('output')??'data/georeference',request,
+        ...(string('snapshot')?{snapshot:string('snapshot')!}:{}),...(string('source-file')?{sourceFile:string('source-file')!}:{}),signal:controller.signal});
+    } else if(command==='snapshot') {
       const metadata=JSON.parse(await readFile(string('metadata',true)!,'utf8')) as SnapshotMetadata;
       const output=string('output',true)!;
       await createSnapshot(output,metadata,inputEntities(string('input',true)!,controller.signal));
@@ -89,10 +116,7 @@ async function main():Promise<void> {
           const counts={country:0,subdivision:0,locality:0};for(const entity of snapshot.entities())counts[entity.entityType]++;
           result={metadata:snapshot.metadata,count:snapshot.count,counts};
         } else {
-          const request:ExportRequest={format:string('format',true)!};
-          for(const [flag,key] of [['country','countries'],['subdivision','subdivisions'],['types','entityTypes']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=list(flag);
-          for(const [flag,key] of [['layout','layout'],['compression','compression'],['schema-mode','schemaMode'],['sql-mode','sqlMode']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=string(flag);
-          if(values.coordinates)request.coordinates=true;if(values.boundaries)request.boundaries=true;if(values['no-ancestors'])request.includeAncestors=false;if(values['spreadsheet-safe'])request.spreadsheetSafe=true;
+          const request=exportRequest(string('format',true)!);
           result=await exportSnapshot(snapshot,string('output',true)!,request,{signal:controller.signal});
         }
       } finally{snapshot.close();}

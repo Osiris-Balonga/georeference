@@ -21,6 +21,8 @@ GeoNames publishes its extracts under [Creative Commons Attribution 4.0](https:/
 
 Download and extract files before ingestion. Keep the same downloaded files to reproduce a snapshot; assign a meaningful `--version` and do not silently replace published versions. No GeoNames username or API key is required for this offline path.
 
+The [one-shot country generator](generation.md) automatically downloads only `countryInfo.txt`, bounded to 2 MiB with a 30-second timeout. It derives dataset versions from source SHA-256 and retains the license/attribution in generated files. `--source-file` bypasses the network with a retained file; subdivisions, localities and boundaries require a supplied snapshot or the advanced ingestion workflow.
+
 ## Deliberate coverage limits
 
 - The importer maps supplied level 1/2 administrative files; it does not claim every administrative level or every locality worldwide. Smaller city extracts are subsets.

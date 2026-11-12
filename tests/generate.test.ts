@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { mkdtemp,rm,readdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { generateFiles } from '../src/generate.ts';
+import { readPackage } from '../src/package.ts';
+const source=['XZ','XZZ','001','','Synthetic country','','','','','','','','','','','','101'].join('\t')+'\n';
+test('one-shot generation downloads country data, preserves provenance and publishes usable standalone files',async t=>{
+  const folder=await mkdtemp(join(tmpdir(),'georeference-generate-'));t.after(()=>rm(folder,{recursive:true,force:true}));
+  let requested='';
+  const download:typeof fetch=async input=>{requested=String(input);return new Response(source);};
+  const output=join(folder,'out');
+  const manifest=await generateFiles({output,request:{format:'json'}},download);
+  assert.equal(requested,'https://download.geonames.org/export/dump/countryInfo.txt');
+  assert.equal(manifest.count,1);assert.match(manifest.datasetVersion,/^geonames-countryInfo-sha256:/);
+  assert.equal(manifest.sources[0]?.license,'CC-BY-4.0');
+  const imported=await readPackage(output);assert.equal(imported.entities[0]?.id,'geonames:101');
+  assert.deepEqual(await readdir(folder),['out']);
+});
+test('generation refuses unavailable, oversized, malformed and aborted downloads without leaving project files',async t=>{
+  const folder=await mkdtemp(join(tmpdir(),'georeference-generate-fail-'));t.after(()=>rm(folder,{recursive:true,force:true}));
+  const options={output:join(folder,'out'),request:{format:'json'}};
+  await assert.rejects(generateFiles(options,async()=>{throw new Error('socket failed');}),/--source-file/);
+  await assert.rejects(generateFiles(options,async()=>new Response('unavailable',{status:503})),/503/);
+  await assert.rejects(generateFiles(options,async()=>new Response('x'.repeat(2*1024*1024+1))),/2 MiB/);
+  await assert.rejects(generateFiles(options,async()=>new Response('not tabular data')),/columns/);
+  const controller=new AbortController();controller.abort();
+  await assert.rejects(generateFiles({...options,signal:controller.signal},async()=>{throw new Error('Must not download');}),{name:'AbortError'});
+  assert.deepEqual(await readdir(folder),[]);
+});
