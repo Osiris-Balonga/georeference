@@ -1,29 +1,63 @@
-# Generate files in your project
+# Generate lists and application resources
 
-[Français](generation.fr.md) · [Home](../README.md)
+[Français](generation.fr.md) · [Home](../README.md) · [Formats](formats.md)
 
-Use Node.js 24.18.x and npm. Run the tool once from your target project. To use a local build instead, build the repository and replace `npx georeference` with `node /path/to/georeference/dist/cli.js`.
+This guide describes the unreleased 1.1.0 redesign. Build this checkout with Node.js 24.18.x, `npm ci` and `npm run build`. npm 1.0.0 does not provide these outputs. After publication, replace `node dist/cli.js` with `npx georeference`.
 
-```sh
-npx georeference
-npx georeference countries --country FR,CG --format csv --output ./data/countries
-npx georeference countries --format sqlite --output ./data/countries-db
-npx georeference countries --source-file ./sources/countryInfo.txt --output ./data/offline
-```
-
-No command means country generation: download GeoNames `countryInfo.txt` over HTTPS, then create `./data/georeference/entities.json` and `manifest.json`. JSON contains `{ metadata, entities }`; use your application's own JSON reader. `npx` caches the executable and its dependencies outside the project. Your `package.json`, lockfile, and project dependencies are untouched. Generated files require no GeoReference runtime installation.
-
-`--output` is a **new directory**, not a filename. Existing destinations are refused, including repeated generation. Generate into another directory, then review/replace application data yourself. Generation never seeds a database. All six [export formats](formats.md) are available; CSV uses the documented machine profile. Keep the manifest with the data for attribution, versions, and checksums.
-
-The default source supplies country names, codes, and stable IDs, without coordinates or boundaries. For richer data, use an existing snapshot:
+## Choose the output
 
 ```sh
-npx georeference generate --snapshot ./sources/world.sqlite --types locality --country CG --coordinates --format ndjson --output ./data/places
-npx georeference countries --snapshot ./sources/world.sqlite --boundaries --format geojson --output ./data/borders
+node dist/cli.js generate --format xlsx --output ./exports/congo-excel
+node dist/cli.js generate --format csv --output ./exports/congo-csv
+node dist/cli.js generate --format json --output ./exports/congo-json
+node dist/cli.js generate --format sql-postgres --output ./exports/congo-postgres
 ```
 
-`countries` selects countries only; `generate` accepts type/subdivision filters on the snapshot. Without a snapshot both use countryInfo. GeoJSON requires geometry flags and preserves unavailable geometry as null. An exported SQLite database differs from an internal snapshot; see [formats](formats.md).
+Every `--output` is a **new directory**, not a filename. Relative paths start at your terminal's current directory: the CSV example writes inside `exports/congo-csv/`, not a previous JSON directory. Existing destinations are refused; consumer dependencies/package files are untouched. The geographic reference is bundled.
 
-Downloads have a 30-second timeout and a 2 MiB source limit. Connection failures fail generation; `--source-file` uses a retained GeoNames file offline. There is no silent stale-data fallback or persistent data cache. Dataset versions derive from source SHA-256, so changed upstream bytes produce a new version. Retain the source file and generator version to reproduce output. Temporary downloads/snapshots are cleaned up after success or failure. Generated metadata/manifests retain GeoNames attribution and CC BY 4.0; preserve them when redistributing data. See [sources](data-sources.md).
+Every package has `README.txt` for coverage/dates and `manifest.json` for integrity. `--audit` adds detailed `coverage.json`/`provenance.json`; they are not geographic rows.
 
-The [SDK](getting-started.md#optional-sdk) is optional for applications that want to query a local snapshot. File generation does not need it.
+## Language and identifiers
+
+CSV headers/filenames and workbook sheets use French by default. `--language en` chooses English. JSON collection/relationship names remain stable English application fields. UUIDs are included in application formats and hidden in human lists unless `--include-ids` is supplied.
+
+```sh
+node dist/cli.js generate --format xlsx --language en --output ./exports/congo-excel-en
+node dist/cli.js communes --format csv --include-ids --output ./exports/communes-with-ids
+node dist/cli.js generate --format json --audit --output ./exports/congo-audited
+```
+
+## Filter categories and places
+
+| Command | Selected resource |
+|---|---|
+| `countries` | Republic of the Congo only |
+| `departments` | Departments |
+| `communes`, `cities` | Communes; `cities` is an alias, not all populated places |
+| `districts` | Districts |
+| `arrondissements` | Communal arrondissements |
+| `neighborhoods` | Named neighborhoods retained in the reference |
+| `villages` | Named villages when curated evidence exists |
+| `generate` | All selected resources |
+
+```sh
+node dist/cli.js arrondissements --city Brazzaville --output ./exports/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 6 --format csv --output ./exports/talangai-csv
+node dist/cli.js neighborhoods --city Pointe-Noire --format xlsx --output ./exports/pointe-noire-excel
+```
+
+`--city` accepts a commune name or UUID. `--arrondissement` accepts a name/UUID; numbers require `--city`. Country scope is CG/COG; CD/COD is another country and is refused. Required parents stay in their own categories: total rows can exceed requested neighborhood counts.
+
+Public resources require typed UUIDs and closed parent relationships. Missing ancestors, generic untyped records and hierarchical mixed-entity layouts are not silently converted. See [migration](migration.md).
+
+## SQL naming and packaging
+
+`--sql-config ./sql-names.json` supplies database schema/table names. `--schema-mode data-only` omits PostgreSQL schema generation; `--sql-mode insert-only` preserves matching UUID rows. See [formats](formats.md) and [database import](seeding.md).
+
+`--compression gzip` compresses files separately. ZIP contains its own manifest; extract into a new directory before importing. Keep README/manifest with shared exports. `verify --package DIRECTORY` checks integrity, not geographic completeness.
+
+## Geometry and coverage
+
+Coordinates and boundaries are independent options. The documentary bundle supplies no geometry. GeoJSON requires `--coordinates` and/or `--boundaries`; missing geometry stays null. No name, parent, point or polygon is inferred to fill gaps.
+
+The reference is partial and dated. Empty categories do not declare the territory empty. Filtering or a software update does not make a 2022 observation current in 2026. See [coverage and sources](congo-reference.md).

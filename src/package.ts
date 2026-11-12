@@ -13,10 +13,12 @@ export async function verifyPackage(directory:string):Promise<ExportManifest> {
   const manifestPath=await packageFile(directory,'manifest.json');
   if ((await stat(manifestPath)).size>1024*1024) throw new Error('Manifest exceeds 1 MiB limit');
   const manifest=JSON.parse(await readFile(manifestPath,'utf8')) as ExportManifest;
+  if(manifest.geographicCoverage!==undefined&&!['partial','complete'].includes(manifest.geographicCoverage))throw new Error('Invalid geographic coverage');
   validateMetadata({contractVersion:manifest.contractVersion,datasetVersion:manifest.datasetVersion,sources:manifest.sources});
   if (!manifest.request || !manifest.counts || !Number.isSafeInteger(manifest.count) || manifest.count<0 || !/^[a-f0-9]{64}$/.test(manifest.contentId) || !Array.isArray(manifest.files) || !manifest.files.length || manifest.files.length>10000 || !Array.isArray(manifest.externalReferences) || !Array.isArray(manifest.contextIds)) throw new Error('Invalid package manifest');
   const seen=new Set<string>();
   for (const item of manifest.files) {
+    if(item.role!==undefined&&!['data','metadata'].includes(item.role))throw new Error('Invalid manifest file role');
     if (!item || seen.has(item.path) || item.path==='manifest.json' || !/^[a-f0-9]{64}$/.test(item.sha256) || !Number.isSafeInteger(item.bytes) || item.bytes<0) throw new Error('Invalid manifest file entry');
     seen.add(item.path);
     const digest=await fileDigest(await packageFile(directory,item.path));
@@ -25,13 +27,13 @@ export async function verifyPackage(directory:string):Promise<ExportManifest> {
   return manifest;
 }
 const MAX_IMPORT_BYTES=128*1024*1024;
-async function boundedText(path:string):Promise<string> {
+export async function boundedText(path:string,maxBytes=MAX_IMPORT_BYTES):Promise<string> {
   const input=createReadStream(path);const stream=path.endsWith('.gz')?input.pipe(createGunzip()):input;
   const chunks:Buffer[]=[];let size=0;
   try {
     for await (const chunk of stream) {
       size+=chunk.length;
-      if (size>MAX_IMPORT_BYTES) throw new Error('Import exceeds 128 MiB uncompressed limit; split the package');
+      if (size>maxBytes) throw new Error('Import exceeds 128 MiB uncompressed limit; split the package');
       chunks.push(Buffer.from(chunk));
     }
     return Buffer.concat(chunks).toString('utf8');
@@ -51,8 +53,9 @@ export async function readPackage(directory:string):Promise<{manifest:ExportMani
   if (manifest.files.some(file=>file.path.endsWith('.zip'))) throw new Error('Extract package.zip into a new directory before importing');
   const format=manifest.request.format;
   if (!['json','ndjson','csv'].includes(format)) throw new Error('Seeding requires a JSON, NDJSON or normalized CSV package');
-  if (manifest.files.length!==1) throw new Error('V1 import expects one data file per package');
-  const text=await boundedText(await packageFile(directory,manifest.files[0]!.path));
+  const dataFiles=manifest.files.filter(file=>file.role!=='metadata');
+  if (dataFiles.length!==1) throw new Error('V1 import expects one data file per package');
+  const text=await boundedText(await packageFile(directory,dataFiles[0]!.path));
   let raw:unknown[];
   if (format==='json') {
     const document=JSON.parse(text) as {entities?:unknown[]};
@@ -65,6 +68,7 @@ export async function readPackage(directory:string):Promise<{manifest:ExportMani
     raw=rows.map(row=>{
       const result:Record<string,unknown>={};
       for(const [key,value] of Object.entries(row)) {
+        if(key==='kind'&&value==='') continue;
         if (jsonFields.has(key)) { if(value!=='') result[key]=JSON.parse(value); }
         else result[key]=value;
       }
