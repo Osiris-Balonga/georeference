@@ -2,6 +2,10 @@
 
 [Français](getting-started.fr.md) · [Home](../README.md)
 
+## Generate files directly
+
+Start with [one-shot generation](generation.md): `npx georeference` generates country files without adding a dependency to your project. The SDK is optional. npm publication is pending; the guide also explains how to run this revision from source. The following sections cover advanced source preparation, exports and database seeding.
+
 ## Build and create a snapshot
 
 Requirements: Node.js 24.18.x, npm, and disk space for snapshots/exports. PostgreSQL is needed only for seeding into PostgreSQL. SQLite support comes from Node's built-in `node:sqlite` module.
@@ -55,9 +59,9 @@ node dist/cli.js seed --package exports/seed --create-schema --apply
 
 Set `DATABASE_URL` in your shell or secret manager before running the seed commands. Do not put credentials in tracked files or exported packages. The commands above target the standard schema; existing application tables require an explicit mapping. See [seeding](seeding.md) for revision ordering, field ownership, and recovery.
 
-## Read through the SDK
+## Optional SDK
 
-After building, use the library from the repository or a locally packed/installed package:
+Only applications that want the local snapshot query API need to install the library. After npm publication, use `npm install georeference`; before publication, build and install a local archive with `npm pack` and `npm install /path/to/georeference-1.0.0.tgz`. File generation needs no such installation.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';

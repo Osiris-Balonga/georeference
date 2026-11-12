@@ -21,6 +21,8 @@ GeoNames publie ses extraits sous [Creative Commons Attribution 4.0](https://cre
 
 Téléchargez et extrayez avant ingestion. Conservez les fichiers téléchargés pour reproduire un instantané ; attribuez une `--version` pertinente sans remplacer silencieusement une version publiée. Ce parcours hors ligne ne demande ni compte GeoNames ni clé API.
 
+Le [générateur ponctuel de pays](generation.fr.md) télécharge automatiquement uniquement `countryInfo.txt`, avec une limite de 2 Mio et un délai de 30 secondes. Il dérive les versions du SHA-256 de la source et conserve licence/attribution dans les fichiers générés. `--source-file` évite le réseau avec un fichier conservé ; subdivisions, localités et frontières demandent un instantané fourni ou le parcours d'ingestion avancé.
+
 ## Limites de couverture explicites
 
 - L'importeur exploite les fichiers administratifs de niveau 1/2 fournis ; il ne promet pas tous les niveaux administratifs ni toutes les localités mondiales. Les petits extraits de villes sont des sous-ensembles.

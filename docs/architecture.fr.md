@@ -3,6 +3,8 @@
 [English](architecture.md) · [Accueil](../README.fr.md)
 
 ```text
+CLI ponctuelle → téléchargement GeoNames / source conservée
+              ↓
 Entrée canonique / texte GeoNames
               ↓
         validation → instantané SQLite versionné
@@ -22,6 +24,8 @@ Instantané local → SDK de lecture → recherches/itérations applicatives
 ```
 
 Le contrat partagé se trouve dans `src/types.ts`. Le cœur possède les règles d'identifiants, d'intégrité du graphe, de sélection et de projection géométrique. Les adaptateurs possèdent l'encodage et la validation propres aux formats. Le coordinateur d'export gère les sorties temporaires, le packaging, les empreintes et la publication. Le seeder gère les mises à jour en base ; le SDK gère la consultation, pas la synchronisation d'une base applicative.
+
+L'orchestrateur ponctuel (`src/generate.ts`) télécharge une source countryInfo bornée ou lit un fichier local, dérive une version de son empreinte, crée un instantané temporaire et délègue au coordinateur d'export existant. Avec `--snapshot`, il utilise directement l'instantané fourni. Il gère le nettoyage sans installation persistante dans le projet. Les fichiers générés sont autonomes ; l'import du SDK reste optionnel. Voir [la génération](generation.fr.md).
 
 Le contrat `ExportAdapter` déclare `format`, `version`, `validate(request)` et `write(context)`. Le contexte contient l'itérateur canonique réutilisable, le plan résolu, le répertoire de sortie et un signal d'annulation facultatif. Le writer renvoie des noms de fichiers relatifs après fermeture de ses ressources. Il refuse les combinaisons non supportées avant génération et préserve les IDs stables.
 
