@@ -3,19 +3,19 @@
 [English](architecture.md) · [Accueil](../README.fr.md)
 
 ```text
-CLI ponctuelle → téléchargement GeoNames / source conservée
+CLI ponctuelle → référentiel Congo intégré et daté
               ↓
-Entrée canonique / texte GeoNames
+Périmètre CG + couverture + provenance par entité
               ↓
         validation → instantané SQLite versionné
                               ↓
-               sélection géographique + résolution des ancêtres
+               sélection par kind/géographie + résolution des ancêtres
                               ↓
                     itérateur d'entités canoniques
                               ↓
                        adaptateur de format
                               ↓
-                fichiers + compression + manifeste
+                données + couverture/provenance + compression + manifeste
                               ↓
                       paquet d'export vérifié
 
@@ -25,7 +25,9 @@ Instantané local → SDK de lecture → recherches/itérations applicatives
 
 Le contrat partagé se trouve dans `src/types.ts`. Le cœur possède les règles d'identifiants, d'intégrité du graphe, de sélection et de projection géométrique. Les adaptateurs possèdent l'encodage et la validation propres aux formats. Le coordinateur d'export gère les sorties temporaires, le packaging, les empreintes et la publication. Le seeder gère les mises à jour en base ; le SDK gère la consultation, pas la synchronisation d'une base applicative.
 
-L'orchestrateur ponctuel (`src/generate.ts`) télécharge une source countryInfo bornée ou lit un fichier local, dérive une version de son empreinte, crée un instantané temporaire et délègue au coordinateur d'export existant. Avec `--snapshot`, il utilise directement l'instantané fourni. Il gère le nettoyage sans installation persistante dans le projet. Les fichiers générés sont autonomes ; l'import du SDK reste optionnel. Voir [la génération](generation.fr.md).
+L'orchestrateur ponctuel utilise le référentiel Congo intégré sans téléchargement géographique, crée un instantané temporaire et délègue au coordinateur d'export. Les instantanés personnalisés explicites doivent aussi contenir uniquement CG et conserver leur propre couverture partielle. Il gère le nettoyage sans installation persistante dans le projet. Les fichiers générés sont autonomes ; l'import du SDK reste optionnel. Voir [la génération](generation.fr.md).
+
+`entityType` fournit les classes internes génériques ; `kind` conserve le sens administratif de commune, arrondissement, quartier et autres unités. Le contrat interne permet des extensions futures, mais le produit livre exclusivement les données du Congo. La validation des parents respecte la profondeur variable documentée. Couverture/provenance ont le rôle de manifeste `role: 'metadata'` et sont exclues des entités à amorcer. Vérifier les fichiers contrôle leur intégrité, pas l'exhaustivité ou l'actualité juridique de la géographie.
 
 Le contrat `ExportAdapter` déclare `format`, `version`, `validate(request)` et `write(context)`. Le contexte contient l'itérateur canonique réutilisable, le plan résolu, le répertoire de sortie et un signal d'annulation facultatif. Le writer renvoie des noms de fichiers relatifs après fermeture de ses ressources. Il refuse les combinaisons non supportées avant génération et préserve les IDs stables.
 
@@ -62,7 +64,7 @@ registerExportAdapter({
   },
 });
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
   await exportSnapshot(snapshot, 'exports/entity-ids', { format: 'entity-ids' });
 } finally {
@@ -79,9 +81,9 @@ Renvoyez les noms relatifs après fermeture des ressources. Le coordinateur four
 ```ts
 import { Snapshot } from 'georeference';
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
-  const plan = snapshot.select({ countries: ['XZ'] });
+  const plan = snapshot.select({ countries: ['CG'] });
   try {
     for (const entity of plan.entities()) console.log(entity.id);
   } finally {

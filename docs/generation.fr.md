@@ -1,29 +1,55 @@
-# Générer les fichiers dans votre projet
+# Générer les fichiers du référentiel Congo
 
-[English](generation.md) · [Accueil](../README.fr.md)
+[English](generation.md) · [Couverture Congo](congo-reference.fr.md) · [Accueil](../README.fr.md)
 
-Utilisez Node.js 24.18.x et npm. Exécutez l'outil une fois depuis le projet cible. Pour utiliser une version locale, construisez le dépôt puis remplacez `npx georeference` par `node /chemin/vers/georeference/dist/cli.js`.
+Ce guide décrit la révision limitée au Congo prévue pour 1.1.0. Tant qu'elle n'est pas publiée, npm 1.0.0 conserve l'ancien fonctionnement. Utilisez un checkout de cette révision avec Node.js 24.18.x, `npm ci` et `npm run build` ; les exemples exécutent ce build local. Après livraison, `npx georeference` pourra remplacer `node dist/cli.js`.
 
-```sh
-npx georeference
-npx georeference countries --country FR,CG --format csv --output ./data/countries
-npx georeference countries --format sqlite --output ./data/countries-db
-npx georeference countries --source-file ./sources/countryInfo.txt --output ./data/offline
-```
-
-Sans commande, l'outil génère les pays : téléchargement HTTPS de `countryInfo.txt` depuis GeoNames, puis création de `./data/georeference/entities.json` et `manifest.json`. Le JSON contient `{ metadata, entities }` ; utilisez le lecteur JSON de votre application. `npx` met en cache l'exécutable et ses dépendances hors du projet. Votre `package.json`, votre fichier de verrouillage et les dépendances restent intacts. Les fichiers générés ne nécessitent aucune installation de GeoReference à l'exécution.
-
-`--output` désigne un **nouveau dossier**, pas un nom de fichier. Les destinations existantes sont refusées, y compris lors d'une seconde génération. Générez dans un autre dossier puis examinez/remplacez vous-même les données applicatives. La génération n'amorce jamais une base. Les six [formats d'export](formats.fr.md) sont disponibles ; CSV utilise le profil machine documenté. Conservez le manifeste avec les données pour l'attribution, les versions et les empreintes.
-
-La source par défaut fournit les noms de pays, codes et IDs stables, sans coordonnées ni frontières. Pour des données enrichies, utilisez un instantané existant :
+## Données intégrées par défaut
 
 ```sh
-npx georeference generate --snapshot ./sources/world.sqlite --types locality --country CG --coordinates --format ndjson --output ./data/places
-npx georeference countries --snapshot ./sources/world.sqlite --boundaries --format geojson --output ./data/borders
+node dist/cli.js
+node dist/cli.js generate --format ndjson --compression gzip --output ./data/congo
+node dist/cli.js departments --format csv --output ./data/congo-departments
+node dist/cli.js communes --output ./data/congo-communes
 ```
 
-`countries` sélectionne uniquement les pays ; `generate` accepte les filtres de type/subdivision sur l'instantané. Sans instantané, les deux utilisent countryInfo. GeoJSON exige les options de géométrie et conserve les géométries indisponibles à null. Une base SQLite exportée diffère d'un instantané interne ; voir [les formats](formats.fr.md).
+Sans commande, la CLI génère le référentiel Congo intégré, pas un téléchargement de liste de pays. Le paquet JSON par défaut contient `entities.json`, `coverage.json`, `provenance.json` et `manifest.json` dans `./data/georeference/`. Le JSON suit `{ metadata, entities }` ; le lecteur JSON de votre application suffit. Aucune base n'est modifiée ni dépendance ajoutée au projet cible.
 
-Les téléchargements sont limités à 30 secondes et la source à 2 Mio. Une erreur de connexion fait échouer la génération ; `--source-file` utilise un fichier GeoNames conservé hors ligne. Aucun repli silencieux sur d'anciennes données, ni cache persistant des données. Les versions dérivent du SHA-256 de la source : des octets amont modifiés donnent une nouvelle version. Conservez le fichier source et la version du générateur pour reproduire la sortie. Les téléchargements/instantanés temporaires sont nettoyés après succès ou échec. Métadonnées/manifestes conservent l'attribution GeoNames et CC BY 4.0 ; préservez-les lors de la redistribution. Voir [les sources](data-sources.fr.md).
+`--output` est un **nouveau répertoire**, pas un fichier. Les chemins existants sont refusés. Générez ailleurs puis examinez les changements avant de remplacer les données applicatives. Les six [formats](formats.fr.md) utilisent le même référentiel. Gzip/ZIP regroupent données et métadonnées ; conservez manifeste et couverture/provenance lors du partage.
 
-Le [SDK](getting-started.fr.md#sdk-optionnel) est optionnel pour consulter un instantané local depuis une application. La génération de fichiers n'en a pas besoin.
+## Sélectionner les types administratifs
+
+| Commande | `kind` sélectionné |
+|---|---|
+| `countries` | `country` — uniquement la République du Congo |
+| `departments` | `department` |
+| `communes`, `cities` | `commune` (`cities` est un alias, pas tous les lieux habités) |
+| `districts` | `district` |
+| `arrondissements` | `arrondissement` |
+| `neighborhoods` | `neighborhood` |
+| `villages` | `village`, lorsqu'une observation nommée a été intégrée |
+| `generate` | Toutes les entités sélectionnées |
+
+`generate` et `export` avancé acceptent aussi `--kinds department,commune` (valeurs `kind` séparées par des virgules). Une commande sémantique comme `neighborhoods` fixe son propre type. `countries` reste compatible avec un instantané fourni limité au pays sans `kind`.
+
+Les ancêtres nécessaires peuvent apparaître comme contexte : le nombre de lignes ne correspond pas nécessairement au seul nombre de quartiers sélectionnés. La couverture distingue effectifs du référentiel/de l'export et exhaustivité géographique.
+
+```sh
+node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 2 --format csv --output ./data/bacongo-neighborhoods
+node dist/cli.js neighborhoods --city Pointe-Noire --output ./data/pointe-noire-neighborhoods
+```
+
+`--city` résout un ID ou nom de commune enregistré. `--arrondissement` résout un ID/nom ; un numéro seul nécessite `--city`, car les numéros se répètent entre communes. Les filtres suivent les descendants vérifiés, pas la proximité ni la ressemblance des noms. La date d'observation reste valable après filtrage. Une entrée absente/ambiguë ne doit pas sélectionner silencieusement un autre parent.
+
+Les filtres pays acceptent `CG`, `COG` ou l'ID Congo conservé `geonames:2260494`. Les autres pays sont refusés, dont `CD`/`COD` (République démocratique du Congo). Cette CLI ne propose pas de référentiel mondial.
+
+## Géométries et entrées Congo personnalisées
+
+Coordonnées et frontières restent indépendantes. Les demander ne crée pas de géométrie indisponible. GeoJSON peut contenir des géométries nulles ; consultez la couverture et [les limites](formats.fr.md).
+
+Les utilisateurs avancés peuvent fournir `--snapshot ./sources/congo.sqlite` à la place du référentiel intégré. Il doit contenir uniquement des données CG. L'entrée historique `--source-file ./sources/countryInfo.txt` fournit seulement le pays Congo ; ce n'est pas une source de villes/quartiers. Les entrées personnalisées ont leur couverture partielle et n'héritent pas des observations intégrées.
+
+Le référentiel par défaut n'exige pas de réseau. npm peut avoir besoin d'une connexion pour obtenir l'exécutable via `npx`. Aucun rafraîchissement géographique en arrière-plan ni repli silencieux sur une source amont. Conservez version du générateur et révision source pour reproduire un paquet.
+
+Le [SDK optionnel](getting-started.fr.md#sdk-optionnel) sert aux applications souhaitant interroger un instantané local. La lecture des fichiers générés n'en dépend pas.

@@ -1,5 +1,19 @@
 # Changelog / Historique
 
+## 1.1.0 — Unreleased / Non publié
+
+### English
+
+Scope corrected to Republic of the Congo (CG/COG) exclusively. Default generation uses bundled curated facts with source observations from 2022–2025, with no geographic network download. Add kind-specific commands, commune/arrondissement descendant filters, and distinct commune/department identities. Neighborhood parents follow evidence and can be a commune, arrondissement, or urban community.
+
+Generated packages include explicit partial coverage and per-entity provenance metadata; unnamed, unresolved, and conflicting observations remain visible gaps. Add optional SDK administrative lookups and nullable SQL `kind`; older managed tables require an explicit migration or compatible column mapping. Synthetic fixtures are tests only. This section describes a planned correction, not an npm/GitHub release; the published 1.0.0 behavior below remains historical.
+
+### Français
+
+Périmètre corrigé : République du Congo (CG/COG) exclusivement. La génération utilise par défaut des faits vérifiés intégrés, observés dans les sources de 2022–2025, sans téléchargement géographique. Ajout de commandes par type administratif, de filtres descendants par commune/arrondissement et d'identités distinctes pour commune/département. Le parent d'un quartier suit les preuves et peut être une commune, un arrondissement ou une communauté urbaine.
+
+Les paquets générés comprennent couverture explicitement partielle et provenance par entité ; observations sans nom, non résolues et contradictoires restent des lacunes visibles. Ajout de consultations administratives au SDK optionnel et de `kind` SQL nullable ; les anciennes tables gérées nécessitent une migration explicite ou un mapping compatible. Les données fictives restent réservées aux tests. Cette section décrit une correction prévue, pas une publication npm/GitHub ; le comportement 1.0.0 ci-dessous est historique.
+
 ## 1.0.0
 
 ### English

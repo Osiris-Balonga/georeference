@@ -1,79 +1,89 @@
 # Getting started
 
-[Français](getting-started.fr.md) · [Home](../README.md)
+[Français](getting-started.fr.md) · [Congo reference](congo-reference.md) · [Home](../README.md)
 
-## Generate files directly
+This guide is for the upcoming Congo-only 1.1.0 revision. It does not describe the older published 1.0.0 package. Until the revised release is available, build a checkout of this revision; do not assume a default clone or npm `latest` already contains it.
 
-Start with [one-shot generation](generation.md): `npx georeference` generates country files without adding a dependency to your project. The SDK is optional. The guide also explains how to run a local build. The following sections cover advanced source preparation, exports and database seeding.
+## Generate files, then read them directly
 
-## Build and create a snapshot
-
-Requirements: Node.js 24.18.x, npm, and disk space for snapshots/exports. PostgreSQL is needed only for seeding into PostgreSQL. SQLite support comes from Node's built-in `node:sqlite` module.
+Use Node.js 24.18.x and npm:
 
 ```sh
 npm ci
 npm run build
-node dist/cli.js --help
-node dist/cli.js snapshot --input examples/sample.ndjson --metadata examples/metadata.json --output data/example.sqlite
-node dist/cli.js inspect --snapshot data/example.sqlite
+node dist/cli.js
+node dist/cli.js verify --package ./data/georeference
 ```
 
-The included entities are fictional. The metadata file specifies `contractVersion`, `datasetVersion`, and `sources`; each source declares `name`, `url`, `license`, `attribution`, and `revision`. Input entities have stable `id`, `entityType`, `name`, `countryId`, and `parentId`. Optional fields are `codes`, localized `names`, administrative `level`, `coordinates`, and Polygon/MultiPolygon `boundary`.
+The CLI uses the bundled Republic of the Congo reference and creates a new directory containing `entities.json`, `coverage.json`, `provenance.json`, and `manifest.json`. No geographic download or SDK installation is required. After publication, `npx georeference` offers the same entry point from a target project; npm may download the tool itself.
 
-Countries refer to themselves through `countryId` and have `parentId: null`. Every other parent must exist in the snapshot. Coordinate objects use named `longitude` and `latitude`; GeoJSON positions use `[longitude, latitude]`. Creating a snapshot validates the graph and geometry. Supply a new output path rather than overwriting an existing snapshot.
+Your application can load `entities.json` with its own reader. The top level is `{ metadata, entities }`. Preserve the coverage/provenance files and manifest alongside it: row count is not a guarantee of complete geographic coverage. See [generation](generation.md) for kind selectors, commune/arrondissement filters, compression, and [reference coverage](congo-reference.md) for dated gaps.
 
-## Select and export
+## Select real administrative units
 
 ```sh
-node dist/cli.js export --snapshot data/example.sqlite --country XZ --types locality --coordinates --format ndjson --compression gzip --output exports/localities
-node dist/cli.js verify --package exports/localities
-node dist/cli.js export --snapshot data/example.sqlite --subdivision example:region --format json --layout hierarchical --output exports/region-tree
-node dist/cli.js export --snapshot data/example.sqlite --format geojson --coordinates --boundaries --output exports/map-layers
+node dist/cli.js communes --output ./data/congo-communes
+node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 2 --output ./data/bacongo-neighborhoods
+node dist/cli.js departments --country CG --format csv --output ./data/congo-departments
 ```
 
-Country filters accept stable IDs or country codes. Multiple IDs/types use comma-separated values. Subdivision filters include descendants by administrative membership; they do not perform spatial intersection. Required ancestors are added by default and reported as context. `--no-ancestors` makes references outside the selection explicit; an importer must resolve them in the target.
+`cities` is an alias for `communes`. An arrondissement number requires its commune through `--city`. Country scope is CG/COG only; CD/COD identifies a different country and is rejected. Keep source-observation dates when displaying a selected neighborhood; filtering does not make a 2022 observation a complete 2026 inventory.
 
-Coordinates and boundaries are excluded unless requested. Missing geometry stays missing; the manifest reports coverage. A requested format/layout combination must be supported; consult [formats](formats.md).
+## Optional: prepare a local Congo snapshot
 
-Export packages contain `manifest.json` and data files. Verification checks file integrity. Preserve the manifest when sharing files. Gzip compresses each payload inside the directory; the package reader decompresses it. With ZIP, the output directory contains an outer manifest and `package.zip`; the archive contains the payload files and an inner manifest. Verify the original directory for archive integrity, then extract `package.zip` to a **new directory** and verify/seed that extracted directory. Compression is transport packaging, not a new data contract.
-
-## Use real GeoNames inputs
-
-Download the desired files from [GeoNames exports](https://download.geonames.org/export/dump/), retain their license, and extract any ZIP archives yourself. Then ingest local text files:
+To query the bundled reference through the optional SDK, create an internal snapshot directly:
 
 ```sh
-node dist/cli.js geonames --countries data/countryInfo.txt --admin1 data/admin1CodesASCII.txt --admin2 data/admin2Codes.txt --places data/cities1000.txt --version geonames-2026-11-11 --output data/geonames.sqlite
+node dist/cli.js snapshot --output ./data/congo.sqlite
+node dist/cli.js inspect --snapshot ./data/congo.sqlite
 ```
 
-Only `--countries`, `--version`, and `--output` are mandatory. The importer does not fetch data from the network. It accepts GeoNames populated-place records, not every feature class. Each supplied file receives a SHA-256 provenance revision. See [source coverage and limitations](data-sources.md).
+No input/metadata file is required for this bundled path. `verify --package` checks file integrity; it does not certify geographic completeness or current legal status.
 
-## Seed PostgreSQL
+### Custom source input
 
-Export normalized JSON, NDJSON, or CSV, then preview before applying:
+The default generation path needs no prepared snapshot. For custom ingestion, the following files are **your own validated, real CG inputs**, not fictional files shipped as a dataset. Supply `--input` and `--metadata` together:
 
 ```sh
-node dist/cli.js export --snapshot data/example.sqlite --format ndjson --coordinates --output exports/seed
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
+node dist/cli.js snapshot --input ./sources/congo.ndjson --metadata ./sources/congo-metadata.json --output ./data/congo.sqlite
+node dist/cli.js inspect --snapshot ./data/congo.sqlite
+node dist/cli.js export --snapshot ./data/congo.sqlite --country CG --format ndjson --compression gzip --output ./exports/congo
 ```
 
-Set `DATABASE_URL` in your shell or secret manager before running the seed commands. Do not put credentials in tracked files or exported packages. The commands above target the standard schema; existing application tables require an explicit mapping. See [seeding](seeding.md) for revision ordering, field ownership, and recovery.
+The metadata contract has `contractVersion`, `datasetVersion`, and `sources`; each source has `name`, `url`, `license`, `attribution`, and `revision`. Entities have stable `id`, `entityType`, `name`, `countryId`, and `parentId`; `kind` adds administrative meaning. Optional fields include `codes`, localized `names`, `level`, `coordinates`, and Polygon/MultiPolygon `boundary`.
+
+`entityType` is a storage class (`country`, `subdivision`, `locality`); use `kind` to distinguish a commune, arrondissement, and neighborhood. Countries reference themselves through `countryId` and have `parentId: null`. Parents must exist and satisfy the documented hierarchy. Country identity `geonames:2260494` is preserved. Custom snapshots/CLI inputs must be Congo-only and have their own coverage/provenance; they do not inherit the bundled catalog's observations.
+
+The ready-to-query `sqlite` export uses the relational export schema; it is not the internal snapshot file consumed by `Snapshot.open`. Coordinates use named `longitude`/`latitude`; GeoJSON positions use `[longitude, latitude]`. Missing geometry is never reconstructed from a name or guessed parent.
+
+## Seed PostgreSQL separately
+
+```sh
+node dist/cli.js generate --format ndjson --output ./exports/congo-seed
+node dist/cli.js seed --package ./exports/congo-seed --create-schema
+node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
+```
+
+Set `DATABASE_URL` in your environment before seeding. Preview is the default; `--apply` writes to the database. Coverage/provenance files are metadata, not additional entity payloads. Existing managed tables need the nullable `kind` column or an explicit mapping before importing kind-bearing data. See [seeding](seeding.md) for migration, revision ordering, local keys, and recovery.
 
 ## Optional SDK
 
-Only applications that want the local snapshot query API need to install the library with `npm install georeference`. You can also build and install a local archive with `npm pack` and `npm install /path/to/georeference-1.0.0.tgz`. File generation needs no such installation.
+Generating files needs no `npm install georeference`. Applications choosing a local snapshot query API can build/install this revision's package, for example using the archive printed by `npm pack`. Until publication, the older npm 1.0.0 archive does not provide this revision's kind-specific methods.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
   const client = createClient(snapshot);
-  console.log(client.getEntity('example:locality'));
-  console.log(client.getCountry('example:country'));
+  console.log(client.getCountry('CG'));
+  console.log(client.listCommunes());
 } finally {
   snapshot.close();
 }
 ```
 
-The SDK reads the local snapshot and does not synchronize an application database. Keep the snapshot open while iterating and close it when finished. Install the compiled package with `npm install georeference`, or build/install it from this repository.
+`listArrondissements(communeId)` and `listNeighborhoods(parentSubdivisionId)` use stored parent identities. Their results depend on the snapshot's kinds and coverage. Keep the snapshot open while iterating and close it after use. The SDK reads data; it does not seed or synchronize an application database.
+
+For direct access to the bundled revision, `await loadCongoReference()` (exported from `georeference`) returns its validated `metadata`, `entities`, `coverage`, per-entity `provenance`, and `issues`. This is optional application integration, independent of generating standalone files.

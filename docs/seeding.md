@@ -2,6 +2,8 @@
 
 [Français](seeding.fr.md) · [Home](../README.md)
 
+The upcoming 1.1.0 CLI imports Republic of the Congo (CG/COG) packages only. Generating files, applying database changes, and reading through the optional SDK are separate operations. Coverage/provenance sidecars have manifest role `metadata` and are never geographic rows. A verified checksum proves file integrity, not complete/current geographic coverage.
+
 ## Preview, then apply
 
 The seeder reads verified, normalized GeoReference packages, not arbitrary downloaded SQL. Use JSON, NDJSON, or the machine-profile CSV. Spreadsheet-transformed CSV, GeoJSON layers, SQL scripts, and SQLite export files are not interchangeable seeder inputs. V1 package imports are bounded to 128 MiB of uncompressed data and 500,000 records; split larger imports into measured geographic packages. Gzip is read directly; ZIP must first be extracted with its inner manifest into a new directory.
@@ -9,8 +11,8 @@ The seeder reads verified, normalized GeoReference packages, not arbitrary downl
 Set `DATABASE_URL` outside tracked files. For the standard GeoReference table:
 
 ```sh
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
+node dist/cli.js seed --package ./exports/congo-seed --create-schema
+node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
 ```
 
 Without `--apply`, the command produces a read-only plan. `--create-schema` allows creation of the standard objects when applying; it is not permission to alter arbitrary existing application schemas. The default target is `public.georeference_entities`.
@@ -31,7 +33,7 @@ The seeder uses **source-wins** for managed fields. Automatic merging of local e
 Dataset version labels are opaque: `release-b` cannot be reliably compared with `2026.11`. The first import defaults to revision `0`. A changed dataset/package requires a strictly higher explicit integer revision:
 
 ```sh
-node dist/cli.js seed --package exports/updated-seed --revision 1 --apply
+node dist/cli.js seed --package ./exports/congo-updated-seed --revision 1 --apply
 ```
 
 Older/equal conflicting revisions are rejected. `--allow-downgrade` is an explicit override, not a default recovery mechanism. Preserve the same revision when resuming the same interrupted import.
@@ -48,6 +50,7 @@ Use `--mapping path/to/mapping.json` for a supported mapping of canonical fields
   "columns": {
     "id": "georeference_id",
     "entityType": "entity_type",
+    "kind": "administrative_kind",
     "countryId": "country_id",
     "parentId": "parent_id"
   }
@@ -55,6 +58,10 @@ Use `--mapping path/to/mapping.json` for a supported mapping of canonical fields
 ```
 
 Here `id` is an existing integer serial/identity primary key, while `georeference_id` is the stable string identifier. Its uniqueness must be enforced by a real, non-partial, single-column PRIMARY KEY or UNIQUE constraint/index; a mapping declaration or a composite unique key does not suffice. The seeder preserves local IDs and maps relationships to them; it does not replace the application's primary keys. Other managed columns must have compatible names/types or explicit mappings. Preserve unrelated business columns and supply their required defaults yourself. V1's local-key mapping supports integer serial/identity keys, not every custom/composite key design.
+
+## Existing tables and the new administrative kind
+
+New standard tables include nullable text `kind`. Before importing kind-bearing Congo records into an older managed table, explicitly add a compatible nullable column through your reviewed migration, or map `kind` to a compatible existing column such as `administrative_kind` above. `--create-schema` does not silently alter an existing table. Existing rows can remain null until a reviewed source update supplies their kind; do not guess it from their name or storage class. Missing optional input preserves the target field; an unknown kind is not permission to invent an arrondissement parent.
 
 ## Transactions, recovery, and visibility
 

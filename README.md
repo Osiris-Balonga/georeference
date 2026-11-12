@@ -1,84 +1,64 @@
-# GeoReference
+# GeoReference — Republic of the Congo
 
-[Français](README.fr.md) · [Getting started](docs/getting-started.md) · [Formats](docs/formats.md) · [Contributing](CONTRIBUTING.md)
+[Français](README.fr.md) · [Congo reference](docs/congo-reference.md) · [Getting started](docs/getting-started.md) · [Contributing](CONTRIBUTING.md)
 
-Versioned geographic datasets, portable exports, and repeatable database seeding.
+Generate standalone files of **Republic of the Congo (Congo-Brazzaville, CG/COG)** departments, communes, districts, arrondissements, and source-observed neighborhoods. The CLI uses a bundled, curated reference with dated provenance; its default geographic data path needs no network download. Read generated files directly from your application. A runtime SDK is optional.
 
-GeoReference generates geographic data files directly in your project. Run the CLI once, keep the generated files, and use them without a GeoReference runtime dependency. An optional TypeScript SDK supports applications that want to query local snapshots.
+**Release status:** this documentation describes the upcoming **1.1.0 Congo-only revision**. It does not mean 1.1.0 is published. The previously published npm/GitHub 1.0.0 version has the older behavior; bare `npx georeference` uses that version until the correction is released. The commands below run a checkout of this revision.
 
-## What V1 provides
+## Generate from this checkout
 
-- One-command country generation from GeoNames, with offline input and geographic filtering.
-- Validated, versioned SQLite snapshots from canonical JSON/NDJSON or local GeoNames text files.
-- Selection by country, subdivision descendants, and entity type, with required ancestors included by default.
-- Independent inclusion of point coordinates and polygon/multipolygon boundaries.
-- JSON (flat or hierarchical), NDJSON, CSV, PostgreSQL SQL, SQLite, and GeoJSON exports.
-- Export manifests with provenance, request options, entity counts, and SHA-256 file checksums; gzip and ZIP packaging.
-- PostgreSQL seeding with a preview by default, explicit apply, managed-field updates, stable identifiers, and resumable batches.
-- A local read SDK with country/subdivision lookups and locality iteration.
-
-The default command downloads GeoNames country information; the repository itself ships software and a small **synthetic** example. Other geographic coverage depends on your input sources. GeoNames data is CC BY 4.0; the MIT software license does not change dataset licenses.
-
-## Try it locally
-
-Use Node.js **24.18.x** and npm. Run the tool from your project:
+Use Node.js **24.18.x** and npm:
 
 ```sh
-npx georeference
-npx georeference countries --country FR,CG --format csv --output ./data/countries
-```
-
-The first command creates `data/georeference/entities.json` and `manifest.json`. JSON contains `{ metadata, entities }`. `--output` is a new directory, not a filename. The CLI preserves existing destinations and does not edit your package manifest, lockfile, or dependencies. `npx` downloads/caches the tool outside the project; your application reads the generated files directly. See [one-shot generation](docs/getting-started.md) for offline use and all six formats.
-
-To run this revision from source:
-
-```sh
-git clone https://github.com/Osiris-Balonga/georeference.git
-cd georeference
 npm ci
 npm run build
 node dist/cli.js
+node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Pointe-Noire --format csv --output ./data/pointe-noire-neighborhoods
 ```
 
-Export output directories must be new. Start with the [complete guide](docs/getting-started.md) for GeoNames ingestion, PostgreSQL seeding, and SDK usage.
+The default command creates a new `data/georeference/` directory with `entities.json`, `coverage.json`, `provenance.json`, and `manifest.json`. It leaves your package manifest, lockfile, and dependencies untouched. Existing destinations are refused. After publication of this revision, use `npx georeference` in place of `node dist/cli.js`; npm may download the executable, while the geographic reference stays bundled.
 
-## Optional SDK
+## Real data with explicit limits
 
-Only applications that want the snapshot query API need `npm install georeference`. Generating JSON, CSV, or other files does not require adding that dependency. See the [SDK example](docs/getting-started.md#optional-sdk).
+The reference contains curated administrative facts, not a fictional demonstration or a world catalog. It combines government electoral observations from 2022, territorial laws from 2024, and a national registry from 2025. Those different dates are preserved. It does **not** claim every current neighborhood, village, boundary, or coordinate as of 2026.
 
-## Three ways to use the data
+`coverage.json` reports reference/export counts, source dates, missing named coverage, code-only/unclassified observations, and unresolved conflicts. An empty neighborhood result means no eligible named observation in this reference; it does not mean no neighborhoods exist. `provenance.json` explains the evidence for exported entities. See [coverage and sources](docs/congo-reference.md).
+
+`kind` records administrative meaning: `department`, `commune`, `district`, `arrondissement`, `urban-community`, `rural-community`, `neighborhood`, or `village` where verified. A department and its same-name commune are separate entities. A neighborhood can belong directly to a commune, an arrondissement, or an urban community; the documented parent is preserved.
+
+## Commands and formats
+
+Use `generate` for the whole bundled reference or select `countries`, `departments`, `communes`, `cities` (alias for communes), `districts`, `arrondissements`, `neighborhoods`, or `villages`. Filters use stored identities and verified descendants. Country selection accepts CG/COG or the stored Congo ID; other countries, including CD/COD, are outside this product.
+
+JSON (flat/hierarchical), NDJSON, CSV, PostgreSQL SQL, SQLite, and GeoJSON are available, with gzip/ZIP packaging. Geometry is included only when it exists; missing points and boundaries are never fabricated. See [generation](docs/generation.md) and [format limits](docs/formats.md).
+
+## Files, database import, optional SDK
 
 | Need | Use |
 |---|---|
-| Download or exchange a snapshot | Export files with a manifest |
-| Initialize/update an application database | Use the PostgreSQL seeder with a reviewed update policy |
-| Query reference data from application code | Use the read SDK over a local snapshot |
+| Add geographic files to your application | Generate once; use your own readers |
+| Initialize/update PostgreSQL | Use the seeder with preview, mapping, and update policy |
+| Query a prepared local snapshot through TypeScript | Opt into the read SDK |
 
-An SQL export is not a universal seeder. Seeding also deals with existing keys, field ownership, conflicts, revisions, transactions, and recovery. See [database import](docs/seeding.md).
+Generation does not seed a database. An SQL file does not handle every existing-key, field-ownership, revision, or recovery requirement. The new nullable SQL `kind` column requires an explicit schema/mapping update for existing managed tables; no silent migration occurs. See [seeding](docs/seeding.md).
 
 ## Documentation
 
 | English | Français |
 |---|---|
-| [One-shot generation](docs/generation.md) | [Génération en une commande](docs/generation.fr.md) |
-| [Getting started](docs/getting-started.md) | [Prise en main](docs/getting-started.fr.md) |
-| [Supported formats and limits](docs/formats.md) | [Formats pris en charge et limites](docs/formats.fr.md) |
+| [Congo reference, coverage and hierarchy](docs/congo-reference.md) | [Référentiel Congo, couverture et hiérarchie](docs/congo-reference.fr.md) |
+| [Generation](docs/generation.md) | [Génération](docs/generation.fr.md) |
+| [Getting started and optional SDK](docs/getting-started.md) | [Prise en main et SDK optionnel](docs/getting-started.fr.md) |
+| [Formats](docs/formats.md) | [Formats](docs/formats.fr.md) |
 | [PostgreSQL seeding](docs/seeding.md) | [Amorçage PostgreSQL](docs/seeding.fr.md) |
-| [Data sources and licenses](docs/data-sources.md) | [Sources et licences des données](docs/data-sources.fr.md) |
+| [Sources and licensing](docs/data-sources.md) | [Sources et licences](docs/data-sources.fr.md) |
 | [Architecture and adapters](docs/architecture.md) | [Architecture et adaptateurs](docs/architecture.fr.md) |
 | [Contributing](CONTRIBUTING.md) | [Contribuer](CONTRIBUTING.fr.md) |
 
-Public guides are maintained in both languages. API identifiers, fields, and commands stay English.
+## Development and license
 
-## Development
+`npm run check` runs TypeScript validation, tests, and build. Behavior changes use tests first; task pull requests target `dev`, and release pull requests go from `dev` to `main`.
 
-```sh
-npm ci
-npm run check
-```
-
-Behavior changes use tests first. Task branches target `dev`; release pull requests go from `dev` to `main`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and PostgreSQL integration checks.
-
-## License
-
-Software and synthetic examples: [MIT](LICENSE), © 2026 Osiris Balonga. GeoNames data: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), with required GeoNames attribution. Any other source keeps its own terms. Read [data licensing](docs/data-sources.md) before redistributing exports.
+Code and documentation: [MIT](LICENSE), © 2026 Osiris Balonga. Source facts retain provenance and applicable source terms; MIT does not relicense external maps or publications. Synthetic fixtures remain tests only. See [data licensing](docs/data-sources.md).

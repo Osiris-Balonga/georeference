@@ -2,7 +2,9 @@
 
 [English](formats.md) · [Accueil](../README.fr.md)
 
-Tous les exports utilisent la même sélection et les mêmes IDs stables. Le manifeste précise version des données, provenance, options, ancêtres de contexte, références externes, couverture géométrique et sommes de contrôle. Voici les valeurs de `--format`.
+Tous les exports utilisent la même sélection d'entités de la République du Congo, leurs types administratifs `kind` et leurs IDs stables. Le manifeste précise version des données, provenance, options, ancêtres de contexte, références externes, couverture géométrique et sommes de contrôle. Voici les valeurs de `--format`. La révision Congo seul est prévue en 1.1.0 ; le paquet 1.0.0 déjà publié a un autre comportement de données par défaut.
+
+`coverage.json` et `provenance.json` accompagnent les paquets comme métadonnées du manifeste (`role: 'metadata'`) ; ce ne sont pas des entités à amorcer. La couverture géographique reste explicitement partielle. Exporter tous les enregistrements sélectionnés de l'instantané, ancêtres compris, ne prouve pas l'exhaustivité du territoire. Voir [le référentiel Congo](congo-reference.fr.md).
 
 Pour les usages, complexités, dépendances, limites et priorités de tous les formats évalués, consultez [les choix des formats](format-decisions.fr.md).
 
@@ -17,9 +19,9 @@ Pour les usages, complexités, dépendances, limites et priorités de tous les f
 
 Coordonnées et frontières sont indépendantes. Une géométrie absente ne devient ni `(0,0)` ni un polygone inventé. L'inclusion des ancêtres préserve par défaut l'intégrité relationnelle ; `--no-ancestors` déclare les dépendances externes.
 
-Le profil machine CSV préserve les valeurs sources. `id`, `entityType`, `name` et `countryId` sont des chaînes ordinaires ; `parentId` est une chaîne JSON ou `null`. Les champs facultatifs `codes`, `names`, `level`, `coordinates` et `boundary` sont des cellules JSON : cellule vide signifie absent, `null` littéral signifie null explicite. Les colonnes coordonnées/frontière sont omises si non demandées. `--spreadsheet-safe` est un profil de présentation explicite pour les cellules pouvant être interprétées comme formules ; cette sortie transformée ne sert pas d'échange machine sans perte.
+Le profil machine CSV préserve les valeurs sources. `id`, `entityType`, `name` et `countryId` sont des chaînes ordinaires ; `kind` est une chaîne ordinaire, vide si absent ; `parentId` est une chaîne JSON ou `null`. Les champs facultatifs `codes`, `names`, `level`, `coordinates` et `boundary` sont des cellules JSON : cellule vide signifie absent, `null` littéral signifie null explicite. Les colonnes coordonnées/frontière sont omises si non demandées. `--spreadsheet-safe` est un profil de présentation explicite pour les cellules pouvant être interprétées comme formules ; cette sortie transformée ne sert pas d'échange machine sans perte.
 
-Le mode de création SQL crée le schéma standard ; ce n'est pas un moteur de migration. `CREATE TABLE IF NOT EXISTS` ne rend pas une table existante compatible. Pour actualiser une base applicative, utilisez [le seeder](seeding.fr.md) et ses règles de champs gérés/révisions.
+Le mode de création SQL crée le schéma standard, avec `kind` nullable ; ce n'est pas un moteur de migration. `CREATE TABLE IF NOT EXISTS` ne rend pas une table existante compatible. Importer des données avec `kind` dans une ancienne table gérée exige une migration explicite de colonne ou un mapping vers une colonne existante compatible. Pour actualiser une base applicative, utilisez [le seeder](seeding.fr.md) et ses règles de champs gérés/révisions.
 
 ## Compression et reproduction
 

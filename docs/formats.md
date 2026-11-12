@@ -2,7 +2,9 @@
 
 [Français](formats.fr.md) · [Home](../README.md)
 
-Every export uses the same selected entities and stable IDs. Its manifest records the data version, provenance, options, context ancestors, external references, geometry coverage, and checksums. `--format` names are listed below.
+Every export uses the same selected Republic of the Congo entities, administrative `kind` values, and stable IDs. Its manifest records the data version, provenance, options, context ancestors, external references, geometry coverage, and checksums. `--format` names are listed below. The Congo-only revision is planned for 1.1.0; the older published 1.0.0 package has different default data behavior.
+
+`coverage.json` and `provenance.json` accompany generated packages as manifest metadata (`role: 'metadata'`); they are not entity payloads for seeding. Geographic coverage is explicitly partial. Exporting every selected snapshot record, including ancestors, does not establish exhaustive territorial coverage. See [the Congo reference](congo-reference.md).
 
 For the uses, complexity, dependencies, limits, and priorities of all evaluated formats, read [format decisions](format-decisions.md).
 
@@ -17,9 +19,9 @@ For the uses, complexity, dependencies, limits, and priorities of all evaluated 
 
 Coordinates and boundaries are separate options. Missing geometry must not become `(0,0)` or an invented polygon. Ancestor inclusion is the default for relational integrity; `--no-ancestors` declares dependencies outside the export.
 
-CSV's machine profile preserves source values. `id`, `entityType`, `name`, and `countryId` are plain strings; `parentId` is a JSON string or `null`. Optional `codes`, `names`, `level`, `coordinates`, and `boundary` are JSON-valued cells: an empty cell means absent, literal `null` means explicitly null. Coordinate/boundary columns are omitted when not requested. `--spreadsheet-safe` is an explicit presentation profile for spreadsheet formula-like cells; do not use that transformed output as a lossless machine interchange source.
+CSV's machine profile preserves source values. `id`, `entityType`, `name`, and `countryId` are plain strings; `kind` is a plain string, empty when absent; `parentId` is a JSON string or `null`. Optional `codes`, `names`, `level`, `coordinates`, and `boundary` are JSON-valued cells: an empty cell means absent, literal `null` means explicitly null. Coordinate/boundary columns are omitted when not requested. `--spreadsheet-safe` is an explicit presentation profile for spreadsheet formula-like cells; do not use that transformed output as a lossless machine interchange source.
 
-SQL creation mode creates the standard schema; it is not a migration engine. An existing table is not made compatible by `CREATE TABLE IF NOT EXISTS`. For updates to an application database use the [seeder](seeding.md), which has its own field ownership and revision policy.
+SQL creation mode creates the standard schema, including nullable `kind`; it is not a migration engine. An existing table is not made compatible by `CREATE TABLE IF NOT EXISTS`. Importing kind-bearing data into an older managed table requires an explicit column migration or mapping to a compatible existing column. For updates to an application database use the [seeder](seeding.md), which has its own field ownership and revision policy.
 
 ## Compression and reproduction
 

@@ -3,19 +3,19 @@
 [Français](architecture.fr.md) · [Home](../README.md)
 
 ```text
-One-shot CLI → GeoNames download / retained source file
+One-shot CLI → bundled, dated Congo reference
               ↓
-Canonical input / GeoNames text
+CG-only scope + coverage + per-entity provenance
               ↓
         validation → versioned SQLite snapshot
                               ↓
-              geographic selection + ancestor resolution
+              kind/geographic selection + ancestor resolution
                               ↓
                    canonical entity iterator
                               ↓
                          format adapter
                               ↓
-             data files + compression + manifest
+             data + coverage/provenance + compression + manifest
                               ↓
                     verified export package
 
@@ -25,7 +25,9 @@ Local snapshot → read SDK → application lookups/iteration
 
 The shared contract lives in `src/types.ts`. Core rules own identifiers, graph integrity, selection, and projected geometry. Adapters own encoding and format-specific validation. The export coordinator owns temporary output, packaging, checksums, and publication. The seeder owns database update semantics; the SDK owns read access, not database synchronization.
 
-The one-shot CLI orchestrator (`src/generate.ts`) downloads a bounded countryInfo source or reads a local file, derives a source-hash version, creates a temporary snapshot and delegates to the existing export coordinator. With `--snapshot`, it uses the supplied snapshot directly. It owns cleanup, not a persistent project installation. Generated data files are standalone; importing the SDK remains optional. See [generation](generation.md).
+The one-shot CLI orchestrator uses the bundled Congo reference without a geographic download, creates a temporary snapshot and delegates to the export coordinator. Explicit custom snapshots must also contain only CG data and retain their own partial coverage. It owns cleanup, not a persistent project installation. Generated data files are standalone; importing the SDK remains optional. See [generation](generation.md).
+
+`entityType` supplies generic internal storage classes; `kind` preserves commune, arrondissement, neighborhood, and other administrative meanings. The internal contract can support future extensions, but this product ships Congo data exclusively. Parent validation supports the documented variable-depth hierarchy. Coverage/provenance sidecars are manifest entries with `role: 'metadata'`, excluded from geographic seeding payloads. File verification checks integrity, not whether geography is exhaustive or legally current.
 
 The `ExportAdapter` contract declares `format`, `version`, `validate(request)`, and `write(context)`. Its context includes a repeatable canonical entity iterator, resolved plan, output directory, and optional cancellation signal. A writer returns relative filenames after closing its handles. It must reject unsupported combinations before producing output and preserve stable IDs.
 
@@ -62,7 +64,7 @@ registerExportAdapter({
   },
 });
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
   await exportSnapshot(snapshot, 'exports/entity-ids', { format: 'entity-ids' });
 } finally {
@@ -79,9 +81,9 @@ Return relative filenames after closing resources. The coordinator supplies mani
 ```ts
 import { Snapshot } from 'georeference';
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
-  const plan = snapshot.select({ countries: ['XZ'] });
+  const plan = snapshot.select({ countries: ['CG'] });
   try {
     for (const entity of plan.entities()) console.log(entity.id);
   } finally {

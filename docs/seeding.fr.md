@@ -2,6 +2,8 @@
 
 [English](seeding.md) · [Accueil](../README.fr.md)
 
+La CLI 1.1.0 à venir importe uniquement les paquets de la République du Congo (CG/COG). Générer des fichiers, appliquer des modifications en base et consulter via le SDK optionnel sont des opérations distinctes. Couverture/provenance ont le rôle de manifeste `metadata` et ne deviennent jamais des lignes géographiques. Une empreinte vérifiée prouve l'intégrité, pas l'exhaustivité ou l'actualité géographique.
+
 ## Aperçu puis application
 
 Le seeder lit des paquets GeoReference normalisés et vérifiés, pas du SQL téléchargé arbitrairement. Utilisez JSON, NDJSON ou le profil machine CSV. Le CSV transformé pour tableur, les couches GeoJSON, les scripts SQL et les fichiers SQLite exportés ne constituent pas des entrées interchangeables pour le seeder. Les imports V1 sont bornés à 128 Mio décompressés et 500 000 entités ; scindez les plus grands jeux en paquets géographiques mesurés. Gzip est lu directement ; ZIP doit être extrait avec son manifeste interne dans un nouveau répertoire.
@@ -9,8 +11,8 @@ Le seeder lit des paquets GeoReference normalisés et vérifiés, pas du SQL té
 Définissez `DATABASE_URL` hors des fichiers suivis. Pour la table GeoReference standard :
 
 ```sh
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
+node dist/cli.js seed --package ./exports/congo-seed --create-schema
+node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
 ```
 
 Sans `--apply`, la commande produit un plan en lecture seule. `--create-schema` permet de créer les objets standards lors de l'application ; cela n'autorise pas à modifier arbitrairement les schémas existants. La cible par défaut est `public.georeference_entities`.
@@ -31,7 +33,7 @@ Le seeder applique la priorité à la source pour les champs gérés. Fusion aut
 Les versions de données sont opaques : `release-b` ne se compare pas de façon fiable à `2026.11`. Le premier import utilise la révision `0` par défaut. Un jeu/paquet modifié exige une révision entière explicite strictement supérieure :
 
 ```sh
-node dist/cli.js seed --package exports/updated-seed --revision 1 --apply
+node dist/cli.js seed --package ./exports/congo-updated-seed --revision 1 --apply
 ```
 
 Les révisions inférieures/égales en conflit sont refusées. `--allow-downgrade` constitue une dérogation explicite, pas une reprise par défaut. Conservez la même révision pour reprendre le même import interrompu.
@@ -48,6 +50,7 @@ Utilisez `--mapping path/to/mapping.json` pour mapper les champs canoniques vers
   "columns": {
     "id": "georeference_id",
     "entityType": "entity_type",
+    "kind": "administrative_kind",
     "countryId": "country_id",
     "parentId": "parent_id"
   }
@@ -55,6 +58,10 @@ Utilisez `--mapping path/to/mapping.json` pour mapper les champs canoniques vers
 ```
 
 Ici, `id` est une clé primaire entière serial/identity existante, et `georeference_id` l'identifiant stable sous forme de chaîne. Son unicité doit être imposée par une vraie clé primaire ou contrainte/index UNIQUE non partiel à une seule colonne ; une déclaration de mapping ou une clé unique composite ne suffit pas. Le seeder préserve les IDs locaux et les utilise pour les relations ; il ne remplace pas les clés de l'application. Les autres colonnes gérées doivent avoir des noms/types compatibles ou un mapping explicite. Préservez les champs métier et fournissez leurs valeurs par défaut obligatoires. Le mapping V1 couvre les clés entières serial/identity, pas tous les schémas personnalisés/composites.
+
+## Tables existantes et nouveau type administratif
+
+Les nouvelles tables standards incluent `kind` en texte nullable. Avant d'importer les données Congo avec `kind` dans une ancienne table gérée, ajoutez explicitement une colonne nullable compatible par une migration relue, ou mappez `kind` vers une colonne compatible existante, comme `administrative_kind` ci-dessus. `--create-schema` ne modifie pas silencieusement une table existante. Les lignes existantes peuvent rester null jusqu'à une mise à jour source vérifiée ; ne déduisez pas leur type du nom ou de la classe de stockage. Un champ facultatif absent préserve la valeur cible ; un type inconnu n'autorise pas à inventer un parent arrondissement.
 
 ## Transactions, reprise et visibilité
 

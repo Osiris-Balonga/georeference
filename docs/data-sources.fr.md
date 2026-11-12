@@ -1,39 +1,25 @@
-# Sources et licences des données
+# Sources Congo et licences
 
-[English](data-sources.md) · [Accueil](../README.fr.md)
+[English](data-sources.md) · [Couverture du référentiel](congo-reference.fr.md) · [Accueil](../README.fr.md)
 
-## La licence du logiciel n'est pas celle des données
+## Référentiel factuel intégré
 
-Le code, la documentation et les exemples fictifs de GeoReference sont sous MIT. Les données géographiques tierces conservent leur licence et leurs exigences d'attribution. Le manifeste transporte les métadonnées sources pour que les destinataires les conservent. Vérifiez les droits de redistribution avant d'ajouter ou de publier une source ; un writer fonctionnel n'accorde aucun droit sur ses données d'entrée.
+La CLI lit par défaut l'asset d'exécution vérifié `reference/congo.json`, composé de faits sur la République du Congo. Elle ne télécharge pas une liste de pays GeoNames pour en déduire des villes ou quartiers. URLs, dates, localisateurs et révisions disponibles accompagnent la provenance générée. Les PDF complets du Journal officiel et les données personnelles/électorales sans lien ne sont pas distribués.
 
-## Entrées GeoNames
+Les sources combinent observations électorales publiques de 2022, tableaux municipaux de quartiers observés en janvier 2024 et reproduits dans un rapport public de juin 2024, lois territoriales d'octobre/décembre 2024 et registre administratif/électoral national de 2025. Le [guide du référentiel](congo-reference.fr.md) fournit URLs exactes, dates, hiérarchie et traitement des ambiguïtés. Ces dates ne signifient pas que chaque lieu a été revérifié en 2026.
 
-L'importeur local accepte les fichiers GeoNames UTF-8 séparés par tabulations :
+Seule une observation nommée admissible avec un parent documenté entre dans une sortie de quartiers nommés. Un code numérique sans nom vérifié constitue un manque, pas une autorisation d'inventer un libellé. Bureaux de vote, écoles et lieux figurant dans une autre colonne ne deviennent pas automatiquement des quartiers. Les observations non classées et graphies contradictoires restent explicites plutôt que fusionnées silencieusement.
 
-| Option CLI | Entrée | Couverture de cet importeur |
-|---|---|---|
-| `--countries` | `countryInfo.txt` | Noms/codes pays et identifiants sources ; obligatoire |
-| `--admin1` | `admin1CodesASCII.txt` | Premier niveau administratif ; facultatif |
-| `--admin2` | `admin2Codes.txt` | Deuxième niveau administratif ; facultatif |
-| `--places` | Fichier d'entités GeoNames extrait, par exemple `cities1000.txt` | Lieux habités (classe `P`) et coordonnées ponctuelles ; facultatif |
+## Droits et attribution
 
-GeoNames publie ses extraits sous [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). Consultez [la documentation officielle](https://download.geonames.org/export/dump/readme.txt) et [le répertoire de téléchargement](https://download.geonames.org/export/dump/). GeoReference enregistre l'attribution GeoNames, l'URL source et une révision SHA-256 de chaque fichier. Cette empreinte identifie les octets locaux ; elle ne certifie pas que tous les fichiers proviennent de la même date de publication.
+Code et documentation sont [sous MIT](../LICENSE). Les faits conservent leur provenance et leurs conditions sources. La [loi congolaise 24-82 du 7 juillet 1982](https://www.sgg.cg/textes-officiels/lois/1982/congo-loi-1982-24.pdf), article 14 page 4, exclut de cette loi sur le droit d'auteur les textes législatifs, judiciaires et décisions administratives ainsi que leurs traductions officielles. Le référentiel extrait des faits administratifs de ces actes ; il ne place pas sous MIT l'ensemble des sites publics, cartes, photos ou rapports tiers.
 
-Téléchargez et extrayez avant ingestion. Conservez les fichiers téléchargés pour reproduire un instantané ; attribuez une `--version` pertinente sans remplacer silencieusement une version publiée. Ce parcours hors ligne ne demande ni compte GeoNames ni clé API.
+Conservez instrument/date/page/article et révisions SHA-256 disponibles lors de la redistribution. Les tableaux municipaux ne fournissent que noms, codes et parents factuels ; ni prose ni illustrations du rapport ne sont republiées, et aucune licence générale de données ouvertes n'est affirmée. Une empreinte identifie des octets sources ou l'intégrité d'un export, pas l'auteur ni l'exhaustivité géographique actuelle. Toute source ajoutée exige sa propre évaluation des droits ; la lecture publique ne suffit pas à établir une licence ouverte.
 
-Le [générateur ponctuel de pays](generation.fr.md) télécharge automatiquement uniquement `countryInfo.txt`, avec une limite de 2 Mio et un délai de 30 secondes. Il dérive les versions du SHA-256 de la source et conserve licence/attribution dans les fichiers générés. `--source-file` évite le réseau avec un fichier conservé ; subdivisions, localités et frontières demandent un instantané fourni ou le parcours d'ingestion avancé.
+## Entrées personnalisées
 
-## Limites de couverture explicites
+Les instantanés Congo avancés conservent leurs propres sources et couverture. Si vous utilisez l'ancien fichier d'informations pays GeoNames, sa [documentation officielle](https://download.geonames.org/export/dump/readme.txt) précise [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Gardez l'attribution GeoNames pour les données qui en proviennent. Ce parcours facultatif limité au pays ne fournit pas les quartiers intégrés ni les rattachements territoriaux corrigés.
 
-- L'importeur exploite les fichiers administratifs de niveau 1/2 fournis ; il ne promet pas tous les niveaux administratifs ni toutes les localités mondiales. Les petits extraits de villes sont des sous-ensembles.
-- Un fichier ou rattachement administratif absent conduit au plus proche ancêtre fourni. Le code brut `geonamesAdmin` reste disponible ; cela n'affirme pas l'absence de niveaux intermédiaires.
-- CountryInfo seul ne fournit pas les géométries ponctuelles facultatives dans cet importeur. Aucun point n'est inventé pour les pays/subdivisions. Cet adaptateur n'importe ni frontières ni noms alternatifs avec langue.
-- Le cœur accepte des polygones/multipolygones canoniques depuis vos propres sources dûment licenciées. Il ne reconstitue pas une frontière à partir de points et ne tranche pas les revendications territoriales.
-- La lecture des fichiers est progressive, mais cet importeur conserve les entités canoniques et tables de correspondance en mémoire avant création de l'instantané. Il convient à des entrées mesurées, sans garantie illimitée pour `allCountries`. Utilisez des entrées bornées par pays/taille et mesurez les ressources.
-- Les doublons, IDs/coordonnées mal formés et références vers des pays inconnus font échouer l'ingestion. Modifications, suppressions, fusions et scissions exigent des règles d'identité explicites ; les IDs stables ne réconcilient pas automatiquement l'historique.
+Aucun point ni polygone n'est inventé. De futures géométries nécessitent des preuves indépendantes de couverture, précision, révision et redistribution. Téléchargements réels et exports générés restent dans des répertoires de travail ignorés ; le catalogue factuel intégré est maintenu séparément des exports de production.
 
-Les jeux générés, instantanés, téléchargements sources et exports restent dans des répertoires locaux ignorés comme `data/` et `exports/`. Ils ne sont pas commités dans le dépôt logiciel.
-
-## Exemple fictif
-
-L'[exemple suivi](../examples/README.md) décrit des lieux fictifs, une frontière carrée inventée et des coordonnées de démonstration. Son URL source est réservée et invalide ; sa licence est MIT. Il sert aux tutoriels et tests, pas à des décisions géographiques.
+Les données fictives servent uniquement aux tests ; elles ne constituent ni le catalogue ni un repli par défaut. Une panne réseau ou une observation absente ne déclenche aucune sortie géographique inventée.

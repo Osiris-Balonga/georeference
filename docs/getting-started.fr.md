@@ -1,79 +1,89 @@
 # Prise en main
 
-[English](getting-started.md) · [Accueil](../README.fr.md)
+[English](getting-started.md) · [Référentiel Congo](congo-reference.fr.md) · [Accueil](../README.fr.md)
 
-## Générer directement les fichiers
+Ce guide concerne la prochaine révision 1.1.0 limitée au Congo, pas l'ancienne version 1.0.0 publiée. Avant sa livraison, construisez un checkout de cette révision ; un clone par défaut ou npm `latest` ne la contient pas nécessairement.
 
-Commencez par [la génération en une commande](generation.fr.md) : `npx georeference` génère les fichiers de pays sans ajouter de dépendance au projet. Le SDK est optionnel. Le guide explique aussi comment utiliser une version locale. Les sections suivantes couvrent la préparation avancée des sources, les exports et l'amorçage en base.
+## Générer puis lire directement les fichiers
 
-## Construire et créer un instantané
-
-Prérequis : Node.js 24.18.x, npm et assez d'espace disque pour les instantanés/exports. PostgreSQL n'est nécessaire que pour l'amorçage d'une base PostgreSQL. SQLite utilise le module `node:sqlite` intégré à Node.
+Utilisez Node.js 24.18.x et npm :
 
 ```sh
 npm ci
 npm run build
-node dist/cli.js --help
-node dist/cli.js snapshot --input examples/sample.ndjson --metadata examples/metadata.json --output data/example.sqlite
-node dist/cli.js inspect --snapshot data/example.sqlite
+node dist/cli.js
+node dist/cli.js verify --package ./data/georeference
 ```
 
-Les entités fournies sont fictives. Le fichier de métadonnées contient `contractVersion`, `datasetVersion` et `sources` ; chaque source déclare `name`, `url`, `license`, `attribution` et `revision`. Les entités ont les champs stables `id`, `entityType`, `name`, `countryId` et `parentId`. Les champs facultatifs sont `codes`, les `names` localisés, le `level` administratif, les `coordinates` et la `boundary` Polygon/MultiPolygon.
+La CLI utilise le référentiel intégré de la République du Congo et crée un nouveau répertoire contenant `entities.json`, `coverage.json`, `provenance.json` et `manifest.json`. Aucun téléchargement géographique ni installation du SDK. Après publication, `npx georeference` fournira ce point d'entrée depuis le projet cible ; npm peut télécharger l'outil lui-même.
 
-Un pays se référence lui-même dans `countryId` et possède `parentId: null`. Tout autre parent doit exister dans l'instantané. Les objets de coordonnées utilisent les champs nommés `longitude` et `latitude` ; les positions GeoJSON suivent `[longitude, latitude]`. La création valide le graphe et les géométries. Utilisez un nouveau chemin de sortie plutôt que d'écraser un instantané existant.
+Votre application lit `entities.json` avec son propre lecteur. La racine suit `{ metadata, entities }`. Conservez couverture/provenance et manifeste : un nombre de lignes ne garantit pas l'exhaustivité géographique. Voir [la génération](generation.fr.md) pour les sélecteurs de types, filtres de commune/arrondissement, compression et [la couverture](congo-reference.fr.md) pour les manques datés.
 
-## Sélectionner et exporter
+## Sélectionner des unités administratives réelles
 
 ```sh
-node dist/cli.js export --snapshot data/example.sqlite --country XZ --types locality --coordinates --format ndjson --compression gzip --output exports/localities
-node dist/cli.js verify --package exports/localities
-node dist/cli.js export --snapshot data/example.sqlite --subdivision example:region --format json --layout hierarchical --output exports/region-tree
-node dist/cli.js export --snapshot data/example.sqlite --format geojson --coordinates --boundaries --output exports/map-layers
+node dist/cli.js communes --output ./data/congo-communes
+node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 2 --output ./data/bacongo-neighborhoods
+node dist/cli.js departments --country CG --format csv --output ./data/congo-departments
 ```
 
-Les filtres de pays acceptent les IDs stables ou les codes pays. Plusieurs IDs/types se séparent par des virgules. Le filtre de subdivision inclut ses descendants administratifs ; il n'effectue pas d'intersection spatiale. Les ancêtres nécessaires sont ajoutés par défaut et signalés comme contexte. `--no-ancestors` rend explicites les références externes à la sélection ; un importeur doit les résoudre en cible.
+`cities` est un alias de `communes`. Un numéro d'arrondissement nécessite sa commune avec `--city`. Le pays est limité à CG/COG ; CD/COD désigne un autre pays et est refusé. Conservez les dates sources lors de l'affichage d'un quartier : le filtrage ne transforme pas une observation de 2022 en inventaire exhaustif de 2026.
 
-Coordonnées et frontières sont exclues tant qu'elles ne sont pas demandées. Une géométrie absente reste absente ; le manifeste indique la couverture. La combinaison format/organisation doit être prise en charge ; consulter [les formats](formats.fr.md).
+## Option : préparer un instantané Congo local
 
-Les paquets contiennent `manifest.json` et les fichiers de données. La vérification contrôle leur intégrité. Conservez le manifeste avec les fichiers partagés. Gzip compresse chaque fichier dans le répertoire ; le lecteur le décompresse. Avec ZIP, la sortie contient un manifeste externe et `package.zip` ; l'archive contient les fichiers et un manifeste interne. Vérifiez le répertoire initial pour l'intégrité de l'archive, puis extrayez `package.zip` dans un **nouveau répertoire** et vérifiez/importez ce répertoire extrait. La compression constitue un transport, pas un nouveau contrat de données.
-
-## Utiliser des fichiers GeoNames réels
-
-Téléchargez les fichiers souhaités depuis [les exports GeoNames](https://download.geonames.org/export/dump/), conservez leur licence et extrayez vous-même les archives ZIP. Importez ensuite les fichiers texte locaux :
+Pour consulter le référentiel intégré via le SDK optionnel, créez directement un instantané interne :
 
 ```sh
-node dist/cli.js geonames --countries data/countryInfo.txt --admin1 data/admin1CodesASCII.txt --admin2 data/admin2Codes.txt --places data/cities1000.txt --version geonames-2026-11-11 --output data/geonames.sqlite
+node dist/cli.js snapshot --output ./data/congo.sqlite
+node dist/cli.js inspect --snapshot ./data/congo.sqlite
 ```
 
-Seuls `--countries`, `--version` et `--output` sont obligatoires. L'importeur ne télécharge rien sur le réseau. Il accepte les lieux habités GeoNames, et non toutes les classes de points géographiques. Chaque fichier reçoit une révision de provenance SHA-256. Voir [la couverture et les limites](data-sources.fr.md).
+Ce parcours intégré ne nécessite aucun fichier input/metadata. `verify --package` contrôle l'intégrité des fichiers ; il ne certifie ni l'exhaustivité géographique ni le statut juridique actuel.
 
-## Amorcer PostgreSQL
+### Source personnalisée
 
-Exportez du JSON, NDJSON ou CSV normalisé, puis examinez l'aperçu avant l'application :
+La génération par défaut ne nécessite pas d'instantané préparé. Pour une ingestion personnalisée, les fichiers suivants sont **vos propres entrées CG réelles et validées**, pas des données fictives distribuées. Fournissez `--input` et `--metadata` ensemble :
 
 ```sh
-node dist/cli.js export --snapshot data/example.sqlite --format ndjson --coordinates --output exports/seed
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
+node dist/cli.js snapshot --input ./sources/congo.ndjson --metadata ./sources/congo-metadata.json --output ./data/congo.sqlite
+node dist/cli.js inspect --snapshot ./data/congo.sqlite
+node dist/cli.js export --snapshot ./data/congo.sqlite --country CG --format ndjson --compression gzip --output ./exports/congo
 ```
 
-Définissez `DATABASE_URL` dans votre terminal ou gestionnaire de secrets avant ces commandes. N'enregistrez pas les identifiants de connexion dans des fichiers suivis ou dans les paquets exportés. Les commandes ci-dessus ciblent le schéma standard ; les tables applicatives existantes nécessitent un mapping explicite. Voir [l'amorçage](seeding.fr.md) pour l'ordre des révisions, les champs gérés et la reprise.
+Le contrat de métadonnées contient `contractVersion`, `datasetVersion` et `sources` ; chaque source contient `name`, `url`, `license`, `attribution` et `revision`. Les entités ont `id` stable, `entityType`, `name`, `countryId` et `parentId` ; `kind` ajoute le sens administratif. Les champs facultatifs sont notamment `codes`, `names` localisés, `level`, `coordinates` et `boundary` Polygon/MultiPolygon.
+
+`entityType` est une classe de stockage (`country`, `subdivision`, `locality`) ; utilisez `kind` pour distinguer commune, arrondissement et quartier. Un pays se référence lui-même dans `countryId` et possède `parentId: null`. Les parents doivent exister et respecter la hiérarchie documentée. L'identité pays `geonames:2260494` est conservée. Les instantanés/entrées CLI doivent être limités au Congo et conserver leur propre couverture/provenance ; ils n'héritent pas des observations intégrées.
+
+L'export `sqlite` directement interrogeable suit le schéma relationnel d'export ; ce n'est pas l'instantané interne lu par `Snapshot.open`. Les coordonnées utilisent `longitude`/`latitude` ; les positions GeoJSON suivent `[longitude, latitude]`. Aucune géométrie n'est reconstruite à partir d'un nom ou d'un parent deviné.
+
+## Amorcer PostgreSQL séparément
+
+```sh
+node dist/cli.js generate --format ndjson --output ./exports/congo-seed
+node dist/cli.js seed --package ./exports/congo-seed --create-schema
+node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
+```
+
+Définissez `DATABASE_URL` dans votre environnement avant l'import. L'aperçu est le défaut ; `--apply` écrit en base. Couverture/provenance sont des métadonnées, pas des fichiers d'entités supplémentaires. Les tables gérées existantes nécessitent la colonne nullable `kind` ou un mapping explicite avant l'import de données typées. Voir [l'amorçage](seeding.fr.md) pour migration, révisions, clés locales et reprise.
 
 ## SDK optionnel
 
-Seules les applications qui souhaitent consulter un instantané via l'API locale doivent installer la bibliothèque avec `npm install georeference`. Vous pouvez aussi construire et installer une archive locale avec `npm pack` puis `npm install /chemin/vers/georeference-1.0.0.tgz`. La génération de fichiers n'en a pas besoin.
+Générer les fichiers ne nécessite pas `npm install georeference`. Les applications souhaitant l'API de consultation peuvent construire/installer le paquet de cette révision, par exemple avec l'archive indiquée par `npm pack`. Avant publication, l'ancien paquet npm 1.0.0 ne fournit pas les nouvelles méthodes de types administratifs.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';
 
-const snapshot = Snapshot.open('data/example.sqlite');
+const snapshot = Snapshot.open('./data/congo.sqlite');
 try {
   const client = createClient(snapshot);
-  console.log(client.getEntity('example:locality'));
-  console.log(client.getCountry('example:country'));
+  console.log(client.getCountry('CG'));
+  console.log(client.listCommunes());
 } finally {
   snapshot.close();
 }
 ```
 
-Le SDK lit l'instantané local ; il ne synchronise pas une base applicative. Gardez l'instantané ouvert pendant les itérations et fermez-le après usage. Installez le paquet compilé avec `npm install georeference`, ou construisez/installez-le depuis ce dépôt.
+`listArrondissements(communeId)` et `listNeighborhoods(parentSubdivisionId)` utilisent les IDs de parents enregistrés. Les résultats dépendent des types et de la couverture de l'instantané. Gardez-le ouvert pendant les itérations puis fermez-le. Le SDK lit les données ; il n'amorce ni ne synchronise une base applicative.
+
+Pour accéder directement à la révision intégrée, `await loadCongoReference()` (exporté par `georeference`) renvoie ses `metadata`, `entities`, `coverage`, `provenance` par entité et `issues` validés. Cette intégration applicative est optionnelle et indépendante de la génération des fichiers autonomes.
