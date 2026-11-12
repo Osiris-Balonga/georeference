@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto';
 import type { Entity } from '../types.ts';
 import type { SeedMapping } from './types.ts';
 
-export const fields = ['id', 'entityType', 'name', 'countryId', 'parentId', 'codes', 'names', 'level', 'coordinates', 'boundary'] as const;
+export const fields = ['id', 'entityType', 'kind', 'name', 'countryId', 'parentId', 'codes', 'names', 'level', 'coordinates', 'boundary'] as const;
 export const defaults: Record<keyof Entity, string> = {
-  id: 'id', entityType: 'entity_type', name: 'name', countryId: 'country_id', parentId: 'parent_id',
+  id: 'id', entityType: 'entity_type', kind:'kind', name: 'name', countryId: 'country_id', parentId: 'parent_id',
   codes: 'codes', names: 'names', level: 'level', coordinates: 'coordinates', boundary: 'boundary',
 };
 export function identifier(value: string): string {
@@ -44,7 +44,7 @@ export function entityFields(entity: Entity, coordinates: boolean, boundaries: b
 export function schemaSql(mapping: ResolvedMapping): string {
   const c = (field: keyof Entity) => identifier(mapping.columns[field]);
   return `CREATE TABLE ${mapping.tableSql} (
-    ${c('id')} TEXT PRIMARY KEY, ${c('entityType')} TEXT NOT NULL,
+    ${c('id')} TEXT PRIMARY KEY, ${c('entityType')} TEXT NOT NULL, ${c('kind')} TEXT,
     ${c('name')} TEXT NOT NULL, ${c('countryId')} TEXT NOT NULL,
     ${c('parentId')} TEXT REFERENCES ${mapping.tableSql}(${c('id')}) DEFERRABLE INITIALLY DEFERRED,
     ${c('codes')} JSONB NOT NULL DEFAULT '{}', ${c('names')} JSONB NOT NULL DEFAULT '{}',

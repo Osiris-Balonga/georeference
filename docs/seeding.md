@@ -1,71 +1,55 @@
-# PostgreSQL import and seeding
+# PostgreSQL resource import
 
-[Français](seeding.fr.md) · [Home](../README.md)
+[Français](seeding.fr.md) · [Home](../README.md) · [Tables](formats.md#relational-tables)
+
+Generating files, applying database changes and reading through the optional SDK are separate operations. The 1.1.0 public CLI imports Congo resource packages into separate business tables. It does not run an arbitrary SQL download or infer an application's existing schema.
 
 ## Preview, then apply
 
-The seeder reads verified, normalized GeoReference packages, not arbitrary downloaded SQL. Use JSON, NDJSON, or the machine-profile CSV. Spreadsheet-transformed CSV, GeoJSON layers, SQL scripts, and SQLite export files are not interchangeable seeder inputs. V1 package imports are bounded to 128 MiB of uncompressed data and 500,000 records; split larger imports into measured geographic packages. Gzip is read directly; ZIP must first be extracted with its inner manifest into a new directory.
-
-Set `DATABASE_URL` outside tracked files. For the standard GeoReference table:
+Generate a JSON or NDJSON resource package and set `DATABASE_URL` outside tracked files:
 
 ```sh
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
+npx georeference@1.1.0 generate --format ndjson --output ./exports/congo-seed
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema --apply
 ```
 
-Without `--apply`, the command produces a read-only plan. `--create-schema` allows creation of the standard objects when applying; it is not permission to alter arbitrary existing application schemas. The default target is `public.georeference_entities`.
+Without `--apply`, the importer only previews changes. `--create-schema` permits creating the configured business tables when applying; it does not silently add columns to existing incompatible tables. Human CSV/XLSX, GeoJSON, SQL scripts and SQLite exports are not seeder inputs. Metadata/audit files are never imported as places.
 
-## Updates and stable identity
-
-- Default `--mode upsert` creates missing records and updates source-managed fields that are actually present. Source values win for those fields; review this policy before importing locally edited reference fields.
-- Optional fields absent from input are preserved. Coordinates/boundaries are managed only when the package requested them. An explicit null and an absent field have different meanings.
-- `--mode insert-only` creates new records, skips changes to existing records, and reports conflicts. Neither mode deletes entities absent from the package.
-- Replaying identical content leaves unchanged rows unchanged. It must not produce duplicates or artificial updates merely because a new import run occurred.
-- Foreign keys are resolved through stable identities; required parents must be in the package or already present in the target. An external parent must be a compatible country/subdivision, never a locality. A partial geographic export is never evidence that absent entities should be removed.
-- Insert-only validates new children against the existing parents actually retained when incoming parent updates are skipped. A partial UPSERT cannot move a parent to another country or change its type if retained target children would become inconsistent; include the affected subtree in the update.
-
-The seeder uses **source-wins** for managed fields. Automatic merging of local edits, migrations, destructive synchronization, and universal ORM mappings are outside V1.
-
-## Order new dataset revisions explicitly
-
-Dataset version labels are opaque: `release-b` cannot be reliably compared with `2026.11`. The first import defaults to revision `0`. A changed dataset/package requires a strictly higher explicit integer revision:
-
-```sh
-node dist/cli.js seed --package exports/updated-seed --revision 1 --apply
-```
-
-Older/equal conflicting revisions are rejected. `--allow-downgrade` is an explicit override, not a default recovery mechanism. Preserve the same revision when resuming the same interrupted import.
-
-## Existing application keys
-
-Use `--mapping path/to/mapping.json` for a supported mapping of canonical fields to your existing columns. For example:
+Use `--sql-config FILE` for the same naming configuration as SQL export:
 
 ```json
 {
   "schema": "public",
-  "table": "places",
-  "localIdColumn": "id",
-  "columns": {
-    "id": "georeference_id",
-    "entityType": "entity_type",
-    "countryId": "country_id",
-    "parentId": "parent_id"
+  "tables": {
+    "communes": "cities",
+    "neighborhoods": "quarters"
   }
 }
 ```
 
-Here `id` is an existing integer serial/identity primary key, while `georeference_id` is the stable string identifier. Its uniqueness must be enforced by a real, non-partial, single-column PRIMARY KEY or UNIQUE constraint/index; a mapping declaration or a composite unique key does not suffice. The seeder preserves local IDs and maps relationships to them; it does not replace the application's primary keys. Other managed columns must have compatible names/types or explicit mappings. Preserve unrelated business columns and supply their required defaults yourself. V1's local-key mapping supports integer serial/identity keys, not every custom/composite key design.
+```sh
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema --apply
+```
 
-## Transactions, recovery, and visibility
+Names change all related generated table/foreign-key references consistently. They do not map columns or arbitrary local primary keys. Review the configuration and preview before applying to an application database.
 
-`--batch-size` bounds each batch (default `500`). Each batch and its recovery cursor commit together. A later failure may leave earlier batches visible; the entire import is not one atomic publication. Rerun the same package, mapping, mode, revision, and batch size to resume. A completed replay performs comparisons again so unchanged records remain unchanged.
+## Updates and transactions
 
-An interrupted import must finish with the same package, mapping, mode, and batch size before a different import can start on that target. Do not switch packages or mappings to bypass a pending recovery cursor.
+- UUIDs identify matching rows. Default `--mode upsert` inserts missing resources and can update supplied source-managed values.
+- Identical replay must create no duplicates or artificial row updates. UUIDs are not regenerated per import.
+- `--mode insert-only` retains existing matching UUID rows.
+- Missing resources never mean deletion. A partial geographic export is not an instruction to synchronize away application data.
+- Required parents must be included and relationships must be valid. A quartier may belong directly to a commune, arrondissement or urban community.
+- Apply uses a database transaction and a dedicated PostgreSQL session with an import lock. Failure rolls back the transaction; the new business-table path does not promise the legacy batch/checkpoint protocol.
 
-An advisory lock serializes imports for the same target. Library callers must supply a **dedicated connection/session**, not a pool that can switch sessions between queries. The CLI opens a dedicated PostgreSQL client. A checkpoint is useful only after its transaction has committed.
+Schema creation is separate from migration. An existing `cities` table with integer local IDs does not become compatible by changing its configured name. Create a reviewed migration/integration or a compatible separate schema before importing; do not replace application primary keys automatically. Managed value updates are not automatic reconciliation of local edits.
 
-Manifests and checksums detect corruption and missing files; they are not a signature proving the sender's identity. Review provenance and mappings, and use the dry-run before applying a package to an existing application.
+The public business-table command accepts `--package`, `--apply`, `--create-schema`, `--mode` and `--sql-config`. Legacy single-table `--mapping`, `--table`, batch/revision/checkpoint flags are not silently interpreted by this new path. Existing low-level canonical seeder code remains a compatibility component, not the contract of these new packages.
 
-## Validation scope
+## SQL files are another delivery path
 
-The test suite exercises PostgreSQL semantics using PGlite and includes a `pg` integration test selected by `DATABASE_URL`. CI provisions a PostgreSQL service for that integration path. An unexecuted/skipped service test is not a tested server-version claim; consult the actual CI result for the revision being used.
+`sql-postgres` generates `schema.sql` and `data.sql`. Review/apply schema before data with your PostgreSQL tools. `--schema-mode data-only` assumes compatible tables already exist. Script generation itself never connects to a database.
+
+PostgreSQL scripts are not universal SQL. MySQL/MariaDB and SQLite SQL scripts are not supported dialects in this revision. Ready-to-query SQLite is a separate artifact. A checksum proves file integrity, not correct source geography or a trusted sender. Consult the actual CI results for engine verification and [migration](migration.md) before replacing previous exports.

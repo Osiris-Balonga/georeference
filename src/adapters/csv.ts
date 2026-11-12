@@ -7,11 +7,11 @@ function spreadsheetCell(value: string, enabled: boolean | undefined): string {
 }
 
 export const csvAdapter: ExportAdapter = {
-  format: 'csv', version: '1.0.0',
+  format: 'csv', version: '1.1.0',
   validate: validateOptions,
   async write(context) {
     const { request } = context.plan;
-    const columns = ['id', 'entityType', 'name', 'countryId', 'parentId', 'codes', 'names', 'level'];
+    const columns = ['id', 'entityType', 'kind', 'name', 'countryId', 'parentId', 'codes', 'names', 'level'];
     if (request.coordinates) columns.push('coordinates');
     if (request.boundaries) columns.push('boundary');
     await writeChunks(context, 'entities.csv', (function* () {
@@ -19,7 +19,7 @@ export const csvAdapter: ExportAdapter = {
       for (const original of context.plan.entities()) {
         const entity = project(original, request);
         const cells: Record<string, string> = {
-          id: spreadsheetCell(entity.id, request.spreadsheetSafe), entityType: entity.entityType,
+          id: spreadsheetCell(entity.id, request.spreadsheetSafe), entityType: entity.entityType, kind:entity.kind??'',
           name: spreadsheetCell(entity.name, request.spreadsheetSafe), countryId: spreadsheetCell(entity.countryId, request.spreadsheetSafe),
           parentId: JSON.stringify(entity.parentId), codes: JSON.stringify(entity.codes) ?? '', names: JSON.stringify(entity.names) ?? '',
           level: JSON.stringify(entity.level) ?? '', coordinates: JSON.stringify(entity.coordinates) ?? '', boundary: JSON.stringify(entity.boundary) ?? '',

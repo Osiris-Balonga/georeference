@@ -18,6 +18,22 @@ async function fixture(t:{after(fn:()=>Promise<void>):void}) {
   t.after(async()=>{snapshot.close();await rm(folder,{recursive:true,force:true});});
   return {folder,snapshot};
 }
+
+test('coverage sidecars are checksummed metadata and do not become imported geographic records',async t=>{
+  const {folder,snapshot}=await fixture(t);const directory=join(folder,'with-coverage');
+  const manifest=await exportSnapshot(snapshot,directory,{format:'ndjson',compression:'gzip'},{geographicCoverage:'partial',sidecars:()=>({'coverage.json':{status:'partial',reason:'Synthetic coverage assertion'}})} as never);
+  const report=manifest.files.find(file=>file.path==='coverage.json.gz');assert.ok(report);
+  assert.equal((report as typeof report&{role:string}).role,'metadata');
+  assert.equal((manifest as typeof manifest&{geographicCoverage:string}).geographicCoverage,'partial');
+  assert.equal((await readPackage(directory)).entities.length,2);
+  await writeFile(join(directory,report.path),'changed');await assert.rejects(readPackage(directory),/checksum|integrity/i);
+});
+test('metadata sidecar paths cannot escape or replace geographic payloads',async t=>{
+  const {folder,snapshot}=await fixture(t);
+  for(const path of ['../escape.json','manifest.json','entities.json']) {
+    await assert.rejects(exportSnapshot(snapshot,join(folder,'bad-'+path.length),{format:'json'},{sidecars:()=>({[path]:{}})} as never),/path|sidecar|reserved|collision/i);
+  }
+});
 test('gzip NDJSON packages verify and preserve string IDs, null parent, and requested coordinates',async t=>{
   const {folder,snapshot}=await fixture(t); const path=join(folder,'out');
   const manifest=await exportSnapshot(snapshot,path,{format:'ndjson',coordinates:true,compression:'gzip'});

@@ -1,71 +1,55 @@
-# Import et amorçage PostgreSQL
+# Importer les ressources dans PostgreSQL
 
-[English](seeding.md) · [Accueil](../README.fr.md)
+[English](seeding.md) · [Accueil](../README.fr.md) · [Tables](formats.fr.md#tables-relationnelles)
 
-## Aperçu puis application
+Générer des fichiers, appliquer des changements en base et lire via le SDK optionnel sont des opérations distinctes. La CLI publique 1.1.0 importe les ressources Congo dans des tables métier séparées. Elle n'exécute pas un SQL téléchargé arbitraire et ne déduit pas le schéma existant d'une application.
 
-Le seeder lit des paquets GeoReference normalisés et vérifiés, pas du SQL téléchargé arbitrairement. Utilisez JSON, NDJSON ou le profil machine CSV. Le CSV transformé pour tableur, les couches GeoJSON, les scripts SQL et les fichiers SQLite exportés ne constituent pas des entrées interchangeables pour le seeder. Les imports V1 sont bornés à 128 Mio décompressés et 500 000 entités ; scindez les plus grands jeux en paquets géographiques mesurés. Gzip est lu directement ; ZIP doit être extrait avec son manifeste interne dans un nouveau répertoire.
+## Prévisualiser, puis appliquer
 
-Définissez `DATABASE_URL` hors des fichiers suivis. Pour la table GeoReference standard :
-
-```sh
-node dist/cli.js seed --package exports/seed --create-schema
-node dist/cli.js seed --package exports/seed --create-schema --apply
-```
-
-Sans `--apply`, la commande produit un plan en lecture seule. `--create-schema` permet de créer les objets standards lors de l'application ; cela n'autorise pas à modifier arbitrairement les schémas existants. La cible par défaut est `public.georeference_entities`.
-
-## Mises à jour et identité stable
-
-- `--mode upsert`, par défaut, crée les lignes manquantes et actualise les champs gérés réellement présents. La source est prioritaire pour ces champs ; examinez cette politique si vous avez modifié localement le référentiel.
-- Les champs facultatifs absents sont préservés. Coordonnées/frontières ne sont gérées que si le paquet les demandait. Un null explicite n'a pas le même sens qu'un champ absent.
-- `--mode insert-only` ajoute les nouvelles entités, ignore les modifications des lignes existantes et signale les conflits. Aucun de ces modes ne supprime une entité absente du paquet.
-- Rejouer le même contenu laisse les lignes inchangées intactes, sans doublons ni mises à jour artificielles simplement parce qu'un nouvel import est lancé.
-- Les relations se résolvent par identité stable ; les parents nécessaires doivent être présents dans le paquet ou dans la cible. Un parent externe doit être un pays/une subdivision compatible, jamais une localité. Un export géographique partiel ne prouve jamais qu'une entité absente doit être supprimée.
-- En insert-only, les nouveaux enfants sont validés contre les parents réellement conservés en cible lorsque leurs mises à jour sont ignorées. Un UPSERT partiel ne peut déplacer un parent vers un autre pays ou changer son type si des enfants conservés deviennent incohérents ; incluez le sous-arbre concerné dans la mise à jour.
-
-Le seeder applique la priorité à la source pour les champs gérés. Fusion automatique des modifications locales, migrations, synchronisation destructive et mappings universels d'ORM restent hors V1.
-
-## Ordonner explicitement les nouvelles révisions
-
-Les versions de données sont opaques : `release-b` ne se compare pas de façon fiable à `2026.11`. Le premier import utilise la révision `0` par défaut. Un jeu/paquet modifié exige une révision entière explicite strictement supérieure :
+Générez un paquet de ressources JSON ou NDJSON et définissez `DATABASE_URL` hors des fichiers suivis :
 
 ```sh
-node dist/cli.js seed --package exports/updated-seed --revision 1 --apply
+npx georeference@1.1.0 generate --format ndjson --output ./exports/congo-seed
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema --apply
 ```
 
-Les révisions inférieures/égales en conflit sont refusées. `--allow-downgrade` constitue une dérogation explicite, pas une reprise par défaut. Conservez la même révision pour reprendre le même import interrompu.
+Sans `--apply`, l'importeur présente seulement les changements prévus. `--create-schema` autorise la création des tables métier configurées lors de l'application ; il n'ajoute pas silencieusement des colonnes à des tables incompatibles. CSV/XLSX humains, GeoJSON, scripts SQL et exports SQLite ne sont pas des entrées du seeder. Les fichiers de métadonnées/audit ne deviennent jamais des lieux.
 
-## Préserver les clés applicatives existantes
-
-Utilisez `--mapping path/to/mapping.json` pour mapper les champs canoniques vers les colonnes prises en charge de votre table. Exemple :
+Utilisez `--sql-config FILE` avec la même configuration de noms que pour l'export SQL :
 
 ```json
 {
   "schema": "public",
-  "table": "places",
-  "localIdColumn": "id",
-  "columns": {
-    "id": "georeference_id",
-    "entityType": "entity_type",
-    "countryId": "country_id",
-    "parentId": "parent_id"
+  "tables": {
+    "communes": "cities",
+    "neighborhoods": "quarters"
   }
 }
 ```
 
-Ici, `id` est une clé primaire entière serial/identity existante, et `georeference_id` l'identifiant stable sous forme de chaîne. Son unicité doit être imposée par une vraie clé primaire ou contrainte/index UNIQUE non partiel à une seule colonne ; une déclaration de mapping ou une clé unique composite ne suffit pas. Le seeder préserve les IDs locaux et les utilise pour les relations ; il ne remplace pas les clés de l'application. Les autres colonnes gérées doivent avoir des noms/types compatibles ou un mapping explicite. Préservez les champs métier et fournissez leurs valeurs par défaut obligatoires. Le mapping V1 couvre les clés entières serial/identity, pas tous les schémas personnalisés/composites.
+```sh
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema --apply
+```
 
-## Transactions, reprise et visibilité
+Les noms changent de façon cohérente les tables et références de clés étrangères générées. Ils ne mappent pas des colonnes ou clés primaires locales arbitraires. Examinez configuration et aperçu avant application dans une base applicative.
 
-`--batch-size` borne chaque lot (`500` par défaut). Un lot et son curseur de reprise sont commités ensemble. Une erreur ultérieure peut laisser visibles des lots précédents ; l'import entier ne constitue pas une publication atomique. Relancez le même paquet avec les mêmes mapping, mode, révision et taille de lot pour reprendre. Un import terminé rejoué compare à nouveau les lignes et préserve les valeurs inchangées.
+## Actualisations et transactions
 
-Un import interrompu doit se terminer avec les mêmes paquet, mapping, mode et taille de lot avant qu'un autre import commence sur cette cible. Ne changez pas de paquet ou de mapping pour contourner un curseur de reprise en attente.
+- Les UUID identifient les lignes correspondantes. Le mode par défaut `--mode upsert` crée les ressources absentes et peut actualiser les valeurs sources fournies.
+- Rejouer un contenu identique ne doit créer ni doublons ni mises à jour artificielles. Les UUID ne sont pas régénérés à chaque import.
+- `--mode insert-only` conserve les lignes ayant déjà le même UUID.
+- Une ressource absente n'implique jamais une suppression. Un export géographique partiel ne demande pas de retirer les données applicatives absentes.
+- Les parents nécessaires doivent être inclus et les relations valides. Un quartier peut relever directement d'une commune, d'un arrondissement ou d'une communauté urbaine.
+- L'application utilise une transaction et une session PostgreSQL dédiée avec verrou d'import. Un échec annule la transaction ; le nouveau parcours métier ne promet pas l'ancien protocole de lots/checkpoints.
 
-Un verrou consultatif sérialise les imports vers la même cible. Les utilisateurs de la bibliothèque doivent fournir une **connexion/session dédiée**, pas un pool susceptible de changer de session entre les requêtes. La CLI ouvre un client PostgreSQL dédié. Un point de reprise n'est valable qu'après commit de sa transaction.
+Créer un schéma est distinct d'une migration. Une table `cities` existante avec identifiants locaux entiers ne devient pas compatible en configurant son nom. Préparez une migration/intégration examinée ou un schéma séparé compatible ; ne remplacez pas automatiquement les clés applicatives. Actualiser les valeurs gérées ne réconcilie pas automatiquement des modifications locales.
 
-Manifestes et empreintes détectent corruption et fichiers manquants ; ils ne constituent pas une signature garantissant l'identité de l'émetteur. Examinez provenance et mapping, puis utilisez l'aperçu avant d'appliquer un paquet à une base existante.
+La commande métier accepte `--package`, `--apply`, `--create-schema`, `--mode` et `--sql-config`. Les anciens paramètres mono-table `--mapping`, `--table`, lots/révisions/checkpoints ne sont pas interprétés silencieusement dans ce parcours. Le seeder canonique bas niveau reste un composant de compatibilité, pas le contrat de ces nouveaux paquets.
 
-## Périmètre de validation
+## Les fichiers SQL constituent une autre livraison
 
-Les tests exercent la sémantique PostgreSQL via PGlite et comprennent un test d'intégration `pg` activé par `DATABASE_URL`. La CI fournit un service PostgreSQL pour ce parcours. Un test de service sauté/non exécuté ne prouve pas la compatibilité d'une version serveur ; consultez le résultat CI exact de la révision utilisée.
+`sql-postgres` génère `schema.sql` et `data.sql`. Examinez/appliquez le schéma avant les données avec vos outils PostgreSQL. `--schema-mode data-only` suppose des tables compatibles préexistantes. Générer les scripts ne connecte jamais une base.
+
+Les scripts PostgreSQL ne constituent pas un SQL universel. MySQL/MariaDB et scripts SQL SQLite ne sont pas pris en charge ici. La base SQLite prête à consulter est un artefact distinct. Une somme de contrôle prouve l'intégrité, pas la justesse géographique ni la confiance dans l'expéditeur. Consultez les résultats CI réels pour la validation des moteurs et [la migration](migration.fr.md) avant de remplacer les anciens exports.
