@@ -2,14 +2,12 @@
 
 [Français](getting-started.fr.md) · [Home](../README.md) · [Generation](generation.md)
 
-Build this unreleased 1.1.0 checkout with Node.js 24.18.x. npm 1.0.0 keeps the previous output contract; it cannot be used to try these examples.
+Use Node.js 24.18.x and `npx georeference@1.1.0`. Source contributors can also build the checkout with `npm ci` and `npm run build`.
 
 ```sh
-npm ci
-npm run build
-node dist/cli.js generate --format xlsx --output ./exports/congo-excel
-node dist/cli.js generate --format json --output ./exports/congo-json
-node dist/cli.js verify --package ./exports/congo-json
+npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
+npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx georeference@1.1.0 verify --package ./exports/congo-json
 ```
 
 Open `exports/congo-excel/congo.xlsx` for the lists. Application arrays are in `exports/congo-json/communes.json`, `arrondissements.json`, `neighborhoods.json`, etc. Read `README.txt` for dates and partial coverage. `verify` checks file integrity, not geographic exhaustiveness.
@@ -44,16 +42,16 @@ Use names for display and UUIDs for stored selections. A production form must re
 ## Prepare PostgreSQL separately
 
 ```sh
-node dist/cli.js generate --format ndjson --output ./exports/congo-seed
-node dist/cli.js seed --package ./exports/congo-seed --create-schema
-node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
+npx georeference@1.1.0 generate --format ndjson --output ./exports/congo-seed
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema --apply
 ```
 
 Set `DATABASE_URL` in your environment first. Preview is read-only; `--apply` writes. Human CSV/XLSX, SQL scripts and SQLite files are not equivalent seeder inputs. Use the verified resource JSON/NDJSON package. See [database import](seeding.md) for configuration and existing-schema limits.
 
 ## Optional SDK
 
-Reading generated files does not require `npm install georeference`. Applications choosing a package API can build/install this revision's archive with `npm pack`; the published 1.0.0 package does not expose the new resource contract.
+Reading generated files does not require `npm install georeference`. Applications choosing the optional SDK can install `georeference@1.1.0`; version 1.0.0 does not expose the new resource contract.
 
 ```ts
 import { loadCongoReference, toResourceTables } from 'georeference';

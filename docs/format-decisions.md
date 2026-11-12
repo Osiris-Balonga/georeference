@@ -4,7 +4,7 @@
 
 Decision record reviewed November 12, 2026.
 
-The product scope is exclusively the Republic of the Congo. These encoding choices serve its curated, source-dated reference; no format broadens country coverage or supplies missing neighborhoods/geometries. The Congo-only correction is planned for 1.1.0 and is not yet the published 1.0.0 behavior.
+The product scope is exclusively the Republic of the Congo. These encoding choices serve its curated, source-dated reference; no format broadens country coverage or supplies missing neighborhoods/geometries. Version 1.1.0 introduces the Congo-only resource contract; version 1.0.0 used the older country-list behavior.
 
 This comparison explains the V1 boundary and where another adapter would be useful. **V1** means one of the seven implemented built-in formats; **later** means evaluated but unsupported by the shipped CLI. Later priorities are driven by a concrete integration request, not a promise to implement every format.
 

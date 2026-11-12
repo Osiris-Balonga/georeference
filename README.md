@@ -4,18 +4,16 @@
 
 Get Republic of the Congo (CG/COG) geographic data as readable lists or application resources. Choose Excel category tabs, CSV files with place names, separate JSON collections, or database exports with stable UUIDs and configurable business tables. Generated files need no permanent project dependency.
 
-**Release status:** this checkout prepares **1.1.0**, not yet published. npm/GitHub 1.0.0 has the older country-list behavior. Until publication, run this local build. After release, `npx georeference` can replace `node dist/cli.js`.
+Version **1.1.0** provides the Congo resource exports. Use `npx georeference@1.1.0` to select this version explicitly. Version 1.0.0 used the previous country-list output.
 
 ## Try the data
 
-Use Node.js **24.18.x** and npm from this checkout:
+Use Node.js **24.18.x** and npm:
 
 ```sh
-npm ci
-npm run build
-node dist/cli.js generate --format xlsx --output ./exports/congo-excel
-node dist/cli.js neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-node dist/cli.js generate --format json --output ./exports/congo-json
+npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
+npx georeference@1.1.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx georeference@1.1.0 generate --format json --output ./exports/congo-json
 ```
 
 Open `congo.xlsx` for category worksheets, CSV files for readable lists, or JSON arrays such as `communes.json`, `arrondissements.json` and `neighborhoods.json` for applications. Each new output directory includes a human coverage/date summary in `README.txt` and technical integrity metadata in `manifest.json`. Detailed evidence is optional with `--audit`. Existing destinations are refused.

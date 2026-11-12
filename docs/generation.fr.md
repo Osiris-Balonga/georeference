@@ -2,15 +2,15 @@
 
 [English](generation.md) · [Accueil](../README.fr.md) · [Formats](formats.fr.md)
 
-Ce guide décrit la refonte 1.1.0 non publiée. Compilez ce checkout avec Node.js 24.18.x, `npm ci` et `npm run build`. npm 1.0.0 ne fournit pas ces sorties. Après livraison, remplacez `node dist/cli.js` par `npx georeference`.
+Utilisez Node.js 24.18.x et `npx georeference@1.1.0`. Pour développer depuis les sources, utilisez plutôt `npm ci`, `npm run build` et `node dist/cli.js`. La version 1.0.0 ne fournit pas ces sorties.
 
 ## Choisir la sortie
 
 ```sh
-node dist/cli.js generate --format xlsx --output ./exports/congo-excel
-node dist/cli.js generate --format csv --output ./exports/congo-csv
-node dist/cli.js generate --format json --output ./exports/congo-json
-node dist/cli.js generate --format sql-postgres --output ./exports/congo-postgres
+npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
+npx georeference@1.1.0 generate --format csv --output ./exports/congo-csv
+npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx georeference@1.1.0 generate --format sql-postgres --output ./exports/congo-postgres
 ```
 
 Chaque `--output` désigne un **nouveau dossier**, pas un fichier. Les chemins relatifs partent du dossier courant du terminal : l'exemple CSV écrit dans `exports/congo-csv/`, pas dans un précédent dossier JSON. Les destinations existantes sont refusées ; dépendances/fichiers de paquet du consommateur restent intacts. Le référentiel géographique est intégré.
@@ -22,9 +22,9 @@ Chaque paquet contient `README.txt` pour couverture/dates et `manifest.json` pou
 Les en-têtes/fichiers CSV et les onglets utilisent le français par défaut. `--language en` choisit l'anglais. Les collections/relations JSON gardent des champs applicatifs anglais stables. Les UUID figurent dans les formats applicatifs et restent masqués dans les listes sauf avec `--include-ids`.
 
 ```sh
-node dist/cli.js generate --format xlsx --language en --output ./exports/congo-excel-en
-node dist/cli.js communes --format csv --include-ids --output ./exports/communes-with-ids
-node dist/cli.js generate --format json --audit --output ./exports/congo-audited
+npx georeference@1.1.0 generate --format xlsx --language en --output ./exports/congo-excel-en
+npx georeference@1.1.0 communes --format csv --include-ids --output ./exports/communes-with-ids
+npx georeference@1.1.0 generate --format json --audit --output ./exports/congo-audited
 ```
 
 ## Filtrer les catégories et lieux
@@ -41,9 +41,9 @@ node dist/cli.js generate --format json --audit --output ./exports/congo-audited
 | `generate` | Toutes les ressources sélectionnées |
 
 ```sh
-node dist/cli.js arrondissements --city Brazzaville --output ./exports/brazzaville-arrondissements
-node dist/cli.js neighborhoods --city Brazzaville --arrondissement 6 --format csv --output ./exports/talangai-csv
-node dist/cli.js neighborhoods --city Pointe-Noire --format xlsx --output ./exports/pointe-noire-excel
+npx georeference@1.1.0 arrondissements --city Brazzaville --output ./exports/brazzaville-arrondissements
+npx georeference@1.1.0 neighborhoods --city Brazzaville --arrondissement 6 --format csv --output ./exports/talangai-csv
+npx georeference@1.1.0 neighborhoods --city Pointe-Noire --format xlsx --output ./exports/pointe-noire-excel
 ```
 
 `--city` accepte un nom ou UUID de commune. `--arrondissement` accepte un nom/UUID ; un numéro exige `--city`. Le périmètre est CG/COG ; CD/COD est un autre pays et est refusé. Les parents nécessaires restent dans leur catégorie : le total peut dépasser le nombre de quartiers demandés.

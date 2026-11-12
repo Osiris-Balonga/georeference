@@ -4,7 +4,7 @@
 
 Décisions réexaminées le 12 novembre 2026.
 
-Le produit concerne exclusivement la République du Congo. Ces choix d'encodage servent son référentiel vérifié et daté ; aucun format n'étend les pays couverts ni ne fournit les quartiers/géométries manquants. La correction Congo seul est prévue en 1.1.0 et ne décrit pas le comportement 1.0.0 déjà publié.
+Le produit concerne exclusivement la République du Congo. Ces choix d'encodage servent son référentiel vérifié et daté ; aucun format n'étend les pays couverts ni ne fournit les quartiers/géométries manquants. La version 1.1.0 introduit le contrat de ressources Congo ; la version 1.0.0 utilisait l’ancien export de liste de pays.
 
 Cette comparaison explique le périmètre V1 et les besoins auxquels répondrait un autre adaptateur. **V1** désigne l'un des sept formats intégrés ; **ultérieur** signifie évalué mais non pris en charge par la CLI livrée. Les priorités suivantes dépendent d'une demande d'intégration concrète, sans engagement à développer tous les formats.
 
