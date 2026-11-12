@@ -21,7 +21,7 @@ The default command downloads GeoNames country information; the repository itsel
 
 ## Try it locally
 
-Use Node.js **24.18.x** and npm. The npm distribution is pending publication; the intended one-shot workflow is:
+Use Node.js **24.18.x** and npm. Run the tool from your project:
 
 ```sh
 npx georeference
@@ -44,7 +44,7 @@ Export output directories must be new. Start with the [complete guide](docs/gett
 
 ## Optional SDK
 
-Only applications that want the snapshot query API need `npm install georeference` after publication. Generating JSON, CSV, or other files does not require adding that dependency. See the [SDK example](docs/getting-started.md#optional-sdk).
+Only applications that want the snapshot query API need `npm install georeference`. Generating JSON, CSV, or other files does not require adding that dependency. See the [SDK example](docs/getting-started.md#optional-sdk).
 
 ## Three ways to use the data
 

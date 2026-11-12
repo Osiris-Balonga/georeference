@@ -4,7 +4,7 @@
 
 ## Générer directement les fichiers
 
-Commencez par [la génération en une commande](generation.fr.md) : `npx georeference` génère les fichiers de pays sans ajouter de dépendance au projet. Le SDK est optionnel. La publication npm est en attente ; le guide explique aussi comment exécuter cette révision depuis les sources. Les sections suivantes couvrent la préparation avancée des sources, les exports et l'amorçage en base.
+Commencez par [la génération en une commande](generation.fr.md) : `npx georeference` génère les fichiers de pays sans ajouter de dépendance au projet. Le SDK est optionnel. Le guide explique aussi comment utiliser une version locale. Les sections suivantes couvrent la préparation avancée des sources, les exports et l'amorçage en base.
 
 ## Construire et créer un instantané
 
@@ -61,7 +61,7 @@ Définissez `DATABASE_URL` dans votre terminal ou gestionnaire de secrets avant 
 
 ## SDK optionnel
 
-Seules les applications qui souhaitent consulter un instantané via l'API locale doivent installer la bibliothèque. Après publication npm, utilisez `npm install georeference` ; avant publication, construisez et installez une archive locale avec `npm pack` puis `npm install /chemin/vers/georeference-1.0.0.tgz`. La génération de fichiers n'en a pas besoin.
+Seules les applications qui souhaitent consulter un instantané via l'API locale doivent installer la bibliothèque avec `npm install georeference`. Vous pouvez aussi construire et installer une archive locale avec `npm pack` puis `npm install /chemin/vers/georeference-1.0.0.tgz`. La génération de fichiers n'en a pas besoin.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';

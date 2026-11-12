@@ -21,7 +21,7 @@ La commande par défaut télécharge les informations de pays GeoNames ; le dép
 
 ## Essayer en local
 
-Utilisez Node.js **24.18.x** et npm. La distribution npm attend sa publication ; le parcours ponctuel prévu est :
+Utilisez Node.js **24.18.x** et npm. Exécutez l'outil depuis votre projet :
 
 ```sh
 npx georeference
@@ -44,7 +44,7 @@ Le répertoire de destination d'un export doit être nouveau. Le [guide complet]
 
 ## SDK optionnel
 
-Seules les applications qui souhaitent utiliser l'API de consultation des instantanés ont besoin de `npm install georeference` après publication. La génération de fichiers JSON, CSV ou autres ne nécessite pas d'ajouter cette dépendance. Voir [l'exemple SDK](docs/getting-started.fr.md#sdk-optionnel).
+Seules les applications qui souhaitent utiliser l'API de consultation des instantanés ont besoin de `npm install georeference`. La génération de fichiers JSON, CSV ou autres ne nécessite pas d'ajouter cette dépendance. Voir [l'exemple SDK](docs/getting-started.fr.md#sdk-optionnel).
 
 ## Trois façons d'utiliser les données
 

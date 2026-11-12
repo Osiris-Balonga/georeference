@@ -2,7 +2,7 @@
 
 [English](generation.md) · [Accueil](../README.fr.md)
 
-Utilisez Node.js 24.18.x et npm. Après publication npm, exécutez l'outil une fois depuis le projet cible. La distribution npm attend actuellement sa publication ; pour essayer cette révision maintenant, construisez le dépôt puis remplacez `npx georeference` par `node /chemin/vers/georeference/dist/cli.js`.
+Utilisez Node.js 24.18.x et npm. Exécutez l'outil une fois depuis le projet cible. Pour utiliser une version locale, construisez le dépôt puis remplacez `npx georeference` par `node /chemin/vers/georeference/dist/cli.js`.
 
 ```sh
 npx georeference

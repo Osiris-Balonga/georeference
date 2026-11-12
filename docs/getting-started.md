@@ -4,7 +4,7 @@
 
 ## Generate files directly
 
-Start with [one-shot generation](generation.md): `npx georeference` generates country files without adding a dependency to your project. The SDK is optional. npm publication is pending; the guide also explains how to run this revision from source. The following sections cover advanced source preparation, exports and database seeding.
+Start with [one-shot generation](generation.md): `npx georeference` generates country files without adding a dependency to your project. The SDK is optional. The guide also explains how to run a local build. The following sections cover advanced source preparation, exports and database seeding.
 
 ## Build and create a snapshot
 
@@ -61,7 +61,7 @@ Set `DATABASE_URL` in your shell or secret manager before running the seed comma
 
 ## Optional SDK
 
-Only applications that want the local snapshot query API need to install the library. After npm publication, use `npm install georeference`; before publication, build and install a local archive with `npm pack` and `npm install /path/to/georeference-1.0.0.tgz`. File generation needs no such installation.
+Only applications that want the local snapshot query API need to install the library with `npm install georeference`. You can also build and install a local archive with `npm pack` and `npm install /path/to/georeference-1.0.0.tgz`. File generation needs no such installation.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';

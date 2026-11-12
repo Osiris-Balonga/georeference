@@ -2,7 +2,7 @@
 
 [Français](generation.fr.md) · [Home](../README.md)
 
-Use Node.js 24.18.x and npm. After npm publication, run the tool once from your target project. The npm distribution is currently pending publication; to try this revision now, build the repository and replace `npx georeference` with `node /path/to/georeference/dist/cli.js`.
+Use Node.js 24.18.x and npm. Run the tool once from your target project. To use a local build instead, build the repository and replace `npx georeference` with `node /path/to/georeference/dist/cli.js`.
 
 ```sh
 npx georeference
