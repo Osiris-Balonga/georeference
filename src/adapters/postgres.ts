@@ -4,6 +4,7 @@ import { project, validateOptions, writeChunks } from './common.ts';
 export const POSTGRES_SCHEMA = `CREATE TABLE IF NOT EXISTS "georeference_entities" (
   "id" TEXT PRIMARY KEY,
   "entity_type" TEXT NOT NULL,
+  "kind" TEXT,
   "name" TEXT NOT NULL,
   "country_id" TEXT NOT NULL,
   "parent_id" TEXT REFERENCES "georeference_entities"("id") DEFERRABLE INITIALLY DEFERRED,
@@ -32,11 +33,12 @@ function values(entity: Entity): [string, string][] {
     if (Object.hasOwn(entity, key)) result.push([key, entity[key] === null ? 'NULL' : literal(JSON.stringify(entity[key]), true)]);
   }
   if (Object.hasOwn(entity, 'level')) result.push(['level', literal(entity.level ?? null)]);
+  if (entity.kind!==undefined) result.push(['kind',literal(entity.kind)]);
   return result;
 }
 
 export const postgresAdapter: ExportAdapter = {
-  format: 'sql-postgres', version: '1.0.0', validate: validateOptions,
+  format: 'sql-postgres', version: '1.1.0', validate: validateOptions,
   async write(context) {
     await writeChunks(context, 'entities.sql', (function* () {
       yield '-- GeoReference PostgreSQL export. data-only requires a compatible existing schema.\n';

@@ -1,4 +1,5 @@
 import type { Boundary, Entity, SnapshotMetadata } from './types.ts';
+import { GEOGRAPHIC_KINDS } from './types.ts';
 
 export function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
@@ -40,10 +41,15 @@ function validateBoundary(value: unknown): asserts value is Boundary {
 }
 export function validateEntity(value: unknown): asserts value is Entity {
   if (!object(value)) throw new Error('Entity must be an object');
-  const fields = new Set(['id','entityType','name','countryId','parentId','codes','names','level','coordinates','boundary']);
+  const fields = new Set(['id','entityType','kind','name','countryId','parentId','codes','names','level','coordinates','boundary']);
   for (const key of Object.keys(value)) if (!fields.has(key)) throw new Error(`Unknown entity field: ${key}`);
   for (const field of ['id','name','countryId']) text(value[field], field);
   if (!['country','subdivision','locality'].includes(value.entityType as string)) throw new Error('Invalid entityType');
+  if(value.kind!==undefined) {
+    if(!GEOGRAPHIC_KINDS.includes(value.kind as never)) throw new Error('Invalid geographic kind');
+    const expected=value.kind==='country'?'country':['neighborhood','village'].includes(value.kind as string)?'locality':'subdivision';
+    if(value.entityType!==expected) throw new Error('Geographic kind does not match entityType');
+  }
   if (value.parentId !== null) text(value.parentId, 'parentId');
   if (value.entityType === 'country' && (value.countryId !== value.id || value.parentId !== null)) throw new Error('Country must reference itself and have no parent');
   if (value.entityType !== 'country' && value.parentId === null) throw new Error('Non-country entity requires a parent reference');

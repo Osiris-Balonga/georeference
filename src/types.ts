@@ -1,5 +1,7 @@
 /** Public v1 contract. IDs are opaque strings and never derived from display names. */
 export type EntityType = 'country' | 'subdivision' | 'locality';
+export const GEOGRAPHIC_KINDS=['country','department','commune','district','arrondissement','urban-community','rural-community','neighborhood','village','administrative-unit'] as const;
+export type GeographicKind=typeof GEOGRAPHIC_KINDS[number];
 export interface Coordinates { longitude: number; latitude: number }
 export interface Polygon { type: 'Polygon'; coordinates: number[][][] }
 export interface MultiPolygon { type: 'MultiPolygon'; coordinates: number[][][][] }
@@ -7,6 +9,7 @@ export type Boundary = Polygon | MultiPolygon;
 export interface Entity {
   id: string;
   entityType: EntityType;
+  kind?: GeographicKind;
   name: string;
   countryId: string;
   parentId: string | null;
@@ -29,6 +32,7 @@ export interface SnapshotMetadata {
   sources: DataSource[];
 }
 export interface Selection {
+  kinds?: GeographicKind[];
   countries?: string[];
   subdivisions?: string[];
   entityTypes?: EntityType[];
@@ -68,8 +72,9 @@ export interface ExportAdapter {
   /** Return relative filenames, never absolute paths; close all file handles before resolving. */
   write(context: AdapterContext): Promise<string[]>;
 }
-export interface ManifestFile { path: string; bytes: number; sha256: string }
+export interface ManifestFile { path: string; bytes: number; sha256: string; role?:'data'|'metadata' }
 export interface ExportManifest {
+  geographicCoverage?:'partial'|'complete';
   contractVersion: '1.0';
   generatorVersion: string;
   adapterVersion: string;

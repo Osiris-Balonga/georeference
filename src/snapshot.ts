@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { access, mkdir, link, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { canonicalJson, validateEntity, validateMetadata } from './validation.ts';
+import { GEOGRAPHIC_KINDS } from './types.ts';
 import type { Entity, SnapshotMetadata, Selection, ExportPlan, ExportRequest } from './types.ts';
 
 function ensureGraph(db: DatabaseSync): void {
@@ -73,6 +74,7 @@ export class Snapshot {
     selection=structuredClone(selection);
     const request = {format:'json',...selection} as ExportRequest;
     if (selection.entityTypes && (selection.entityTypes.length===0 || selection.entityTypes.some(type=>!['country','subdivision','locality'].includes(type)))) throw new Error('Invalid entityTypes selection');
+    if(selection.kinds&&(!selection.kinds.length||selection.kinds.some(kind=>!GEOGRAPHIC_KINDS.includes(kind))))throw new Error('Invalid geographic kind selection');
     const table = `selected_${this.nextPlan++}`;
     this.db.exec(`CREATE TEMP TABLE ${table} (id TEXT PRIMARY KEY, context INTEGER NOT NULL DEFAULT 0)`);
     try {
@@ -92,6 +94,7 @@ export class Snapshot {
     }
     if (!scoped) this.db.exec(`INSERT INTO ${table}(id) SELECT id FROM entities`);
     if (selection.entityTypes) this.db.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM entities WHERE entity_type NOT IN (${selection.entityTypes.map(()=>'?').join(',')}))`).run(...selection.entityTypes);
+    if(selection.kinds)this.db.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM entities WHERE json_extract(data,'$.kind') IS NULL OR json_extract(data,'$.kind') NOT IN (${selection.kinds.map(()=>'?').join(',')}))`).run(...selection.kinds);
     if (selection.includeAncestors!==false) this.db.exec(`WITH RECURSIVE ancestors(id) AS (
       SELECT e.parent_id FROM entities e JOIN ${table} s ON e.id=s.id WHERE e.parent_id IS NOT NULL UNION
       SELECT e.parent_id FROM entities e JOIN ancestors a ON e.id=a.id WHERE e.parent_id IS NOT NULL)

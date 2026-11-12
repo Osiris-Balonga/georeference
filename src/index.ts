@@ -1,4 +1,7 @@
 export type * from './types.ts';
+export { GEOGRAPHIC_KINDS } from './types.ts';
+export { loadCongoReference,validateCongoReference } from './congo.ts';
+export type { CongoReference,CongoEvidence } from './congo.ts';
 export { Snapshot, createSnapshot } from './snapshot.ts';
 export { createClient } from './client.ts';
 export { exportSnapshot, registerExportAdapter } from './export.ts';
