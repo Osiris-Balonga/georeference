@@ -2,7 +2,7 @@
 
 [English](formats.md) · [Accueil](../README.fr.md) · [Étude complète des formats](format-decisions.fr.md)
 
-La CLI 1.1.0 non publiée exporte les données Congo sélectionnées sous forme de ressources, pas d'un mélange d'entités. Les UUID identifient les enregistrements applicatifs. Les listes montrent les noms par défaut. Tous les formats partagent une couverture partielle et datée ; aucun ne fournit les données géographiques manquantes.
+La CLI 1.1.0 exporte les données Congo sélectionnées sous forme de ressources, pas d'un mélange d'entités. Les UUID identifient les enregistrements applicatifs. Les listes montrent les noms par défaut. Tous les formats partagent une couverture partielle et datée ; aucun ne fournit les données géographiques manquantes.
 
 ## Fichiers et onglets
 

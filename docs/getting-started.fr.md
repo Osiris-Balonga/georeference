@@ -2,14 +2,14 @@
 
 [English](getting-started.md) · [Accueil](../README.fr.md) · [Génération](generation.fr.md)
 
-Compilez ce checkout 1.1.0 non publié avec Node.js 24.18.x. npm 1.0.0 conserve le contrat de sortie précédent ; il ne permet pas d'essayer ces exemples.
+Utilisez Node.js 24.18.x et `npx georeference@1.1.0`. Les contributeurs peuvent également compiler les sources avec `npm ci` et `npm run build`.
 
 ```sh
 npm ci
 npm run build
-node dist/cli.js generate --format xlsx --output ./exports/congo-excel
-node dist/cli.js generate --format json --output ./exports/congo-json
-node dist/cli.js verify --package ./exports/congo-json
+npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
+npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx georeference@1.1.0 verify --package ./exports/congo-json
 ```
 
 Ouvrez `exports/congo-excel/congo.xlsx` pour les listes. Les tableaux applicatifs sont dans `exports/congo-json/communes.json`, `arrondissements.json`, `neighborhoods.json`, etc. Lisez `README.txt` pour les dates et la couverture partielle. `verify` contrôle l'intégrité, pas l'exhaustivité géographique.
@@ -44,9 +44,9 @@ Utilisez les noms pour l'affichage et les UUID pour les sélections enregistrée
 ## Préparer PostgreSQL séparément
 
 ```sh
-node dist/cli.js generate --format ndjson --output ./exports/congo-seed
-node dist/cli.js seed --package ./exports/congo-seed --create-schema
-node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
+npx georeference@1.1.0 generate --format ndjson --output ./exports/congo-seed
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema --apply
 ```
 
 Définissez d'abord `DATABASE_URL` dans votre environnement. L'aperçu est en lecture seule ; `--apply` écrit. CSV/XLSX humains, scripts SQL et fichiers SQLite ne sont pas des entrées de seeding équivalentes. Utilisez le paquet JSON/NDJSON de ressources vérifié. Voir [l'import en base](seeding.fr.md) pour les noms et limites des schémas existants.

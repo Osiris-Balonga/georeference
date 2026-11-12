@@ -9,9 +9,9 @@ Generating files, applying database changes and reading through the optional SDK
 Generate a JSON or NDJSON resource package and set `DATABASE_URL` outside tracked files:
 
 ```sh
-node dist/cli.js generate --format ndjson --output ./exports/congo-seed
-node dist/cli.js seed --package ./exports/congo-seed --create-schema
-node dist/cli.js seed --package ./exports/congo-seed --create-schema --apply
+npx georeference@1.1.0 generate --format ndjson --output ./exports/congo-seed
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --create-schema --apply
 ```
 
 Without `--apply`, the importer only previews changes. `--create-schema` permits creating the configured business tables when applying; it does not silently add columns to existing incompatible tables. Human CSV/XLSX, GeoJSON, SQL scripts and SQLite exports are not seeder inputs. Metadata/audit files are never imported as places.
@@ -29,8 +29,8 @@ Use `--sql-config FILE` for the same naming configuration as SQL export:
 ```
 
 ```sh
-node dist/cli.js seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema
-node dist/cli.js seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema --apply
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema
+npx georeference@1.1.0 seed --package ./exports/congo-seed --sql-config ./sql-names.json --create-schema --apply
 ```
 
 Names change all related generated table/foreign-key references consistently. They do not map columns or arbitrary local primary keys. Review the configuration and preview before applying to an application database.

@@ -2,7 +2,7 @@
 
 [Français](migration.fr.md) · [Home](../README.md) · [Formats](formats.md)
 
-Version 1.1.0 is unreleased. It deliberately changes public output from npm 1.0.0 and earlier development exports. Keep existing files/backups, generate into a new directory and compare before replacing application data.
+Version 1.1.0 deliberately changes public output from npm 1.0.0 and earlier development exports. Keep existing files/backups, generate into a new directory and compare before replacing application data.
 
 | Earlier output | New resource output |
 |---|---|

@@ -2,7 +2,7 @@
 
 [English](migration.md) · [Accueil](../README.fr.md) · [Formats](formats.fr.md)
 
-La version 1.1.0 n'est pas publiée. Elle modifie volontairement les sorties publiques de npm 1.0.0 et des anciens exports de développement. Conservez fichiers/sauvegardes, générez dans un nouveau dossier et comparez avant remplacement.
+La version 1.1.0 modifie volontairement les sorties publiques de npm 1.0.0 et des anciens exports de développement. Conservez fichiers/sauvegardes, générez dans un nouveau dossier et comparez avant remplacement.
 
 | Ancienne sortie | Nouvelle sortie |
 |---|---|
