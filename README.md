@@ -4,10 +4,11 @@
 
 Versioned geographic datasets, portable exports, and repeatable database seeding.
 
-GeoReference is a TypeScript library and command-line tool for building a consistent reference of countries, administrative subdivisions, and localities. Keep stable identifiers across exports, select a geographic scope, and load reference data into PostgreSQL without confusing file generation with database synchronization.
+GeoReference generates geographic data files directly in your project. Run the CLI once, keep the generated files, and use them without a GeoReference runtime dependency. An optional TypeScript SDK supports applications that want to query local snapshots.
 
 ## What V1 provides
 
+- One-command country generation from GeoNames, with offline input and geographic filtering.
 - Validated, versioned SQLite snapshots from canonical JSON/NDJSON or local GeoNames text files.
 - Selection by country, subdivision descendants, and entity type, with required ancestors included by default.
 - Independent inclusion of point coordinates and polygon/multipolygon boundaries.
@@ -16,30 +17,34 @@ GeoReference is a TypeScript library and command-line tool for building a consis
 - PostgreSQL seeding with a preview by default, explicit apply, managed-field updates, stable identifiers, and resumable batches.
 - A local read SDK with country/subdivision lookups and locality iteration.
 
-This repository ships software and a small **synthetic** example. It does not ship a complete world dataset or a hosted API. Data coverage depends on the input source; the MIT software license does not change a source dataset's license.
+The default command downloads GeoNames country information; the repository itself ships software and a small **synthetic** example. Other geographic coverage depends on your input sources. GeoNames data is CC BY 4.0; the MIT software license does not change dataset licenses.
 
 ## Try it locally
 
-Use Node.js **24.18.x** and npm. Install the compiled package in your project:
+Use Node.js **24.18.x** and npm. Run the tool from your project:
 
 ```sh
-npm install georeference
-npx --no-install georeference --help
+npx georeference
+npx georeference countries --country FR,CG --format csv --output ./data/countries
 ```
 
-To build from source and try the included synthetic example:
+The first command creates `data/georeference/entities.json` and `manifest.json`. JSON contains `{ metadata, entities }`. `--output` is a new directory, not a filename. The CLI preserves existing destinations and does not edit your package manifest, lockfile, or dependencies. `npx` downloads/caches the tool outside the project; your application reads the generated files directly. See [one-shot generation](docs/getting-started.md) for offline use and all six formats.
+
+To run this revision from source:
 
 ```sh
 git clone https://github.com/Osiris-Balonga/georeference.git
 cd georeference
 npm ci
 npm run build
-node dist/cli.js snapshot --input examples/sample.ndjson --metadata examples/metadata.json --output data/example.sqlite
-node dist/cli.js export --snapshot data/example.sqlite --format json --country XZ --coordinates --boundaries --output exports/example-json
-node dist/cli.js verify --package exports/example-json
+node dist/cli.js
 ```
 
 Export output directories must be new. Start with the [complete guide](docs/getting-started.md) for GeoNames ingestion, PostgreSQL seeding, and SDK usage.
+
+## Optional SDK
+
+Only applications that want the snapshot query API need `npm install georeference`. Generating JSON, CSV, or other files does not require adding that dependency. See the [SDK example](docs/getting-started.md#optional-sdk).
 
 ## Three ways to use the data
 
@@ -55,6 +60,7 @@ An SQL export is not a universal seeder. Seeding also deals with existing keys, 
 
 | English | Français |
 |---|---|
+| [One-shot generation](docs/generation.md) | [Génération en une commande](docs/generation.fr.md) |
 | [Getting started](docs/getting-started.md) | [Prise en main](docs/getting-started.fr.md) |
 | [Supported formats and limits](docs/formats.md) | [Formats pris en charge et limites](docs/formats.fr.md) |
 | [PostgreSQL seeding](docs/seeding.md) | [Amorçage PostgreSQL](docs/seeding.fr.md) |

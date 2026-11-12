@@ -2,6 +2,10 @@
 
 [English](getting-started.md) · [Accueil](../README.fr.md)
 
+## Générer directement les fichiers
+
+Commencez par [la génération en une commande](generation.fr.md) : `npx georeference` génère les fichiers de pays sans ajouter de dépendance au projet. Le SDK est optionnel. Le guide explique aussi comment utiliser une version locale. Les sections suivantes couvrent la préparation avancée des sources, les exports et l'amorçage en base.
+
 ## Construire et créer un instantané
 
 Prérequis : Node.js 24.18.x, npm et assez d'espace disque pour les instantanés/exports. PostgreSQL n'est nécessaire que pour l'amorçage d'une base PostgreSQL. SQLite utilise le module `node:sqlite` intégré à Node.
@@ -55,9 +59,9 @@ node dist/cli.js seed --package exports/seed --create-schema --apply
 
 Définissez `DATABASE_URL` dans votre terminal ou gestionnaire de secrets avant ces commandes. N'enregistrez pas les identifiants de connexion dans des fichiers suivis ou dans les paquets exportés. Les commandes ci-dessus ciblent le schéma standard ; les tables applicatives existantes nécessitent un mapping explicite. Voir [l'amorçage](seeding.fr.md) pour l'ordre des révisions, les champs gérés et la reprise.
 
-## Lire avec le SDK
+## SDK optionnel
 
-Après compilation, utilisez la bibliothèque depuis le dépôt ou depuis un paquet construit et installé localement :
+Seules les applications qui souhaitent consulter un instantané via l'API locale doivent installer la bibliothèque avec `npm install georeference`. Vous pouvez aussi construire et installer une archive locale avec `npm pack` puis `npm install /chemin/vers/georeference-1.0.0.tgz`. La génération de fichiers n'en a pas besoin.
 
 ```ts
 import { Snapshot, createClient } from 'georeference';
