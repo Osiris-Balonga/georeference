@@ -37,6 +37,10 @@ Keep identifiers, geographic selection and parent rules in the shared model. A w
 
 A new format needs reader/interoperability tests and clear unsupported-option rejection. Its addition must not introduce a new geographic rule inside its writer. The low-level `ExportAdapter`/`registerExportAdapter` extension contract is retained for canonical compatibility; registration there alone does not add a public business-resource CLI format. Built-in public formats are explicit and documented.
 
+Register a business writer through `registerResourceAdapter({ format, version, validate, write })`. Its `write(tables, context)` receives validated domain resources and returns relative filenames; `exportResources` handles packaging without a coordinator change. Registration is process-local in SDK integrations, not automatic CLI plugin installation. Built-in names cannot be replaced.
+
+The write-only XLSX adapter creates SpreadsheetML parts and uses the existing ZIP dependency, with fixed archive dates and literal string cells. ExcelJS 4.4.0 (MIT) is a development-only independent reader for interoperability tests. Its UUID helper is overridden to 11.1.1 to resolve the advisory affecting the older test dependency. No ExcelJS runtime is distributed with the CLI; the identity registry uses Node's UUID generator independently.
+
 ## Import is not export
 
 The database importer owns write policy, schema compatibility, transaction boundaries and concurrency. It consumes verified JSON/NDJSON resources, not the human CSV/XLSX layout. SQL schema generation, applying a migration and importing a dataset remain distinct actions. The public business-table path is not an arbitrary ORM/local-key mapper.

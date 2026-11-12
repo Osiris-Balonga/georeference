@@ -37,6 +37,10 @@ Conservez identifiants, sélection et règles de parents dans le modèle partag�
 
 Un nouveau format exige des tests de lecture/interopérabilité et le refus clair des options incompatibles. Son ajout n'introduit pas de règle géographique dans son writer. Le contrat bas niveau `ExportAdapter`/`registerExportAdapter` est conservé pour la compatibilité canonique ; s'y enregistrer n'ajoute pas à lui seul un format métier à la CLI. Les formats publics intégrés sont explicites et documentés.
 
+Enregistrez un writer métier avec `registerResourceAdapter({ format, version, validate, write })`. Sa fonction `write(tables, context)` reçoit les ressources validées et retourne des noms de fichiers relatifs ; `exportResources` gère le paquet sans modification du coordinateur. L'enregistrement reste local au processus SDK et n'installe pas automatiquement un plugin CLI. Les noms intégrés ne peuvent pas être remplacés.
+
+L'adaptateur XLSX crée les parties SpreadsheetML avec la dépendance ZIP existante, des dates d'archive fixes et des cellules textuelles littérales. ExcelJS 4.4.0 (MIT) sert uniquement de lecteur indépendant dans les tests de développement. Son utilitaire UUID est fixé à 11.1.1 pour corriger l'avis affectant cette ancienne dépendance de test. ExcelJS n'est pas distribué comme dépendance d'exécution de la CLI ; le registre d'identités utilise indépendamment le générateur UUID de Node.
+
 ## Importer est distinct d'exporter
 
 L'importeur gère politique d'écriture, compatibilité, transactions et concurrence. Il consomme du JSON/NDJSON de ressources vérifié, pas la présentation humaine CSV/XLSX. Génération du schéma, application d'une migration et import d'un jeu de données sont distincts. Le parcours public métier n'est pas un mappeur arbitraire d'ORM/clés locales.
