@@ -5,8 +5,6 @@
 Use Node.js 24.18.x and `npx georeference@1.1.0`. Source contributors can also build the checkout with `npm ci` and `npm run build`.
 
 ```sh
-npm ci
-npm run build
 npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
 npx georeference@1.1.0 generate --format json --output ./exports/congo-json
 npx georeference@1.1.0 verify --package ./exports/congo-json

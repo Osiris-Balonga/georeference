@@ -5,8 +5,6 @@
 Utilisez Node.js 24.18.x et `npx georeference@1.1.0`. Les contributeurs peuvent également compiler les sources avec `npm ci` et `npm run build`.
 
 ```sh
-npm ci
-npm run build
 npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
 npx georeference@1.1.0 generate --format json --output ./exports/congo-json
 npx georeference@1.1.0 verify --package ./exports/congo-json
