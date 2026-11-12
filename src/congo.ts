@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import type { Entity,SnapshotMetadata,GeographicKind } from './types.ts';
 import { validateEntity,validateMetadata,canonicalJson } from './validation.ts';
+import { UUID_PATTERN } from './domain/model.ts';
 export interface CongoEvidence {sourceId:string;observedAt:string;locator:string;pdfPage?:number|null;printedPage?:number|null;rawLabel:string}
 export interface CongoReference {metadata:SnapshotMetadata;entities:Entity[];coverage:Record<string,unknown>;provenance:Record<string,CongoEvidence[]>;issues:Record<string,unknown[]>}
 function object(input:unknown):input is Record<string,unknown> {return typeof input==='object'&&input!==null&&!Array.isArray(input);}
@@ -19,7 +20,7 @@ export function validateCongoReference(input:unknown):CongoReference {
   for(const entry of input.entries) {
     if(!object(entry))throw new Error('Invalid catalog entry');
     validateEntity(entry.entity);const entity=entry.entity;
-    if(!entity.kind||byId.has(entity.id))throw new Error('Missing kind or duplicate entity ID');
+    if(!entity.kind||byId.has(entity.id)||!UUID_PATTERN.test(entity.id))throw new Error('Missing kind, invalid UUID or duplicate entity ID');
     if(!Array.isArray(entry.evidence)||!entry.evidence.length)throw new Error('Every entity requires source evidence');
     for(const proof of entry.evidence) {
       if(!object(proof)||!sourceIds.has(proof.sourceId as string)||typeof proof.observedAt!=='string'||!/^\d{4}-\d{2}(?:-\d{2})?$/.test(proof.observedAt)||typeof proof.locator!=='string'||!proof.locator.trim()||typeof proof.rawLabel!=='string'||!proof.rawLabel.trim())throw new Error('Invalid source evidence');
@@ -31,7 +32,7 @@ export function validateCongoReference(input:unknown):CongoReference {
   }
   assertCongoEntities(entities);
   const country=entities.find(entity=>entity.entityType==='country')!;
-  if(country.id!=='geonames:2260494'||input.countryId!==country.id||country.codes?.iso2!=='CG'||country.codes?.iso3!=='COG')throw new Error('Congo catalog must preserve the stable CG/COG country identity');
+  if(input.countryId!==country.id||country.codes?.iso2!=='CG'||country.codes?.iso3!=='COG')throw new Error('Congo catalog requires the CG/COG country identity');
   for(const entity of entities) {
     if(entity.kind==='country')continue;
     const parent=byId.get(entity.parentId!);
@@ -41,7 +42,11 @@ export function validateCongoReference(input:unknown):CongoReference {
   return {metadata,entities,coverage:input.coverage,provenance,issues};
 }
 export async function loadCongoReference():Promise<CongoReference> {
-  return validateCongoReference(JSON.parse(await readFile(new URL('../reference/congo.json',import.meta.url),'utf8')));
+  const reference=validateCongoReference(JSON.parse(await readFile(new URL('../reference/congo.json',import.meta.url),'utf8')));
+  const registry=JSON.parse(await readFile(new URL('../reference/identities.json',import.meta.url),'utf8')) as {version:number;ids:Record<string,string>};
+  const ids=Object.values(registry.ids),known=new Set(ids);
+  if(registry.version!==1||ids.length!==known.size||reference.entities.some(e=>!known.has(e.id)))throw new Error('Catalog UUIDs must match the persistent identity registry');
+  return reference;
 }
 /** Public CLI input guard; the underlying snapshot/adapter contracts remain reusable. */
 export function assertCongoEntities(entities:Iterable<Entity>):string {

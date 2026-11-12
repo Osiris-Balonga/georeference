@@ -5,7 +5,7 @@ import { loadCongoReference,validateCongoReference } from '../src/congo.ts';
 test('Congo reference contains real dated administrative relationships and no other country',async()=>{
   const reference=await loadCongoReference();const byId=new Map(reference.entities.map(e=>[e.id,e]));
   const country=reference.entities.filter(e=>e.kind==='country');assert.equal(country.length,1);assert.equal(country[0]?.codes?.iso2,'CG');assert.equal(country[0]?.codes?.iso3,'COG');
-  assert.equal(country[0]?.id,'geonames:2260494');
+  assert.match(country[0]!.id,/^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/);
   assert.equal(reference.entities.filter(e=>e.kind==='department').length,15);
   const kintele=reference.entities.find(e=>e.kind==='commune'&&e.name==='Kintélé');assert.ok(kintele);
   assert.equal(byId.get(kintele.parentId!)?.name,'Brazzaville');assert.equal(byId.get(kintele.parentId!)?.kind,'department');
