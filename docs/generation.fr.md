@@ -1,55 +1,63 @@
-# Générer les fichiers du référentiel Congo
+# Générer des listes et des ressources applicatives
 
-[English](generation.md) · [Couverture Congo](congo-reference.fr.md) · [Accueil](../README.fr.md)
+[English](generation.md) · [Accueil](../README.fr.md) · [Formats](formats.fr.md)
 
-Ce guide décrit la révision limitée au Congo prévue pour 1.1.0. Tant qu'elle n'est pas publiée, npm 1.0.0 conserve l'ancien fonctionnement. Utilisez un checkout de cette révision avec Node.js 24.18.x, `npm ci` et `npm run build` ; les exemples exécutent ce build local. Après livraison, `npx georeference` pourra remplacer `node dist/cli.js`.
+Ce guide décrit la refonte 1.1.0 non publiée. Compilez ce checkout avec Node.js 24.18.x, `npm ci` et `npm run build`. npm 1.0.0 ne fournit pas ces sorties. Après livraison, remplacez `node dist/cli.js` par `npx georeference`.
 
-## Données intégrées par défaut
+## Choisir la sortie
 
 ```sh
-node dist/cli.js
-node dist/cli.js generate --format ndjson --compression gzip --output ./data/congo
-node dist/cli.js departments --format csv --output ./data/congo-departments
-node dist/cli.js communes --output ./data/congo-communes
+node dist/cli.js generate --format xlsx --output ./exports/congo-excel
+node dist/cli.js generate --format csv --output ./exports/congo-csv
+node dist/cli.js generate --format json --output ./exports/congo-json
+node dist/cli.js generate --format sql-postgres --output ./exports/congo-postgres
 ```
 
-Sans commande, la CLI génère le référentiel Congo intégré, pas un téléchargement de liste de pays. Le paquet JSON par défaut contient `entities.json`, `coverage.json`, `provenance.json` et `manifest.json` dans `./data/georeference/`. Le JSON suit `{ metadata, entities }` ; le lecteur JSON de votre application suffit. Aucune base n'est modifiée ni dépendance ajoutée au projet cible.
+Chaque `--output` désigne un **nouveau dossier**, pas un fichier. Les chemins relatifs partent du dossier courant du terminal : l'exemple CSV écrit dans `exports/congo-csv/`, pas dans un précédent dossier JSON. Les destinations existantes sont refusées ; dépendances/fichiers de paquet du consommateur restent intacts. Le référentiel géographique est intégré.
 
-`--output` est un **nouveau répertoire**, pas un fichier. Les chemins existants sont refusés. Générez ailleurs puis examinez les changements avant de remplacer les données applicatives. Les six [formats](formats.fr.md) utilisent le même référentiel. Gzip/ZIP regroupent données et métadonnées ; conservez manifeste et couverture/provenance lors du partage.
+Chaque paquet contient `README.txt` pour couverture/dates et `manifest.json` pour l'intégrité. `--audit` ajoute `coverage.json`/`provenance.json` détaillés ; ce ne sont pas des lignes géographiques.
 
-## Sélectionner les types administratifs
+## Langue et identifiants
 
-| Commande | `kind` sélectionné |
+Les en-têtes/fichiers CSV et les onglets utilisent le français par défaut. `--language en` choisit l'anglais. Les collections/relations JSON gardent des champs applicatifs anglais stables. Les UUID figurent dans les formats applicatifs et restent masqués dans les listes sauf avec `--include-ids`.
+
+```sh
+node dist/cli.js generate --format xlsx --language en --output ./exports/congo-excel-en
+node dist/cli.js communes --format csv --include-ids --output ./exports/communes-with-ids
+node dist/cli.js generate --format json --audit --output ./exports/congo-audited
+```
+
+## Filtrer les catégories et lieux
+
+| Commande | Ressource sélectionnée |
 |---|---|
-| `countries` | `country` — uniquement la République du Congo |
-| `departments` | `department` |
-| `communes`, `cities` | `commune` (`cities` est un alias, pas tous les lieux habités) |
-| `districts` | `district` |
-| `arrondissements` | `arrondissement` |
-| `neighborhoods` | `neighborhood` |
-| `villages` | `village`, lorsqu'une observation nommée a été intégrée |
-| `generate` | Toutes les entités sélectionnées |
-
-`generate` et `export` avancé acceptent aussi `--kinds department,commune` (valeurs `kind` séparées par des virgules). Une commande sémantique comme `neighborhoods` fixe son propre type. `countries` reste compatible avec un instantané fourni limité au pays sans `kind`.
-
-Les ancêtres nécessaires peuvent apparaître comme contexte : le nombre de lignes ne correspond pas nécessairement au seul nombre de quartiers sélectionnés. La couverture distingue effectifs du référentiel/de l'export et exhaustivité géographique.
+| `countries` | République du Congo uniquement |
+| `departments` | Départements |
+| `communes`, `cities` | Communes ; `cities` est un alias, pas tous les lieux peuplés |
+| `districts` | Districts |
+| `arrondissements` | Arrondissements communaux |
+| `neighborhoods` | Quartiers nommés retenus dans le référentiel |
+| `villages` | Villages nommés lorsqu'une preuve a été retenue |
+| `generate` | Toutes les ressources sélectionnées |
 
 ```sh
-node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
-node dist/cli.js neighborhoods --city Brazzaville --arrondissement 2 --format csv --output ./data/bacongo-neighborhoods
-node dist/cli.js neighborhoods --city Pointe-Noire --output ./data/pointe-noire-neighborhoods
+node dist/cli.js arrondissements --city Brazzaville --output ./exports/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 6 --format csv --output ./exports/talangai-csv
+node dist/cli.js neighborhoods --city Pointe-Noire --format xlsx --output ./exports/pointe-noire-excel
 ```
 
-`--city` résout un ID ou nom de commune enregistré. `--arrondissement` résout un ID/nom ; un numéro seul nécessite `--city`, car les numéros se répètent entre communes. Les filtres suivent les descendants vérifiés, pas la proximité ni la ressemblance des noms. La date d'observation reste valable après filtrage. Une entrée absente/ambiguë ne doit pas sélectionner silencieusement un autre parent.
+`--city` accepte un nom ou UUID de commune. `--arrondissement` accepte un nom/UUID ; un numéro exige `--city`. Le périmètre est CG/COG ; CD/COD est un autre pays et est refusé. Les parents nécessaires restent dans leur catégorie : le total peut dépasser le nombre de quartiers demandés.
 
-Les filtres pays acceptent `CG`, `COG` ou l'ID Congo conservé `geonames:2260494`. Les autres pays sont refusés, dont `CD`/`COD` (République démocratique du Congo). Cette CLI ne propose pas de référentiel mondial.
+Les ressources publiques exigent des UUID typés et des relations fermées. Ancêtres manquants, enregistrements génériques non typés et anciens arbres d'entités mélangées ne sont pas convertis silencieusement. Voir [la migration](migration.fr.md).
 
-## Géométries et entrées Congo personnalisées
+## Noms SQL et compression
 
-Coordonnées et frontières restent indépendantes. Les demander ne crée pas de géométrie indisponible. GeoJSON peut contenir des géométries nulles ; consultez la couverture et [les limites](formats.fr.md).
+`--sql-config ./sql-names.json` fournit les noms de schéma/tables. `--schema-mode data-only` omet la génération du schéma PostgreSQL ; `--sql-mode insert-only` préserve les lignes ayant le même UUID. Voir [les formats](formats.fr.md) et [l'import en base](seeding.fr.md).
 
-Les utilisateurs avancés peuvent fournir `--snapshot ./sources/congo.sqlite` à la place du référentiel intégré. Il doit contenir uniquement des données CG. L'entrée historique `--source-file ./sources/countryInfo.txt` fournit seulement le pays Congo ; ce n'est pas une source de villes/quartiers. Les entrées personnalisées ont leur couverture partielle et n'héritent pas des observations intégrées.
+`--compression gzip` compresse les fichiers séparément. ZIP contient son manifeste interne ; extrayez-le dans un nouveau dossier avant import. Gardez README/manifeste avec les exports partagés. `verify --package DIRECTORY` contrôle l'intégrité, pas l'exhaustivité géographique.
 
-Le référentiel par défaut n'exige pas de réseau. npm peut avoir besoin d'une connexion pour obtenir l'exécutable via `npx`. Aucun rafraîchissement géographique en arrière-plan ni repli silencieux sur une source amont. Conservez version du générateur et révision source pour reproduire un paquet.
+## Géométrie et couverture
 
-Le [SDK optionnel](getting-started.fr.md#sdk-optionnel) sert aux applications souhaitant interroger un instantané local. La lecture des fichiers générés n'en dépend pas.
+Coordonnées et frontières sont indépendantes. Le référentiel documentaire ne fournit pas de géométrie. GeoJSON exige `--coordinates` et/ou `--boundaries` ; la géométrie absente reste nulle. Aucun nom, parent, point ni polygone n'est déduit pour combler les manques.
+
+Le référentiel est partiel et daté. Une catégorie vide ne déclare pas le territoire vide. Filtrer ou mettre à jour le logiciel ne rend pas une observation de 2022 actuelle en 2026. Voir [couverture et sources](congo-reference.fr.md).

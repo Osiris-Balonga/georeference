@@ -3,105 +3,42 @@
 [Français](architecture.fr.md) · [Home](../README.md)
 
 ```text
-One-shot CLI → bundled, dated Congo reference
-              ↓
-CG-only scope + coverage + per-entity provenance
-              ↓
-        validation → versioned SQLite snapshot
-                              ↓
-              kind/geographic selection + ancestor resolution
-                              ↓
-                   canonical entity iterator
-                              ↓
-                         format adapter
-                              ↓
-             data + coverage/provenance + compression + manifest
-                              ↓
-                    verified export package
+Dated Congo facts + persistent UUID registry
+                    ↓
+Validated internal snapshot and geographic selection
+                    ↓
+Public domain resources and explicit relationships
+                    ↓
+        output-specific adapters
+        ├─ names and ancestor labels → CSV / XLSX
+        ├─ UUID resource collections → JSON / NDJSON
+        ├─ configurable relational schema/data → PostgreSQL / SQLite
+        └─ supplied geometry → GeoJSON
+                    ↓
+README + optional audit + compression + integrity manifest
 
-Export package → validation → import plan → PostgreSQL adapter → target database
-Local snapshot → read SDK → application lookups/iteration
+Verified resource package → preview/apply → PostgreSQL business tables
+Domain resources → optional SDK / a future API contract
 ```
 
-The shared contract lives in `src/types.ts`. Core rules own identifiers, graph integrity, selection, and projected geometry. Adapters own encoding and format-specific validation. The export coordinator owns temporary output, packaging, checksums, and publication. The seeder owns database update semantics; the SDK owns read access, not database synchronization.
+The public model separates countries, departments, communes, districts, arrondissements, communities, neighborhoods and villages. It preserves documented variable parentage. A same-name department and commune are different resources; the model does not force an arrondissement where evidence establishes a direct commune parent.
 
-The one-shot CLI orchestrator uses the bundled Congo reference without a geographic download, creates a temporary snapshot and delegates to the export coordinator. Explicit custom snapshots must also contain only CG data and retain their own partial coverage. It owns cleanup, not a persistent project installation. Generated data files are standalone; importing the SDK remains optional. See [generation](generation.md).
+## Stable identity and representations
 
-`entityType` supplies generic internal storage classes; `kind` preserves commune, arrondissement, neighborhood, and other administrative meanings. The internal contract can support future extensions, but this product ships Congo data exclusively. Parent validation supports the documented variable-depth hierarchy. Coverage/provenance sidecars are manifest entries with `role: 'metadata'`, excluded from geographic seeding payloads. File verification checks integrity, not whether geography is exhaustive or legally current.
+A versioned identity registry assigns UUIDs once. Names and source codes are not recomputed into new identifiers on each export. API-facing resources, JSON and database outputs share the same logical UUIDs. Human lists use place names and hide IDs by default. Source-specific identifiers remain provenance, not public primary keys.
 
-The `ExportAdapter` contract declares `format`, `version`, `validate(request)`, and `write(context)`. Its context includes a repeatable canonical entity iterator, resolved plan, output directory, and optional cancellation signal. A writer returns relative filenames after closing its handles. It must reject unsupported combinations before producing output and preserve stable IDs.
+`toResourceTables` projects validated internal entities to typed resource tables. `exportResources` is the public resource export path; `readResourcePackage` validates supported resource packages and their identity. Internal canonical snapshots and legacy adapters/seeding remain compatibility components. Their generic entity dump is not the new CLI default and must not be mistaken for the public resource contract.
 
-Adding a format means implementing that contract, registering it, and writing behavior/reader compatibility tests. Geographic filtering and identifier allocation do not move into the new writer. The library's `registerExportAdapter(adapter)` accepts a custom format string for the current process; duplicate registrations and overriding built-in formats are rejected. The CLI lists the built-in formats; custom writers are registered by application code. Heavy native geospatial dependencies are not required for existing formats.
+The same resources can back a future HTTP API, but this revision implements no hosted API, endpoint service or deployment. Generated data and an optional installed SDK are separate consumption choices.
 
-## Register a custom writer
+## Adding a format
 
-This application-level example exports one stable ID per line and refuses tree or geometry requests, since this format deliberately contains IDs only:
+Keep identifiers, geographic selection and parent rules in the shared model. A writer owns serialization, naming and representation loss. The coordinator owns temporary output, file safety, checksums, compression and publishing a completed directory. Human-readable headers/relations belong to presentation adapters; SQL quoting and constraints belong to database adapters.
 
-```ts
-import { open } from 'node:fs/promises';
-import { join } from 'node:path';
-import { Snapshot, exportSnapshot, registerExportAdapter } from 'georeference';
+A new format needs reader/interoperability tests and clear unsupported-option rejection. Its addition must not introduce a new geographic rule inside its writer. The low-level `ExportAdapter`/`registerExportAdapter` extension contract is retained for canonical compatibility; registration there alone does not add a public business-resource CLI format. Built-in public formats are explicit and documented.
 
-registerExportAdapter({
-  format: 'entity-ids',
-  version: '1.0.0',
-  validate(request) {
-    if (request.layout === 'hierarchical' || request.coordinates || request.boundaries) {
-      throw new Error('entity-ids supports flat IDs without geometry');
-    }
-  },
-  async write({ plan, directory, signal }) {
-    const file = await open(join(directory, 'ids.txt'), 'wx');
-    try {
-      for (const entity of plan.entities()) {
-        signal?.throwIfAborted();
-        await file.write(entity.id + '\n');
-      }
-    } finally {
-      await file.close();
-    }
-    return ['ids.txt'];
-  },
-});
+## Import is not export
 
-const snapshot = Snapshot.open('./data/congo.sqlite');
-try {
-  await exportSnapshot(snapshot, 'exports/entity-ids', { format: 'entity-ids' });
-} finally {
-  snapshot.close();
-}
-```
+The database importer owns write policy, schema compatibility, transaction boundaries and concurrency. It consumes verified JSON/NDJSON resources, not the human CSV/XLSX layout. SQL schema generation, applying a migration and importing a dataset remain distinct actions. The public business-table path is not an arbitrary ORM/local-key mapper.
 
-Return relative filenames after closing resources. The coordinator supplies manifest generation, integrity checks, compression, cancellation, and atomic publication to the custom format too. A custom format is not automatically a supported seeder input.
-
-## Release selection plans
-
-`Snapshot.select()` returns a plan whose `entities()` iterator can be read repeatedly until disposal. Lower-level callers must release the plan's temporary selection resources after use:
-
-```ts
-import { Snapshot } from 'georeference';
-
-const snapshot = Snapshot.open('./data/congo.sqlite');
-try {
-  const plan = snapshot.select({ countries: ['CG'] });
-  try {
-    for (const entity of plan.entities()) console.log(entity.id);
-  } finally {
-    plan.dispose?.();
-  }
-} finally {
-  snapshot.close();
-}
-```
-
-Keep the snapshot open while using the plan. The export coordinator and read SDK release their own plans automatically; consumers directly calling `select()` own that lifecycle.
-
-## Resource behavior
-
-Snapshots use SQLite rather than forcing every export to load the source file again. Iterators let flat writers process records progressively; hierarchical output and some import paths require bounded materialization. A single polygon can still be large. Cancellation, output cleanup, and atomic publication belong to the coordinator; applications embedding the library decide their job scheduling and storage limits.
-
-V1 does not include a hosted job queue, dashboard, SDK remote service, or universal source reconciliation engine. Such services can wrap the library without changing the entity contract. Do not infer an operational capacity guarantee from a streaming API: measure the chosen dataset, writer, concurrency, and deployment.
-
-## Version boundaries
-
-Dataset version, contract version, adapter version, and package version have different meanings. Source revisions and checksums make provenance visible. The same logical selection should preserve values and IDs; byte-identical regeneration across different binary libraries or compression tools is a separate guarantee.
+Default packages carry a readable coverage summary. Detailed audit information is opt-in and has metadata role; it never becomes application place rows. Integrity verification cannot certify a complete/current geographic inventory. See [coverage](congo-reference.md), [formats](formats.md) and [migration](migration.md).

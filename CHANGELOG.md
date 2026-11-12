@@ -4,15 +4,19 @@
 
 ### English
 
-Scope corrected to Republic of the Congo (CG/COG) exclusively. Default generation uses bundled curated facts with source observations from 2022–2025, with no geographic network download. Add kind-specific commands, commune/arrondissement descendant filters, and distinct commune/department identities. Neighborhood parents follow evidence and can be a commune, arrondissement, or urban community.
+Redesign public exports for their recipients: XLSX category worksheets, readable CSV files by category, separate JSON/NDJSON collections with formatted JSON arrays, and PostgreSQL/SQLite business tables with configurable names. Public resources use UUIDs assigned once in a versioned identity registry; relationships have explicit fields. Preserve earlier identity correspondence for deliberate migrations.
 
-Generated packages include explicit partial coverage and per-entity provenance metadata; unnamed, unresolved, and conflicting observations remain visible gaps. Add optional SDK administrative lookups and nullable SQL `kind`; older managed tables require an explicit migration or compatible column mapping. Synthetic fixtures are tests only. This section describes a planned correction, not an npm/GitHub release; the published 1.0.0 behavior below remains historical.
+Default packages include a human coverage summary; detailed provenance/conflict reports are opt-in with `--audit`. CSV/XLSX are presentation outputs, not seed inputs. The public resource importer has preview/apply and stable-UUID updates; schema creation does not migrate arbitrary application tables or remap local keys. Legacy canonical helpers remain compatibility components.
+
+Scope is Republic of Congo (CG/COG) only. The unchanged factual inventory has 398 records with geographic observations from 2022–2025 and explicit partial coverage. No exhaustive villages/neighborhoods, invented geometry, hosted HTTP API, MongoDB migration or unverified SQL dialect is claimed. This is an unreleased revision, not evidence of npm/GitHub publication.
 
 ### Français
 
-Périmètre corrigé : République du Congo (CG/COG) exclusivement. La génération utilise par défaut des faits vérifiés intégrés, observés dans les sources de 2022–2025, sans téléchargement géographique. Ajout de commandes par type administratif, de filtres descendants par commune/arrondissement et d'identités distinctes pour commune/département. Le parent d'un quartier suit les preuves et peut être une commune, un arrondissement ou une communauté urbaine.
+Refonte des sorties selon leurs destinataires : onglets XLSX par catégorie, CSV lisibles séparés, collections JSON/NDJSON distinctes avec tableaux JSON indentés et tables métier PostgreSQL/SQLite aux noms configurables. Les ressources publiques utilisent des UUID attribués une fois dans un registre versionné ; leurs relations ont des champs explicites. La correspondance avec les anciennes identités reste disponible pour une migration examinée.
 
-Les paquets générés comprennent couverture explicitement partielle et provenance par entité ; observations sans nom, non résolues et contradictoires restent des lacunes visibles. Ajout de consultations administratives au SDK optionnel et de `kind` SQL nullable ; les anciennes tables gérées nécessitent une migration explicite ou un mapping compatible. Les données fictives restent réservées aux tests. Cette section décrit une correction prévue, pas une publication npm/GitHub ; le comportement 1.0.0 ci-dessous est historique.
+Les paquets portent un résumé humain de couverture ; les preuves/conflits détaillés sont facultatifs avec `--audit`. CSV/XLSX servent à la consultation, pas au seeding. L’importeur de ressources distingue aperçu/application et actualise par UUID stable ; créer le schéma ne migre pas des tables applicatives arbitraires et ne remappe pas les clés locales. Les helpers canoniques restent des composants de compatibilité.
+
+Périmètre : République du Congo (CG/COG) uniquement. L’inventaire factuel inchangé compte 398 enregistrements observés dans les sources de 2022–2025, avec couverture explicitement partielle. Aucun inventaire exhaustif de villages/quartiers, géométrie inventée, API HTTP hébergée, migration MongoDB ou dialecte SQL non vérifié n’est annoncé. Cette révision non publiée ne prouve pas une livraison npm/GitHub.
 
 ## 1.0.0
 

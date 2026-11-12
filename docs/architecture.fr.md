@@ -3,105 +3,42 @@
 [English](architecture.md) · [Accueil](../README.fr.md)
 
 ```text
-CLI ponctuelle → référentiel Congo intégré et daté
-              ↓
-Périmètre CG + couverture + provenance par entité
-              ↓
-        validation → instantané SQLite versionné
-                              ↓
-               sélection par kind/géographie + résolution des ancêtres
-                              ↓
-                    itérateur d'entités canoniques
-                              ↓
-                       adaptateur de format
-                              ↓
-                données + couverture/provenance + compression + manifeste
-                              ↓
-                      paquet d'export vérifié
+Faits Congo datés + registre UUID persistant
+                    ↓
+Instantané interne validé et sélection géographique
+                    ↓
+Ressources métier publiques et relations explicites
+                    ↓
+        adaptateurs propres aux sorties
+        ├─ noms et lieux parents → CSV / XLSX
+        ├─ collections de ressources UUID → JSON / NDJSON
+        ├─ schéma/données relationnels configurables → PostgreSQL / SQLite
+        └─ géométries fournies → GeoJSON
+                    ↓
+README + audit facultatif + compression + manifeste d'intégrité
 
-Paquet → validation → plan d'import → adaptateur PostgreSQL → base cible
-Instantané local → SDK de lecture → recherches/itérations applicatives
+Paquet de ressources vérifié → aperçu/application → tables métier PostgreSQL
+Ressources métier → SDK optionnel / futur contrat API
 ```
 
-Le contrat partagé se trouve dans `src/types.ts`. Le cœur possède les règles d'identifiants, d'intégrité du graphe, de sélection et de projection géométrique. Les adaptateurs possèdent l'encodage et la validation propres aux formats. Le coordinateur d'export gère les sorties temporaires, le packaging, les empreintes et la publication. Le seeder gère les mises à jour en base ; le SDK gère la consultation, pas la synchronisation d'une base applicative.
+Le modèle public sépare pays, départements, communes, districts, arrondissements, communautés, quartiers et villages. Il conserve les rattachements variables documentés. Un département et sa commune homonyme sont distincts ; le modèle n'impose pas d'arrondissement lorsqu'une source établit un parent communal direct.
 
-L'orchestrateur ponctuel utilise le référentiel Congo intégré sans téléchargement géographique, crée un instantané temporaire et délègue au coordinateur d'export. Les instantanés personnalisés explicites doivent aussi contenir uniquement CG et conserver leur propre couverture partielle. Il gère le nettoyage sans installation persistante dans le projet. Les fichiers générés sont autonomes ; l'import du SDK reste optionnel. Voir [la génération](generation.fr.md).
+## Identité stable et représentations
 
-`entityType` fournit les classes internes génériques ; `kind` conserve le sens administratif de commune, arrondissement, quartier et autres unités. Le contrat interne permet des extensions futures, mais le produit livre exclusivement les données du Congo. La validation des parents respecte la profondeur variable documentée. Couverture/provenance ont le rôle de manifeste `role: 'metadata'` et sont exclues des entités à amorcer. Vérifier les fichiers contrôle leur intégrité, pas l'exhaustivité ou l'actualité juridique de la géographie.
+Un registre versionné attribue les UUID une seule fois. Noms et codes sources ne sont pas recalculés en nouveaux identifiants à chaque export. Ressources destinées à l'API, JSON et bases partagent les mêmes UUID logiques. Les listes utilisent les noms et masquent les IDs par défaut. Les identifiants sources restent une provenance, pas des clés primaires publiques.
 
-Le contrat `ExportAdapter` déclare `format`, `version`, `validate(request)` et `write(context)`. Le contexte contient l'itérateur canonique réutilisable, le plan résolu, le répertoire de sortie et un signal d'annulation facultatif. Le writer renvoie des noms de fichiers relatifs après fermeture de ses ressources. Il refuse les combinaisons non supportées avant génération et préserve les IDs stables.
+`toResourceTables` projette les entités internes validées en tables de ressources typées. `exportResources` est le parcours public d'export ; `readResourcePackage` valide les paquets pris en charge et leur identité. Instantanés canoniques, anciens adaptateurs et seeder restent des composants de compatibilité. Leur mélange générique d'entités n'est plus la sortie par défaut de la CLI ni le contrat public de ressources.
 
-Ajouter un format consiste à implémenter ce contrat, l'enregistrer et écrire des tests de comportement/compatibilité de lecture. Les filtres géographiques et l'attribution des IDs restent dans le cœur. La fonction `registerExportAdapter(adapter)` de la bibliothèque accepte un nom de format personnalisé pour le processus courant ; les doublons et le remplacement des formats intégrés sont refusés. La CLI énumère les formats intégrés ; les writers personnalisés sont enregistrés par le code applicatif. Les formats existants ne nécessitent pas de lourdes dépendances SIG natives.
+Ces ressources peuvent alimenter une future API HTTP ; cette révision n'implémente ni API hébergée, ni service de points d'accès, ni déploiement. Fichiers générés et SDK optionnel installé restent deux choix de consommation.
 
-## Enregistrer un writer personnalisé
+## Ajouter un format
 
-Cet exemple applicatif exporte un ID stable par ligne et refuse les demandes d'arborescence ou de géométrie, car ce format contient volontairement les IDs seuls :
+Conservez identifiants, sélection et règles de parents dans le modèle partagé. Un writer gère sérialisation, noms et pertes de représentation. Le coordinateur gère sortie temporaire, sécurité des fichiers, sommes de contrôle, compression et publication du dossier terminé. Les libellés/relations lisibles appartiennent aux adaptateurs de présentation ; échappement SQL et contraintes aux adaptateurs de base.
 
-```ts
-import { open } from 'node:fs/promises';
-import { join } from 'node:path';
-import { Snapshot, exportSnapshot, registerExportAdapter } from 'georeference';
+Un nouveau format exige des tests de lecture/interopérabilité et le refus clair des options incompatibles. Son ajout n'introduit pas de règle géographique dans son writer. Le contrat bas niveau `ExportAdapter`/`registerExportAdapter` est conservé pour la compatibilité canonique ; s'y enregistrer n'ajoute pas à lui seul un format métier à la CLI. Les formats publics intégrés sont explicites et documentés.
 
-registerExportAdapter({
-  format: 'entity-ids',
-  version: '1.0.0',
-  validate(request) {
-    if (request.layout === 'hierarchical' || request.coordinates || request.boundaries) {
-      throw new Error('entity-ids supports flat IDs without geometry');
-    }
-  },
-  async write({ plan, directory, signal }) {
-    const file = await open(join(directory, 'ids.txt'), 'wx');
-    try {
-      for (const entity of plan.entities()) {
-        signal?.throwIfAborted();
-        await file.write(entity.id + '\n');
-      }
-    } finally {
-      await file.close();
-    }
-    return ['ids.txt'];
-  },
-});
+## Importer est distinct d'exporter
 
-const snapshot = Snapshot.open('./data/congo.sqlite');
-try {
-  await exportSnapshot(snapshot, 'exports/entity-ids', { format: 'entity-ids' });
-} finally {
-  snapshot.close();
-}
-```
+L'importeur gère politique d'écriture, compatibilité, transactions et concurrence. Il consomme du JSON/NDJSON de ressources vérifié, pas la présentation humaine CSV/XLSX. Génération du schéma, application d'une migration et import d'un jeu de données sont distincts. Le parcours public métier n'est pas un mappeur arbitraire d'ORM/clés locales.
 
-Renvoyez les noms relatifs après fermeture des ressources. Le coordinateur fournit aussi au format personnalisé le manifeste, les vérifications d'intégrité, la compression, l'annulation et la publication atomique. Un format personnalisé ne devient pas automatiquement une entrée du seeder.
-
-## Libérer les plans de sélection
-
-`Snapshot.select()` renvoie un plan dont l'itérateur `entities()` peut être relu jusqu'à sa libération. Les utilisateurs de cette API doivent libérer les ressources temporaires après usage :
-
-```ts
-import { Snapshot } from 'georeference';
-
-const snapshot = Snapshot.open('./data/congo.sqlite');
-try {
-  const plan = snapshot.select({ countries: ['CG'] });
-  try {
-    for (const entity of plan.entities()) console.log(entity.id);
-  } finally {
-    plan.dispose?.();
-  }
-} finally {
-  snapshot.close();
-}
-```
-
-Gardez l'instantané ouvert pendant l'utilisation du plan. Le coordinateur d'export et le SDK libèrent automatiquement leurs propres plans ; les appels directs à `select()` impliquent de gérer ce cycle de vie.
-
-## Gestion des ressources
-
-Les instantanés utilisent SQLite au lieu de relire entièrement la source pour chaque export. Les itérateurs permettent une écriture progressive des formats plats ; les sorties hiérarchiques et certains imports nécessitent une matérialisation bornée. Un seul polygone peut rester volumineux. Annulation, nettoyage et publication atomique appartiennent au coordinateur ; l'application qui utilise la bibliothèque fixe l'ordonnancement et les limites de stockage.
-
-La V1 n'inclut ni file de jobs hébergée, ni tableau de bord, ni service distant de SDK, ni moteur universel de réconciliation des sources. Ces services pourront envelopper la bibliothèque sans changer le contrat des entités. Une API progressive ne constitue pas une garantie de capacité : mesurez le jeu de données, le writer, la concurrence et le déploiement.
-
-## Versions distinctes
-
-Version du jeu de données, du contrat, de l'adaptateur et du paquet ont des sens différents. Les révisions sources et empreintes rendent la provenance visible. Une même sélection logique doit préserver valeurs et IDs ; la régénération binaire identique entre bibliothèques/outils de compression différents constitue une garantie séparée.
+Les paquets portent un résumé lisible de couverture. L'audit détaillé est facultatif et possède un rôle de métadonnée ; il ne devient jamais des lieux applicatifs. Vérifier l'intégrité ne certifie pas un inventaire géographique complet/actuel. Voir [la couverture](congo-reference.fr.md), [les formats](formats.fr.md) et [la migration](migration.fr.md).

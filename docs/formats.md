@@ -1,36 +1,63 @@
-# Supported formats and limits
+# Formats, files and business tables
 
-[Français](formats.fr.md) · [Home](../README.md)
+[Français](formats.fr.md) · [Home](../README.md) · [Full format assessment](format-decisions.md)
 
-Every export uses the same selected Republic of the Congo entities, administrative `kind` values, and stable IDs. Its manifest records the data version, provenance, options, context ancestors, external references, geometry coverage, and checksums. `--format` names are listed below. The Congo-only revision is planned for 1.1.0; the older published 1.0.0 package has different default data behavior.
+The unreleased 1.1.0 CLI exports selected Congo data as resources, not a mixed entity dump. UUIDs identify application records. Human lists show names by default. All formats share the reference's partial, dated coverage; no format supplies missing geography.
 
-`coverage.json` and `provenance.json` accompany generated packages as manifest metadata (`role: 'metadata'`); they are not entity payloads for seeding. Geographic coverage is explicitly partial. Exporting every selected snapshot record, including ancestors, does not establish exhaustive territorial coverage. See [the Congo reference](congo-reference.md).
+## Files and worksheets
 
-For the uses, complexity, dependencies, limits, and priorities of all evaluated formats, read [format decisions](format-decisions.md).
+| Format | Main output | Intended reader |
+|---|---|---|
+| `xlsx` | `congo.xlsx`, with Informations and category sheets | Excel/compatible spreadsheet applications |
+| `csv` | Nine category files, even when a category has only its header | People reading tabular lists |
+| `json` | Nine named files, each a formatted JSON array; empty categories are `[]` | Application JSON readers |
+| `ndjson` | Nine named files, one resource object per line | Batch pipelines/resource importer |
+| `sql-postgres` | `schema.sql` and `data.sql`; data-only omits the schema file | PostgreSQL |
+| `sqlite` | `congo.sqlite`, containing business tables | SQLite readers |
+| `geojson` | Requested point/boundary FeatureCollections | Mapping tools; geometries may be null |
 
-| Format | V1 purpose | Layout and geometry | Limitations |
-|---|---|---|---|
-| `json` | General application exchange | Flat records or `--layout hierarchical`; optional coordinates/boundaries | Hierarchical output is limited to 50,000 entities; many consumers load the whole document |
-| `ndjson` | Batch pipelines and seeder input | One flat entity per line; optional coordinates/boundaries | Schema/metadata live in the manifest; a single large geometry still makes a large record |
-| `csv` | Spreadsheets and normalized tabular exchange | Flat records; structured fields use JSON cells | No intrinsic type system; preserve IDs as text in spreadsheet import; not a hierarchical format |
-| `sql-postgres` | PostgreSQL standard-schema scripts | `--schema-mode schema-and-data` or `data-only`; `--sql-mode upsert` or `insert-only` | PostgreSQL-specific, not MySQL/MariaDB/SQLite SQL; data-only requires the compatible standard table |
-| `sqlite` | A ready-to-query local database | Standalone file with relationships/indexes | Not GeoPackage or SpatiaLite; JSON geometry does not imply native spatial indexing |
-| `geojson` | Point and boundary map layers | Separate point/boundary FeatureCollections when requested | WGS84 `[longitude, latitude]`; polygon boundaries are not inferred from points |
+All packages also contain `README.txt` and `manifest.json`. With `--audit`, detailed `coverage.json` and `provenance.json` are metadata, never seed rows.
 
-Coordinates and boundaries are separate options. Missing geometry must not become `(0,0)` or an invented polygon. Ancestor inclusion is the default for relational integrity; `--no-ancestors` declares dependencies outside the export.
+French CSV names are `pays.csv`, `departements.csv`, `communes.csv`, `districts.csv`, `arrondissements.csv`, `communautes-urbaines.csv`, `communautes-rurales.csv`, `quartiers.csv`, and `villages.csv`. XLSX has corresponding Pays, Départements, Communes, Districts, Arrondissements, Communautés urbaines, Communautés rurales, Quartiers and Villages sheets, plus Informations. `--language en` changes human labels; it does not translate geographic names or change UUIDs.
 
-CSV's machine profile preserves source values. `id`, `entityType`, `name`, and `countryId` are plain strings; `kind` is a plain string, empty when absent; `parentId` is a JSON string or `null`. Optional `codes`, `names`, `level`, `coordinates`, and `boundary` are JSON-valued cells: an empty cell means absent, literal `null` means explicitly null. Coordinate/boundary columns are omitted when not requested. `--spreadsheet-safe` is an explicit presentation profile for spreadsheet formula-like cells; do not use that transformed output as a lossless machine interchange source.
+CSV contains one table per file and cannot contain workbook tabs. Names of ancestor places replace raw relationship IDs in human lists. For example, a neighborhood row can show its name, arrondissement, commune, department and country. `--include-ids` adds UUIDs when needed. Neither these lists nor XLSX are lossless seeding inputs. Formula-like text must remain text when opened in a spreadsheet.
 
-SQL creation mode creates the standard schema, including nullable `kind`; it is not a migration engine. An existing table is not made compatible by `CREATE TABLE IF NOT EXISTS`. Importing kind-bearing data into an older managed table requires an explicit column migration or mapping to a compatible existing column. For updates to an application database use the [seeder](seeding.md), which has its own field ownership and revision policy.
+Application JSON/NDJSON names are `countries`, `departments`, `communes`, `districts`, `arrondissements`, `urbanCommunities`, `ruralCommunities`, `neighborhoods`, and `villages`, with the appropriate extension. Rows have `id`, `name` and explicit fields such as `departmentId` or `arrondissementId`; there is no generic `kind`/`parentId` column to interpret. These resource files are not MongoDB Extended JSON or an automatic MongoDB migration; applications choose their collection/`_id` conventions explicitly.
 
-## Compression and reproduction
+## Relational tables
 
-`--compression none`, `gzip`, or `zip` controls transport packaging. Gzip payloads are read transparently. ZIP output contains `manifest.json` plus `package.zip`; the archive contains its own manifest and payloads. Verify the outer package for archive integrity; extract the ZIP to a new directory for payload verification and seeding. Completed exports are published only after generation; existing output directories are rejected. Cancellation/failure must not publish a partially complete package.
+| Default SQL table | Relationship fields |
+|---|---|
+| `countries` | ISO2/ISO3 codes |
+| `departments` | `country_id` |
+| `communes`, `districts` | `department_id` |
+| `arrondissements` | `commune_id`, optional municipal `number` |
+| `urban_communities`, `rural_communities` | `district_id` |
+| `neighborhoods` | Exactly one documented parent: `commune_id`, `arrondissement_id`, or `urban_community_id` |
+| `villages` | Exactly one documented parent: `district_id`, `rural_community_id`, or `urban_community_id` |
 
-Retain published artifacts when exact bytes matter. Semantic reproducibility means the same snapshot and normalized request select the same values/IDs; binary formats and compression metadata may differ between generator/tool versions. Manifest checksums validate the artifact you received, not every possible future regeneration.
+Every table has a UUID identity and a name. PostgreSQL uses UUID primary/foreign keys; SQLite stores UUID strings. Geometry is optional data, not an inferred location.
 
-## Formats not included in V1
+Supply a JSON naming configuration through `--sql-config`:
 
-MySQL/MariaDB SQL, SQLite SQL scripts, generated TypeScript data modules, YAML, Parquet, GeoParquet, GeoPackage, and Shapefile are not advertised as supported. They can be added as adapters when a concrete integration needs them. A TypeScript SDK is already available; that is separate from exporting datasets as TypeScript source.
+```json
+{
+  "schema": "public",
+  "tables": {
+    "communes": "cities",
+    "neighborhoods": "quarters"
+  }
+}
+```
 
-GeoPackage requires OGC metadata and geometry encoding; renaming a `.sqlite` file is insufficient. GeoParquet needs a tested version/profile, not simply a WKB column. Shapefile has restrictive field names/types and multifile packaging, so it is a compatibility target rather than the default geographic format.
+Unspecified names keep defaults. Keys identify resources; values are table names. Names must be valid identifiers and distinct. This renames generated objects consistently; it is not an existing-column/local-key mapping or a migration. SQLite does not support a custom PostgreSQL schema.
+
+PostgreSQL schema generation creates tables, indexes and foreign keys without dropping existing data. An existing table is not made compatible by `CREATE TABLE IF NOT EXISTS`. `data.sql` uses stable-UUID upserts by default; `--sql-mode insert-only` retains existing matching rows. Omitted rows are never deletion instructions. See [database import](seeding.md).
+
+## Packaging and limits
+
+`--compression none|gzip|zip` controls packaging. ZIP carries an inner manifest: extract into a new directory before resource import. Integrity verification checks received bytes, not the source's authority or exhaustive coverage. Failed/cancelled generation must not publish a partial destination.
+
+The public resource path requires included parents and rejects mixed hierarchical entity output. Text JSON can be large; NDJSON is suitable for batch processing. Keep source revisions, generator version and finished artifacts when reproducing data. Binary bytes may vary across tool versions even when UUIDs/values are unchanged.
+
+MySQL/MariaDB SQL, SQLite SQL scripts, generated TypeScript modules, YAML, Parquet, GeoParquet, GeoPackage and Shapefile remain evaluated future adapters, not advertised V1 outputs. A file extension cannot establish standards compliance. See [format decisions](format-decisions.md).

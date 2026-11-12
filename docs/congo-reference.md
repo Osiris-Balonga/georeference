@@ -6,9 +6,9 @@
 
 The bundled reference covers **Republic of the Congo, CG/COG**, exclusively. It is a curated factual reference of actual named administrative units and source-observed neighborhoods, with stable stored IDs. It is not a fictional example, an all-country gazetteer, or an exhaustive 2026 census of every neighborhood/village.
 
-The catalog combines observations made at different dates. Government electoral tables and municipal tables supply dated neighborhood names; later laws establish changed administrative parents; a 2025 national table corroborates departmental membership. Read `coverage.json` and per-entity `provenance.json` for the shipped revision's actual counts and gaps. Do not infer a new observation date from the software release date.
+The catalog combines observations made at different dates. Government electoral tables and municipal tables supply dated neighborhood names; later laws establish changed administrative parents; a 2025 national table corroborates departmental membership. Read the generated `README.txt` for a coverage summary. Add `--audit` for detailed `coverage.json` and per-resource `provenance.json`. Do not infer a new observation date from the software release date.
 
-### Curated revision `cg-reference-2026-11-12.1`
+### Curated revision `cg-reference-2026-11-12.2`
 
 This revision has **398 entities**: 1 country, 15 departments, 16 communes, 23 arrondissements, 89 districts, 4 urban communities, and 250 named neighborhoods. These are reference counts, **not verified national totals** for every kind. It also records 10 unresolved jurisdiction labels and 29 historical code-only neighborhood observations remaining unnamed after the 2024 cross-reference. Such observations are gaps, not extra named entities. No complete named-village inventory is claimed.
 
@@ -26,7 +26,7 @@ Signature/law dates and publication dates are distinct. They do not automaticall
 
 ## Administrative meaning and correct parents
 
-`entityType` is the internal storage class; `kind` provides administrative meaning. The latter can identify a country, department, commune, district, arrondissement, urban/rural community, neighborhood, village, or explicitly unclassified administrative unit. Do not determine legal status from a display name alone.
+The internal catalog records administrative kinds. Public resources have separate collections/tables with named relationship fields; human lists show parent names. Do not determine legal status from a display name alone. Unclassified observations remain audit gaps, not asserted public resource categories.
 
 The primary [law 3-2003 of January 17, 2003](https://www.sgg.cg/textes-officiels/lois/2003/congo-loi-2003-03.pdf), pages 2–4, establishes the relevant variable hierarchy:
 
@@ -36,19 +36,20 @@ The primary [law 3-2003 of January 17, 2003](https://www.sgg.cg/textes-officiels
 
 Department and commune named Brazzaville are distinct records. The commune of Kintélé belongs to **Brazzaville department**, not automatically to Brazzaville commune. A same-name district and head settlement/urban community likewise need separate identities. Correct parent assignment comes from evidence, not nearest-point matching.
 
-## What the generated sidecars mean
+## Coverage summary and optional audit
 
 | File | Meaning |
 |---|---|
-| `coverage.json` | Reference/export counts, geographic coverage status, observation dates, commune-level missing named coverage, code-only/unclassified rows, and known conflicts. |
-| `provenance.json` | Evidence for selected entities: source URLs, dates, article/page locators, and source revisions where available. |
+| `README.txt` | Human summary of selected categories, dates and known coverage limits. |
+| `coverage.json` (`--audit`) | Reference/export counts, geographic coverage status, observation dates, commune-level missing named coverage, code-only/unclassified rows, and known conflicts. |
+| `provenance.json` (`--audit`) | Evidence for selected entities: source URLs, dates, article/page locators, and source revisions where available. |
 | `manifest.json` | File integrity, export request, dataset/generator versions, and metadata-file roles. |
 
 The catalog explicitly declares geographic coverage **partial**. `scope.complete` describes whether an export includes its selected snapshot's scope; it does not turn territorial coverage into an exhaustive census. Ancestors included for integrity are context and can increase exported row counts.
 
-An empty result is a missing-observation result, not a declaration that a commune has no neighborhoods. Numeric-only quartiers, unresolved spellings, missing current observations, and absent geometries stay visible as gaps. Stored source names are not casually replaced with familiar names; aliases require evidence. Country identity `geonames:2260494` is preserved; internal IDs must not be presented as newly official administrative codes.
+An empty result is a missing-observation result, not a declaration that a commune has no neighborhoods. Numeric-only quartiers, unresolved spellings, missing current observations, and absent geometries stay visible as gaps. Stored source names are not casually replaced with familiar names; aliases require evidence. Public identities are UUIDs assigned once and stored in `reference/identities.json`. That registry preserves correspondence with earlier source-style identities. Display-name changes must retain assigned UUIDs. UUIDs are internal reference identities, not newly official administrative codes.
 
-Coverage/provenance files are manifest metadata, not geographic payloads for database seeding. Keep them with downloaded/shared exports. A filtered export cannot prove that an omitted entity should be deleted from an application database.
+Coverage/provenance files are manifest metadata, not geographic payloads for database seeding. Keep requested audit files with downloaded/shared exports. A filtered export cannot prove that an omitted entity should be deleted from an application database.
 
 ## Geometry and updating the reference
 

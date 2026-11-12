@@ -4,7 +4,7 @@
 
 ## Référentiel factuel intégré
 
-La CLI lit par défaut l'asset d'exécution vérifié `reference/congo.json`, composé de faits sur la République du Congo. Elle ne télécharge pas une liste de pays GeoNames pour en déduire des villes ou quartiers. URLs, dates, localisateurs et révisions disponibles accompagnent la provenance générée. Les PDF complets du Journal officiel et les données personnelles/électorales sans lien ne sont pas distribués.
+La CLI lit par défaut l'asset d'exécution vérifié `reference/congo.json`, composé de faits sur la République du Congo. Elle ne télécharge pas une liste de pays GeoNames pour en déduire des villes ou quartiers. Un résumé humain de couverture/sources accompagne chaque export ; `--audit` inclut le détail des URLs, dates, localisateurs et révisions disponibles. Les PDF complets du Journal officiel et les données personnelles/électorales sans lien ne sont pas distribués.
 
 Les sources combinent observations électorales publiques de 2022, tableaux municipaux de quartiers observés en janvier 2024 et reproduits dans un rapport public de juin 2024, lois territoriales d'octobre/décembre 2024 et registre administratif/électoral national de 2025. Le [guide du référentiel](congo-reference.fr.md) fournit URLs exactes, dates, hiérarchie et traitement des ambiguïtés. Ces dates ne signifient pas que chaque lieu a été revérifié en 2026.
 
@@ -18,7 +18,7 @@ Conservez instrument/date/page/article et révisions SHA-256 disponibles lors de
 
 ## Entrées personnalisées
 
-Les instantanés Congo avancés conservent leurs propres sources et couverture. Si vous utilisez l'ancien fichier d'informations pays GeoNames, sa [documentation officielle](https://download.geonames.org/export/dump/readme.txt) précise [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Gardez l'attribution GeoNames pour les données qui en proviennent. Ce parcours facultatif limité au pays ne fournit pas les quartiers intégrés ni les rattachements territoriaux corrigés.
+Les entrées personnalisées doivent respecter le contrat de ressources Congo UUID typées et garder leurs sources/couverture. Un helper d'import ne détermine pas à lui seul les types géographiques vérifiés. Si vous utilisez l'ancien importeur pays GeoNames comme outil bas niveau de compatibilité, sa [documentation officielle](https://download.geonames.org/export/dump/readme.txt) précise [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Gardez l'attribution GeoNames pour les données qui en proviennent. Ce parcours facultatif limité au pays ne fournit pas les quartiers intégrés ni les rattachements territoriaux corrigés.
 
 Aucun point ni polygone n'est inventé. De futures géométries nécessitent des preuves indépendantes de couverture, précision, révision et redistribution. Téléchargements réels et exports générés restent dans des répertoires de travail ignorés ; le catalogue factuel intégré est maintenu séparément des exports de production.
 

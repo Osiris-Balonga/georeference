@@ -1,64 +1,65 @@
 # GeoReference — République du Congo
 
-[English](README.md) · [Référentiel Congo](docs/congo-reference.fr.md) · [Prise en main](docs/getting-started.fr.md) · [Contribuer](CONTRIBUTING.fr.md)
+[English](README.md) · [Prise en main](docs/getting-started.fr.md) · [Formats](docs/formats.fr.md) · [Contribuer](CONTRIBUTING.fr.md)
 
-Générez des fichiers autonomes de départements, communes, districts, arrondissements et quartiers observés dans les sources de la **République du Congo (Congo-Brazzaville, CG/COG)**. La CLI utilise un référentiel intégré, vérifié et accompagné de sa provenance datée ; son parcours géographique par défaut ne télécharge aucune donnée. Votre application lit directement les fichiers. Le SDK reste optionnel.
+Récupérez les données géographiques de la République du Congo (CG/COG) sous forme de listes lisibles ou de ressources applicatives. Choisissez des onglets Excel par catégorie, des CSV avec noms de lieux, des collections JSON séparées ou des exports de bases avec UUID stables et tables métier configurables. Les fichiers générés ne nécessitent aucune dépendance permanente dans le projet.
 
-**État de livraison :** cette documentation décrit la prochaine révision **1.1.0 limitée au Congo**. Elle ne signifie pas que 1.1.0 est publiée. La version npm/GitHub 1.0.0 conserve l'ancien fonctionnement ; `npx georeference` l'utilise tant que la correction n'est pas livrée. Les commandes ci-dessous s'exécutent depuis un checkout de cette révision.
+**État de livraison :** ce checkout prépare **1.1.0**, non publiée. La version npm/GitHub 1.0.0 conserve l'ancien fonctionnement de liste de pays. Avant publication, utilisez cette compilation locale. Après livraison, `npx georeference` pourra remplacer `node dist/cli.js`.
 
-## Générer depuis ce checkout
+## Essayer les données
 
-Utilisez Node.js **24.18.x** et npm :
+Utilisez Node.js **24.18.x** et npm depuis ce checkout :
 
 ```sh
 npm ci
 npm run build
-node dist/cli.js
-node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
-node dist/cli.js neighborhoods --city Pointe-Noire --format csv --output ./data/pointe-noire-neighborhoods
+node dist/cli.js generate --format xlsx --output ./exports/congo-excel
+node dist/cli.js neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+node dist/cli.js generate --format json --output ./exports/congo-json
 ```
 
-La commande par défaut crée un nouveau répertoire `data/georeference/` avec `entities.json`, `coverage.json`, `provenance.json` et `manifest.json`. Elle ne modifie ni le manifeste du projet, ni le fichier de verrouillage, ni les dépendances. Une destination existante est refusée. Après publication, remplacez `node dist/cli.js` par `npx georeference` ; npm peut télécharger l'exécutable, mais le référentiel reste intégré.
+Ouvrez `congo.xlsx` pour consulter les onglets, les CSV pour les listes, ou des tableaux JSON comme `communes.json`, `arrondissements.json` et `neighborhoods.json` pour les applications. Chaque nouveau dossier contient un résumé humain de couverture/dates dans `README.txt` et les métadonnées techniques d'intégrité dans `manifest.json`. Les preuves détaillées sont facultatives avec `--audit`. Les destinations existantes sont refusées.
 
-## Des données réelles, avec des limites explicites
+## Choisir la sortie selon le besoin
 
-Le référentiel contient des faits administratifs vérifiés, pas une démonstration fictive ni un catalogue mondial. Il combine des observations électorales publiques de 2022, des lois territoriales de 2024 et un registre national de 2025. Ces dates sont conservées. Il ne prétend **pas** couvrir tous les quartiers, villages, frontières ou coordonnées actuels en 2026.
-
-`coverage.json` indique effectifs du référentiel/de l'export, dates sources, manques de quartiers nommés, observations codées/non classées et conflits non résolus. Un résultat de quartiers vide signifie qu'aucune observation nommée admissible n'est présente ; cela ne prouve pas l'absence de quartiers. `provenance.json` expose les preuves des entités exportées. Voir [couverture et sources](docs/congo-reference.fr.md).
-
-`kind` précise le sens administratif : `department`, `commune`, `district`, `arrondissement`, `urban-community`, `rural-community`, `neighborhood` ou `village`, lorsque vérifié. Un département et sa commune homonyme sont distincts. Un quartier peut dépendre directement d'une commune, d'un arrondissement ou d'une communauté urbaine ; le parent documenté est conservé.
-
-## Commandes et formats
-
-Utilisez `generate` pour tout le référentiel ou sélectionnez `countries`, `departments`, `communes`, `cities` (alias des communes), `districts`, `arrondissements`, `neighborhoods` ou `villages`. Les filtres suivent les identités et descendants vérifiés. Le filtre pays accepte CG/COG ou l'ID Congo conservé ; les autres pays, dont CD/COD, restent hors périmètre.
-
-JSON (plat/hiérarchique), NDJSON, CSV, SQL PostgreSQL, SQLite et GeoJSON sont disponibles, avec gzip/ZIP. Les géométries ne sont incluses que lorsqu'elles existent ; aucun point ni aucune frontière ne sont inventés. Voir [la génération](docs/generation.fr.md) et [les limites des formats](docs/formats.fr.md).
-
-## Fichiers, import en base, SDK optionnel
-
-| Besoin | Solution |
+| Besoin | Sortie |
 |---|---|
-| Ajouter des fichiers géographiques à une application | Générer une fois ; utiliser vos lecteurs |
-| Initialiser/actualiser PostgreSQL | Utiliser le seeder avec aperçu, mapping et politique de mise à jour |
-| Interroger un instantané local depuis TypeScript | Choisir le SDK de lecture |
+| Consulter ou partager des listes dans un tableur | `xlsx` : onglets par catégorie, noms et rattachements lisibles |
+| Utiliser les listes dans plusieurs tableurs | `csv` : un fichier par catégorie, noms plutôt que clés étrangères brutes par défaut |
+| Ajouter des données locales à une application | `json` ou `ndjson` : ressources séparées, UUID et relations explicites |
+| Initialiser des tables PostgreSQL | `sql-postgres` : scripts de schéma/données séparés, tables configurables |
+| Interroger directement une base locale | `sqlite` : tables métier prêtes à consulter |
+| Utiliser des géométries fournies | `geojson` : couches demandées, aucune géométrie inventée |
 
-La génération n'amorce pas une base. Un script SQL ne répond pas à toutes les questions de clés existantes, champs gérés, révision et reprise. La nouvelle colonne SQL nullable `kind` nécessite une adaptation explicite des tables/mappings gérés existants ; aucune migration silencieuse. Voir [l'amorçage](docs/seeding.fr.md).
+Un CSV contient une table, pas des onglets. Choisissez XLSX pour un classeur à plusieurs feuilles. CSV/XLSX sont des exports de consultation, pas des entrées de seeding. Voir [la génération](docs/generation.fr.md) et [les formats](docs/formats.fr.md).
+
+## Un référentiel Congo daté et partiel
+
+Le référentiel vérifié contient **398 enregistrements** : 1 pays, 15 départements, 16 communes, 23 arrondissements, 89 districts, 4 communautés urbaines et 250 quartiers nommés. Ce sont les enregistrements couverts, pas des totaux nationaux certifiés pour chaque catégorie. Les observations datent de 2022–2025 ; aucun inventaire actuel exhaustif des villages/quartiers ni aucune géométrie ne sont annoncés.
+
+Les communes/départements homonymes ont des UUID distincts. Le parent documenté d'un quartier peut être une commune, un arrondissement ou une communauté urbaine. Un résultat vide signale un manque d'observations, pas l'absence de lieux. Voir [le référentiel et ses sources](docs/congo-reference.fr.md).
+
+## Fichiers, import en base et SDK optionnel
+
+Générer des fichiers n'écrit pas dans une base. L'importeur PostgreSQL propose un aperçu en lecture seule et une application distincte ; les tables existantes doivent correspondre au schéma métier choisi. Il ne migre pas silencieusement une application et ne remappe pas des clés primaires arbitraires. Voir [l'import en base](docs/seeding.fr.md).
+
+Le SDK optionnel expose des ressources aux applications choisissant cette intégration. Son modèle prépare une future API ; **cette version ne déploie aucune API HTTP**. Voir [la prise en main](docs/getting-started.fr.md) et [l'architecture](docs/architecture.fr.md).
 
 ## Documentation
 
 | Français | English |
 |---|---|
-| [Référentiel Congo, couverture et hiérarchie](docs/congo-reference.fr.md) | [Congo reference, coverage and hierarchy](docs/congo-reference.md) |
-| [Génération](docs/generation.fr.md) | [Generation](docs/generation.md) |
-| [Prise en main et SDK optionnel](docs/getting-started.fr.md) | [Getting started and optional SDK](docs/getting-started.md) |
-| [Formats](docs/formats.fr.md) | [Formats](docs/formats.md) |
-| [Amorçage PostgreSQL](docs/seeding.fr.md) | [PostgreSQL seeding](docs/seeding.md) |
-| [Sources et licences](docs/data-sources.fr.md) | [Sources and licensing](docs/data-sources.md) |
-| [Architecture et adaptateurs](docs/architecture.fr.md) | [Architecture and adapters](docs/architecture.md) |
+| [Prise en main](docs/getting-started.fr.md) | [Getting started](docs/getting-started.md) |
+| [Génération et filtres](docs/generation.fr.md) | [Generation and filters](docs/generation.md) |
+| [Formats et tables](docs/formats.fr.md) | [Formats and tables](docs/formats.md) |
+| [Import en base](docs/seeding.fr.md) | [Database import](docs/seeding.md) |
+| [Référentiel et sources](docs/congo-reference.fr.md) | [Reference and sources](docs/congo-reference.md) |
+| [Migration](docs/migration.fr.md) | [Migration](docs/migration.md) |
+| [Architecture](docs/architecture.fr.md) | [Architecture](docs/architecture.md) |
 | [Contribuer](CONTRIBUTING.fr.md) | [Contributing](CONTRIBUTING.md) |
 
 ## Développement et licence
 
-`npm run check` lance validation TypeScript, tests et compilation. Les changements commencent par les tests ; les pull requests de tâche ciblent `dev`, les livraisons vont de `dev` vers `main`.
+`npm run check` lance validation TypeScript, tests et compilation. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
 
-Code et documentation : [MIT](LICENSE), © 2026 Osiris Balonga. Les faits conservent leur provenance et les conditions sources ; MIT ne relicencie pas cartes ou publications externes. Les fixtures fictives restent réservées aux tests. Voir [les licences](docs/data-sources.fr.md).
+Code/documentation : [MIT](LICENSE), © 2026 Osiris Balonga. Les faits conservent provenance et conditions sources ; MIT ne relicencie pas les publications/cartes externes. Les fixtures fictives restent réservées aux tests. Voir [les licences](docs/data-sources.fr.md).

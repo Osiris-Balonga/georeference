@@ -1,55 +1,63 @@
-# Generate Congo reference files
+# Generate lists and application resources
 
-[Français](generation.fr.md) · [Congo coverage](congo-reference.md) · [Home](../README.md)
+[Français](generation.fr.md) · [Home](../README.md) · [Formats](formats.md)
 
-This guide describes the Congo-only revision planned for 1.1.0. Until publication, npm 1.0.0 keeps the older behavior. Use a checkout of this revision with Node.js 24.18.x, `npm ci`, and `npm run build`; the examples run that local build. After release, `npx georeference` can replace `node dist/cli.js`.
+This guide describes the unreleased 1.1.0 redesign. Build this checkout with Node.js 24.18.x, `npm ci` and `npm run build`. npm 1.0.0 does not provide these outputs. After publication, replace `node dist/cli.js` with `npx georeference`.
 
-## Bundled data by default
+## Choose the output
 
 ```sh
-node dist/cli.js
-node dist/cli.js generate --format ndjson --compression gzip --output ./data/congo
-node dist/cli.js departments --format csv --output ./data/congo-departments
-node dist/cli.js communes --output ./data/congo-communes
+node dist/cli.js generate --format xlsx --output ./exports/congo-excel
+node dist/cli.js generate --format csv --output ./exports/congo-csv
+node dist/cli.js generate --format json --output ./exports/congo-json
+node dist/cli.js generate --format sql-postgres --output ./exports/congo-postgres
 ```
 
-No command means generation of the bundled Congo reference, not a country-list download. The default JSON package contains `entities.json`, `coverage.json`, `provenance.json`, and `manifest.json` in `./data/georeference/`. JSON uses `{ metadata, entities }`; your application's own JSON reader is sufficient. No database is modified and no dependency added to the target project.
+Every `--output` is a **new directory**, not a filename. Relative paths start at your terminal's current directory: the CSV example writes inside `exports/congo-csv/`, not a previous JSON directory. Existing destinations are refused; consumer dependencies/package files are untouched. The geographic reference is bundled.
 
-`--output` is a **new directory**, not a filename. Existing paths are refused. Generate elsewhere and review changes before replacing application data. All six [formats](formats.md) use the same reference. Gzip/ZIP package data and metadata; keep the corresponding manifest and coverage/provenance when sharing an export.
+Every package has `README.txt` for coverage/dates and `manifest.json` for integrity. `--audit` adds detailed `coverage.json`/`provenance.json`; they are not geographic rows.
 
-## Select administrative kinds
+## Language and identifiers
 
-| Command | Selected `kind` |
+CSV headers/filenames and workbook sheets use French by default. `--language en` chooses English. JSON collection/relationship names remain stable English application fields. UUIDs are included in application formats and hidden in human lists unless `--include-ids` is supplied.
+
+```sh
+node dist/cli.js generate --format xlsx --language en --output ./exports/congo-excel-en
+node dist/cli.js communes --format csv --include-ids --output ./exports/communes-with-ids
+node dist/cli.js generate --format json --audit --output ./exports/congo-audited
+```
+
+## Filter categories and places
+
+| Command | Selected resource |
 |---|---|
-| `countries` | `country` — the Republic of the Congo only |
-| `departments` | `department` |
-| `communes`, `cities` | `commune` (`cities` is an alias, not all populated places) |
-| `districts` | `district` |
-| `arrondissements` | `arrondissement` |
-| `neighborhoods` | `neighborhood` |
-| `villages` | `village`, where a named source record has been curated |
-| `generate` | All selected reference entities |
-
-`generate` and advanced `export` also accept `--kinds department,commune` (comma-separated `kind` values). A semantic command such as `neighborhoods` fixes its own kind. `countries` remains compatible with a supplied country-only snapshot lacking `kind`.
-
-Required ancestors may appear as context, so a payload's row count need not equal the number of selected neighborhoods. Coverage separates reference/export counts from geographic completeness.
+| `countries` | Republic of the Congo only |
+| `departments` | Departments |
+| `communes`, `cities` | Communes; `cities` is an alias, not all populated places |
+| `districts` | Districts |
+| `arrondissements` | Communal arrondissements |
+| `neighborhoods` | Named neighborhoods retained in the reference |
+| `villages` | Named villages when curated evidence exists |
+| `generate` | All selected resources |
 
 ```sh
-node dist/cli.js arrondissements --city Brazzaville --output ./data/brazzaville-arrondissements
-node dist/cli.js neighborhoods --city Brazzaville --arrondissement 2 --format csv --output ./data/bacongo-neighborhoods
-node dist/cli.js neighborhoods --city Pointe-Noire --output ./data/pointe-noire-neighborhoods
+node dist/cli.js arrondissements --city Brazzaville --output ./exports/brazzaville-arrondissements
+node dist/cli.js neighborhoods --city Brazzaville --arrondissement 6 --format csv --output ./exports/talangai-csv
+node dist/cli.js neighborhoods --city Pointe-Noire --format xlsx --output ./exports/pointe-noire-excel
 ```
 
-`--city` resolves a stored commune ID or name. `--arrondissement` resolves an ID/name; a bare number requires `--city` because numbers recur between communes. Filters follow verified descendants, not proximity or name similarity. Observation dates still apply after filtering. Missing/ambiguous input must not quietly select a different parent.
+`--city` accepts a commune name or UUID. `--arrondissement` accepts a name/UUID; numbers require `--city`. Country scope is CG/COG; CD/COD is another country and is refused. Required parents stay in their own categories: total rows can exceed requested neighborhood counts.
 
-Country filters accept `CG`, `COG`, or the stored Congo ID `geonames:2260494`. Other countries are rejected, including `CD`/`COD` (Democratic Republic of the Congo). This CLI does not offer a global dataset.
+Public resources require typed UUIDs and closed parent relationships. Missing ancestors, generic untyped records and hierarchical mixed-entity layouts are not silently converted. See [migration](migration.md).
 
-## Geometry and custom Congo inputs
+## SQL naming and packaging
 
-Coordinates and boundaries remain independent options. Requesting them cannot create unavailable geometry. GeoJSON may contain null geometries; consult coverage and [format limits](formats.md).
+`--sql-config ./sql-names.json` supplies database schema/table names. `--schema-mode data-only` omits PostgreSQL schema generation; `--sql-mode insert-only` preserves matching UUID rows. See [formats](formats.md) and [database import](seeding.md).
 
-Advanced users may supply `--snapshot ./sources/congo.sqlite` instead of the bundle. It must contain only CG data. The legacy `--source-file ./sources/countryInfo.txt` path supplies Congo's country record only; it is not a city/neighborhood source. Custom inputs have their own partial coverage and do not inherit the bundle's observations.
+`--compression gzip` compresses files separately. ZIP contains its own manifest; extract into a new directory before importing. Keep README/manifest with shared exports. `verify --package DIRECTORY` checks integrity, not geographic completeness.
 
-The default geographic reference needs no network. npm may need a connection to obtain the executable through `npx`. No background geographic refresh or silent upstream fallback occurs. Keep the generator version and source revision to reproduce a published package.
+## Geometry and coverage
 
-The [optional SDK](getting-started.md#optional-sdk) is for applications wanting a local snapshot API. Reading generated files does not require it.
+Coordinates and boundaries are independent options. The documentary bundle supplies no geometry. GeoJSON requires `--coordinates` and/or `--boundaries`; missing geometry stays null. No name, parent, point or polygon is inferred to fill gaps.
+
+The reference is partial and dated. Empty categories do not declare the territory empty. Filtering or a software update does not make a 2022 observation current in 2026. See [coverage and sources](congo-reference.md).

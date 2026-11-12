@@ -1,36 +1,63 @@
-# Formats pris en charge et limites
+# Formats, fichiers et tables métier
 
-[English](formats.md) · [Accueil](../README.fr.md)
+[English](formats.md) · [Accueil](../README.fr.md) · [Étude complète des formats](format-decisions.fr.md)
 
-Tous les exports utilisent la même sélection d'entités de la République du Congo, leurs types administratifs `kind` et leurs IDs stables. Le manifeste précise version des données, provenance, options, ancêtres de contexte, références externes, couverture géométrique et sommes de contrôle. Voici les valeurs de `--format`. La révision Congo seul est prévue en 1.1.0 ; le paquet 1.0.0 déjà publié a un autre comportement de données par défaut.
+La CLI 1.1.0 non publiée exporte les données Congo sélectionnées sous forme de ressources, pas d'un mélange d'entités. Les UUID identifient les enregistrements applicatifs. Les listes montrent les noms par défaut. Tous les formats partagent une couverture partielle et datée ; aucun ne fournit les données géographiques manquantes.
 
-`coverage.json` et `provenance.json` accompagnent les paquets comme métadonnées du manifeste (`role: 'metadata'`) ; ce ne sont pas des entités à amorcer. La couverture géographique reste explicitement partielle. Exporter tous les enregistrements sélectionnés de l'instantané, ancêtres compris, ne prouve pas l'exhaustivité du territoire. Voir [le référentiel Congo](congo-reference.fr.md).
+## Fichiers et onglets
 
-Pour les usages, complexités, dépendances, limites et priorités de tous les formats évalués, consultez [les choix des formats](format-decisions.fr.md).
+| Format | Sortie principale | Destinataire |
+|---|---|---|
+| `xlsx` | `congo.xlsx`, avec Informations et onglets par catégorie | Excel/tableurs compatibles |
+| `csv` | Neuf fichiers par catégorie, même si une catégorie n'a que son en-tête | Consultation de listes |
+| `json` | Neuf fichiers nommés, chacun contenant un tableau JSON indenté ; une catégorie vide vaut `[]` | Lecteurs JSON applicatifs |
+| `ndjson` | Neuf fichiers nommés, un objet ressource par ligne | Traitement par lots/importeur de ressources |
+| `sql-postgres` | `schema.sql` et `data.sql` ; data-only omet le schéma | PostgreSQL |
+| `sqlite` | `congo.sqlite`, avec tables métier | Lecteurs SQLite |
+| `geojson` | FeatureCollections de points/frontières demandées | Cartographie ; les géométries peuvent être nulles |
 
-| Format | Usage en V1 | Organisation et géométries | Limites |
-|---|---|---|---|
-| `json` | Échange applicatif général | Entités plates ou `--layout hierarchical` ; coordonnées/frontières facultatives | Sortie hiérarchique limitée à 50 000 entités ; beaucoup de lecteurs chargent tout le document |
-| `ndjson` | Pipelines par lots et entrée du seeder | Une entité plate par ligne ; coordonnées/frontières facultatives | Schéma/métadonnées dans le manifeste ; une grande géométrie reste un grand enregistrement |
-| `csv` | Tableurs et échange tabulaire normalisé | Entités plates ; champs structurés en cellules JSON | Aucun typage intrinsèque ; importer les IDs comme texte dans un tableur ; pas d'arborescence |
-| `sql-postgres` | Scripts pour le schéma standard PostgreSQL | `--schema-mode schema-and-data` ou `data-only` ; `--sql-mode upsert` ou `insert-only` | Spécifique PostgreSQL, pas du SQL MySQL/MariaDB/SQLite ; data-only exige la table standard compatible |
-| `sqlite` | Base locale prête à interroger | Fichier autonome avec relations/index | Ce n'est ni GeoPackage ni SpatiaLite ; une géométrie JSON n'implique pas d'index spatial natif |
-| `geojson` | Couches cartographiques de points et frontières | FeatureCollections distinctes pour points/frontières demandés | WGS84 `[longitude, latitude]` ; les frontières ne sont pas déduites des points |
+Chaque paquet contient aussi `README.txt` et `manifest.json`. Avec `--audit`, les détails `coverage.json` et `provenance.json` sont des métadonnées, jamais des lignes à amorcer.
 
-Coordonnées et frontières sont indépendantes. Une géométrie absente ne devient ni `(0,0)` ni un polygone inventé. L'inclusion des ancêtres préserve par défaut l'intégrité relationnelle ; `--no-ancestors` déclare les dépendances externes.
+Les CSV français se nomment `pays.csv`, `departements.csv`, `communes.csv`, `districts.csv`, `arrondissements.csv`, `communautes-urbaines.csv`, `communautes-rurales.csv`, `quartiers.csv` et `villages.csv`. XLSX contient les onglets Pays, Départements, Communes, Districts, Arrondissements, Communautés urbaines, Communautés rurales, Quartiers, Villages et Informations. `--language en` change les libellés humains ; il ne traduit pas les noms géographiques et ne change pas les UUID.
 
-Le profil machine CSV préserve les valeurs sources. `id`, `entityType`, `name` et `countryId` sont des chaînes ordinaires ; `kind` est une chaîne ordinaire, vide si absent ; `parentId` est une chaîne JSON ou `null`. Les champs facultatifs `codes`, `names`, `level`, `coordinates` et `boundary` sont des cellules JSON : cellule vide signifie absent, `null` littéral signifie null explicite. Les colonnes coordonnées/frontière sont omises si non demandées. `--spreadsheet-safe` est un profil de présentation explicite pour les cellules pouvant être interprétées comme formules ; cette sortie transformée ne sert pas d'échange machine sans perte.
+Un CSV contient une table par fichier et ne peut pas contenir d'onglets. Les noms des lieux parents remplacent les références brutes dans les listes. Une ligne de quartier peut ainsi afficher son nom, arrondissement, commune, département et pays. `--include-ids` ajoute les UUID si nécessaire. Ces listes et XLSX ne constituent pas des entrées de seeding sans perte. Un texte ressemblant à une formule doit rester du texte dans un tableur.
 
-Le mode de création SQL crée le schéma standard, avec `kind` nullable ; ce n'est pas un moteur de migration. `CREATE TABLE IF NOT EXISTS` ne rend pas une table existante compatible. Importer des données avec `kind` dans une ancienne table gérée exige une migration explicite de colonne ou un mapping vers une colonne existante compatible. Pour actualiser une base applicative, utilisez [le seeder](seeding.fr.md) et ses règles de champs gérés/révisions.
+Les noms JSON/NDJSON applicatifs sont `countries`, `departments`, `communes`, `districts`, `arrondissements`, `urbanCommunities`, `ruralCommunities`, `neighborhoods` et `villages`, avec l'extension adaptée. Les lignes portent `id`, `name` et des relations explicites telles que `departmentId` ou `arrondissementId` ; aucun champ générique `kind`/`parentId` n'est à interpréter. Ces fichiers ne sont pas du MongoDB Extended JSON ni une migration MongoDB automatique ; l'application choisit explicitement collections et convention `_id`.
 
-## Compression et reproduction
+## Tables relationnelles
 
-`--compression none`, `gzip` ou `zip` contrôle le transport. Les fichiers gzip sont lus directement. Une sortie ZIP contient `manifest.json` et `package.zip` ; l'archive contient son propre manifeste et les fichiers. Vérifiez le paquet externe pour l'intégrité de l'archive ; extrayez le ZIP dans un nouveau répertoire pour vérifier/importer les fichiers. Les exports terminés sont publiés après génération ; les destinations existantes sont refusées. Une annulation/erreur ne doit pas publier un paquet partiellement complet.
+| Table SQL par défaut | Relations |
+|---|---|
+| `countries` | Codes ISO2/ISO3 |
+| `departments` | `country_id` |
+| `communes`, `districts` | `department_id` |
+| `arrondissements` | `commune_id`, `number` municipal facultatif |
+| `urban_communities`, `rural_communities` | `district_id` |
+| `neighborhoods` | Un seul parent documenté parmi `commune_id`, `arrondissement_id`, `urban_community_id` |
+| `villages` | Un seul parent documenté parmi `district_id`, `rural_community_id`, `urban_community_id` |
 
-Conservez les artefacts publiés si les octets exacts comptent. La reproductibilité sémantique signifie qu'un même instantané et une même requête normalisée sélectionnent les mêmes valeurs/IDs ; les métadonnées binaires/compressées peuvent varier avec les versions des outils. Les sommes de contrôle vérifient l'artefact reçu, pas toute régénération future.
+Chaque table possède une identité UUID et un nom. PostgreSQL utilise des clés primaires/étrangères UUID ; SQLite conserve des chaînes UUID. La géométrie est facultative, jamais déduite.
 
-## Formats absents de la V1
+Fournissez les noms souhaités dans un JSON passé à `--sql-config` :
 
-SQL MySQL/MariaDB, scripts SQL SQLite, modules de données TypeScript, YAML, Parquet, GeoParquet, GeoPackage et Shapefile ne sont pas annoncés comme pris en charge. Des adaptateurs pourront les ajouter selon des besoins concrets. Un SDK TypeScript existe déjà ; il est distinct de l'export de données sous forme de code TypeScript.
+```json
+{
+  "schema": "public",
+  "tables": {
+    "communes": "cities",
+    "neighborhoods": "quarters"
+  }
+}
+```
 
-GeoPackage exige les métadonnées et l'encodage géométrique OGC ; renommer un `.sqlite` ne suffit pas. GeoParquet nécessite un profil/version testé, pas simplement une colonne WKB. Shapefile restreint noms/types de champs et impose plusieurs fichiers : il répond à un besoin de compatibilité plutôt qu'au choix géographique par défaut.
+Les noms non précisés gardent leur valeur par défaut. Les clés désignent les ressources ; les valeurs sont les tables. Les noms doivent être des identifiants valides et distincts. Ce choix renomme les objets générés de façon cohérente ; ce n'est ni un mapping de colonnes/clés locales ni une migration. SQLite n'accepte pas un schéma PostgreSQL personnalisé.
+
+La génération PostgreSQL crée tables, index et clés étrangères sans supprimer les données existantes. `CREATE TABLE IF NOT EXISTS` ne rend pas une table existante compatible. `data.sql` utilise des upserts par UUID stable par défaut ; `--sql-mode insert-only` conserve les lignes existantes. Une ligne absente ne constitue jamais une instruction de suppression. Voir [l'import en base](seeding.fr.md).
+
+## Compression et limites
+
+`--compression none|gzip|zip` contrôle le paquet. ZIP comporte un manifeste interne : extrayez-le dans un nouveau dossier avant import. Vérifier l'intégrité contrôle les octets reçus, pas l'autorité de la source ni son exhaustivité. Un échec/une annulation ne doit pas publier une destination partielle.
+
+Le parcours public exige les parents et refuse les anciens arbres d'entités mélangées. Un JSON texte peut être volumineux ; NDJSON convient au traitement par lots. Conservez révisions sources, version du générateur et artefacts finis pour reproduire les données. Les octets binaires peuvent varier entre outils malgré des UUID/valeurs identiques.
+
+SQL MySQL/MariaDB, scripts SQL SQLite, modules TypeScript générés, YAML, Parquet, GeoParquet, GeoPackage et Shapefile restent des adaptateurs futurs étudiés, pas des sorties V1 annoncées. Une extension ne prouve pas la conformité à un standard. Voir [les décisions de formats](format-decisions.fr.md).
