@@ -27,13 +27,13 @@ export async function verifyPackage(directory:string):Promise<ExportManifest> {
   return manifest;
 }
 const MAX_IMPORT_BYTES=128*1024*1024;
-async function boundedText(path:string):Promise<string> {
+export async function boundedText(path:string,maxBytes=MAX_IMPORT_BYTES):Promise<string> {
   const input=createReadStream(path);const stream=path.endsWith('.gz')?input.pipe(createGunzip()):input;
   const chunks:Buffer[]=[];let size=0;
   try {
     for await (const chunk of stream) {
       size+=chunk.length;
-      if (size>MAX_IMPORT_BYTES) throw new Error('Import exceeds 128 MiB uncompressed limit; split the package');
+      if (size>maxBytes) throw new Error('Import exceeds 128 MiB uncompressed limit; split the package');
       chunks.push(Buffer.from(chunk));
     }
     return Buffer.concat(chunks).toString('utf8');

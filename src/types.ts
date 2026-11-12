@@ -40,7 +40,7 @@ export interface Selection {
   coordinates?: boolean;
   boundaries?: boolean;
 }
-export type ExportFormat = 'json' | 'ndjson' | 'csv' | 'sql-postgres' | 'sqlite' | 'geojson' | (string & {});
+export type ExportFormat = 'xlsx' | 'json' | 'ndjson' | 'csv' | 'sql-postgres' | 'sqlite' | 'geojson' | (string & {});
 export interface ExportRequest extends Selection {
   language?:'fr'|'en';
   includeIds?:boolean;

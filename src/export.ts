@@ -23,7 +23,7 @@ export function registerExportAdapter(adapter:ExportAdapter):void {
   extensions.set(adapter.format,adapter);
 }
 function normalize(request:ExportRequest):ExportRequest {
-  const allowed=new Set(['format','layout','compression','countries','subdivisions','entityTypes','kinds','includeAncestors','coordinates','boundaries','schemaMode','sqlMode','spreadsheetSafe']);
+  const allowed=new Set(['format','layout','compression','countries','subdivisions','entityTypes','kinds','includeAncestors','coordinates','boundaries','schemaMode','sqlMode','spreadsheetSafe','language','includeIds','audit','sqlNames']);
   for (const key of Object.keys(request)) if (!allowed.has(key)) throw new Error(`Unknown export option: ${key}`);
   if (!['none','gzip','zip'].includes(request.compression??'none')) throw new Error('Unsupported compression');
   for(const [key,allowedValues] of Object.entries({layout:['flat','hierarchical'],schemaMode:['schema-and-data','data-only'],sqlMode:['upsert','insert-only']})) {
@@ -40,13 +40,13 @@ function normalize(request:ExportRequest):ExportRequest {
   }
   return result;
 }
-export interface ExportOptions {signal?:AbortSignal;sidecars?:(plan:ExportPlan)=>Record<string,unknown>;geographicCoverage?:'partial'|'complete'}
+export interface ExportOptions {signal?:AbortSignal;sidecars?:(plan:ExportPlan)=>Record<string,unknown>;geographicCoverage?:'partial'|'complete';adapter?:ExportAdapter;dataModel?:'resources-v1';contentIdentity?:(plan:ExportPlan)=>string}
 export async function exportSnapshot(snapshot:Snapshot,directory:string,request:ExportRequest,options:ExportOptions={}):Promise<ExportManifest> {
   options.signal?.throwIfAborted();
   if(options.geographicCoverage!==undefined&&!['partial','complete'].includes(options.geographicCoverage))throw new Error('Invalid geographic coverage');
   const normalized=normalize(request);
   const adapters=await import('./adapters/index.ts');
-  const adapter=extensions.get(normalized.format)??adapters.getBuiltinAdapters().find(item=>item.format===normalized.format);
+  const adapter=options.adapter??extensions.get(normalized.format)??adapters.getBuiltinAdapters().find(item=>item.format===normalized.format);
   if (!adapter) throw new Error(`Unsupported export format: ${normalized.format}`);
   adapter.validate(normalized);
   await mkdir(dirname(directory),{recursive:true});
@@ -68,8 +68,8 @@ export async function exportSnapshot(snapshot:Snapshot,directory:string,request:
     const metadataFiles=new Set<string>();
     for(const [path,value] of Object.entries(options.sidecars?.(plan)??{})) {
       safeRelativePath(path);
-      if(path.includes('/')||!path.endsWith('.json')||path==='manifest.json'||paths.includes(path)) throw new Error('Reserved sidecar path or payload collision');
-      await writeFile(join(temporary,path),JSON.stringify(value,null,2)+'\n',{flag:'wx'});
+      if(path.includes('/')||!['.json','.txt'].some(ext=>path.endsWith(ext))||path==='manifest.json'||paths.includes(path)) throw new Error('Reserved sidecar path or payload collision');
+      await writeFile(join(temporary,path),path.endsWith('.txt')&&typeof value==='string'?value:JSON.stringify(value,null,2)+'\n',{flag:'wx'});
       paths.push(path);metadataFiles.add(path);
     }
     if (normalized.compression==='gzip') {
@@ -82,10 +82,11 @@ export async function exportSnapshot(snapshot:Snapshot,directory:string,request:
       paths=compressed;
     }
     const manifest:ExportManifest={contractVersion:'1.0',generatorVersion:VERSION,adapterVersion:adapter.version,datasetVersion:plan.metadata.datasetVersion,
-      contentId:hash.digest('hex'),request:normalized,sources:plan.metadata.sources,count:plan.count,counts,contextIds:plan.contextIds,externalReferences:plan.externalReferences,
+      contentId:options.contentIdentity?.(plan)??hash.digest('hex'),request:normalized,sources:plan.metadata.sources,count:plan.count,counts,contextIds:plan.contextIds,externalReferences:plan.externalReferences,
       geometry:{coordinates:{requested:normalized.coordinates!,missing:missingCoordinates},boundaries:{requested:normalized.boundaries!,missing:missingBoundaries},crs:'OGC:CRS84'},
       scope:{kind:'full',complete:plan.count===snapshot.count&&normalized.includeAncestors!==false},files:[]};
     if(options.geographicCoverage)manifest.geographicCoverage=options.geographicCoverage;
+    if(options.dataModel)manifest.dataModel=options.dataModel;
     for (const path of paths.sort()) manifest.files.push({path,...await fileDigest(join(temporary,path)),...(metadataFiles.has(path)?{role:'metadata' as const}:{})});
     await writeManifest(temporary,manifest);
     if (normalized.compression==='zip') {
