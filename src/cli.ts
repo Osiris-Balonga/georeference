@@ -5,11 +5,10 @@ import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
 import { Snapshot, createSnapshot } from './snapshot.ts';
 import { verifyPackage } from './package.ts';
-import { importGeoNames } from './sources/geonames.ts';
 import { generateFiles } from './generate.ts';
 import { assertCongoEntities,loadCongoReference } from './congo.ts';
+import { toResourceTables } from './domain/model.ts';
 import type { Entity, ExportRequest, SnapshotMetadata,GeographicKind } from './types.ts';
-import type { SeedMapping, SeedOptions } from './seeding/types.ts';
 
 const HELP=`GeoReference — Republic of Congo geographic files in your project
 
@@ -18,9 +17,9 @@ Quick start (no permanent project dependency):
   npx georeference neighborhoods --city Brazzaville --arrondissement 6
   npx georeference departments --format csv --output ./data/departments
 
-Without a command, generate the bundled Congo reference in ./data/georeference.
-No download is required. Coverage is PARTIAL and dated: see coverage.json and
-provenance.json. Coordinates and boundaries are not supplied by this reference.
+Without a command, generate separate category JSON files in ./data/georeference.
+No download is required. Coverage is PARTIAL and dated: see README.txt.
+Use --audit to include detailed coverage.json and provenance.json.
 Output is a NEW directory; existing destinations are never overwritten.
 
 Commands:
@@ -28,32 +27,32 @@ Commands:
   departments | communes | cities | districts | arrondissements | neighborhoods | villages
   generate  [--source-file FILE | --snapshot FILE] [export options]
   snapshot --output SNAPSHOT.sqlite [--input FILE --metadata FILE]
-  geonames --countries countryInfo.txt --version LABEL --output SNAPSHOT.sqlite
-           [--admin1 FILE] [--admin2 FILE] [--places FILE]
   inspect  --snapshot FILE
   export   --snapshot FILE --output DIRECTORY --format FORMAT [options]
   verify   --package DIRECTORY
-  seed     --package DIRECTORY [--apply] [--create-schema] [--revision N]
+  seed     --package DIRECTORY [--apply] [--create-schema] [--sql-config FILE]
 
-Formats: json, ndjson, csv, sql-postgres, sqlite, geojson
+Formats: xlsx, json, ndjson, csv, sql-postgres, sqlite, geojson
+Human files: --language fr|en --include-ids; CSV files and Excel sheets by category
+SQL: --sql-config FILE (schema and table names); schema.sql and data.sql
 Export: --country CG|COG --city NAME_OR_ID --arrondissement NAME_OR_ID
         (numeric arrondissement requires --city)
         --subdivision IDS --types country,subdivision,locality --kinds KINDS
-        --coordinates --boundaries --no-ancestors --layout flat|hierarchical
+        --coordinates --boundaries
         --compression none|gzip|zip --schema-mode schema-and-data|data-only
-        --sql-mode upsert|insert-only --spreadsheet-safe
-Seed:   --mode upsert|insert-only --batch-size N --schema NAME --table NAME
-        --mapping FILE --allow-downgrade; DATABASE_URL in environment
+        --sql-mode upsert|insert-only
+Seed:   --mode upsert|insert-only; DATABASE_URL in environment
 Seeding is a read-only preview unless --apply is supplied.
 See README.md / README.fr.md for data licensing and full guides.
 `;
-const stringOptions=['input','metadata','output','source-file','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','kinds','city','arrondissement','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping'];
-const booleanOptions=['help','coordinates','boundaries','no-ancestors','spreadsheet-safe','apply','create-schema','allow-downgrade'];
+const stringOptions=['input','metadata','output','source-file','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','kinds','city','arrondissement','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping','language','sql-config'];
+const booleanOptions=['help','coordinates','boundaries','no-ancestors','spreadsheet-safe','apply','create-schema','allow-downgrade','include-ids','audit'];
 const supported:Record<string,string[]>={
-  snapshot:['input','metadata','output'],geonames:['countries','admin1','admin2','places','version','output'],inspect:['snapshot'],verify:['package'],
+  snapshot:['input','metadata','output'],inspect:['snapshot'],verify:['package'],
   export:['snapshot','output','format','country','subdivision','types','kinds','city','arrondissement','coordinates','boundaries','no-ancestors','layout','compression','schema-mode','sql-mode','spreadsheet-safe'],
-  seed:['package','apply','create-schema','revision','mode','batch-size','schema','table','mapping','allow-downgrade']
+  seed:['package','apply','create-schema','mode','sql-config']
 };
+supported.export!.push('language','include-ids','audit','sql-config');
 supported.generate=[...supported.export!,'source-file'];
 supported.countries=supported.generate.filter(key=>key!=='types'&&key!=='subdivision');
 const kindCommands:Record<string,GeographicKind>={departments:'department',communes:'commune',cities:'commune',districts:'district',arrondissements:'arrondissement',neighborhoods:'neighborhood',villages:'village'};
@@ -88,12 +87,13 @@ async function main():Promise<void> {
     return typeof value==='string'?value:undefined;
   };
   const list=(key:string)=>string(key)?.split(',').map(item=>item.trim()).filter(Boolean);
-  const number=(key:string)=>{const value=string(key);if(value===undefined)return undefined;if(!/^\d+$/.test(value)||!Number.isSafeInteger(Number(value))) throw new Error(`--${key} requires a nonnegative integer`);return Number(value);};
+  const sqlNames=async()=>string('sql-config')?JSON.parse(await readFile(string('sql-config')!,'utf8')):undefined;
   const exportRequest=(format:string):ExportRequest=>{
     const request:ExportRequest={format};
     for(const [flag,key] of [['country','countries'],['subdivision','subdivisions'],['types','entityTypes'],['kinds','kinds']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=list(flag);
     for(const [flag,key] of [['layout','layout'],['compression','compression'],['schema-mode','schemaMode'],['sql-mode','sqlMode']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=string(flag);
     if(values.coordinates)request.coordinates=true;if(values.boundaries)request.boundaries=true;if(values['no-ancestors'])request.includeAncestors=false;if(values['spreadsheet-safe'])request.spreadsheetSafe=true;
+    if(string('language'))request.language=string('language') as 'fr'|'en';if(values['include-ids'])request.includeIds=true;if(values.audit)request.audit=true;
     return request;
   };
   const controller=new AbortController();const abort=()=>controller.abort();process.once('SIGINT',abort);
@@ -101,6 +101,7 @@ async function main():Promise<void> {
     let result:unknown;
     if(command==='countries'||command==='generate'||kindCommands[command]) {
       const request=exportRequest(string('format')??'json');
+      if(string('sql-config'))request.sqlNames=await sqlNames();
       if(command==='countries') request.entityTypes=['country'];
       if(kindCommands[command])request.kinds=[kindCommands[command]!];
       result=await generateFiles({output:string('output')??'data/georeference',request,
@@ -113,25 +114,21 @@ async function main():Promise<void> {
         entities=[];for await(const entity of inputEntities(string('input',true)!,controller.signal))entities.push(entity);
       } else {const reference=await loadCongoReference();metadata=reference.metadata;entities=reference.entities;}
       assertCongoEntities(entities);
+      toResourceTables(entities);
       const output=string('output',true)!;
       await createSnapshot(output,metadata,entities);
       const snapshot=Snapshot.open(output);try{result={path:output,count:snapshot.count,datasetVersion:snapshot.metadata.datasetVersion};}finally{snapshot.close();}
-    } else if(command==='geonames') {
-      const paths={countryInfo:string('countries',true)!,...(string('admin1')?{admin1:string('admin1')!}:{}),...(string('admin2')?{admin2:string('admin2')!}:{}),...(string('places')?{places:string('places')!}:{})};
-      const imported=await importGeoNames(paths,{datasetVersion:string('version',true)!});
-      const country=imported.entities.find(entity=>entity.entityType==='country'&&entity.codes?.iso2==='CG');
-      const entities=imported.entities.filter(entity=>entity.countryId===country?.id);assertCongoEntities(entities);
-      await createSnapshot(string('output',true)!,imported.metadata,entities);
-      result={count:entities.length,metadata:imported.metadata};
     } else if(command==='export'||command==='inspect') {
       const snapshot=Snapshot.open(string('snapshot',true)!);
       try {
         assertCongoEntities(snapshot.entities());
+        toResourceTables(snapshot.entities());
         if(command==='inspect') {
           const counts={country:0,subdivision:0,locality:0};for(const entity of snapshot.entities())counts[entity.entityType]++;
           result={metadata:snapshot.metadata,count:snapshot.count,counts};
         } else {
           const request=exportRequest(string('format',true)!);
+          if(string('sql-config'))request.sqlNames=await sqlNames();
           result=await generateFiles({snapshot:string('snapshot',true)!,output:string('output',true)!,request,
             ...(string('city')?{city:string('city')!}:{}),...(string('arrondissement')?{arrondissement:string('arrondissement')!}:{}),signal:controller.signal});
         }
@@ -140,19 +137,16 @@ async function main():Promise<void> {
     else if(command==='seed') {
       const packageDirectory=string('package',true)!;
       // Reject corrupted or unsupported packages before connecting to the database.
-      const {readPackage}=await import('./package.ts');const input=await readPackage(packageDirectory);
-      assertCongoEntities(input.entities);
+      const {readResourcePackage}=await import('./domain/package.ts');const input=await readResourcePackage(packageDirectory);
       const connectionString=process.env.DATABASE_URL;if(!connectionString) throw new Error('DATABASE_URL is required for seed');
-      const {Client}=await import('pg');const {seedEntities}=await import('./seeding/index.ts');
+      const {Client}=await import('pg');const {seedResources}=await import('./domain/seed.ts');
       const client=new Client({connectionString});
       try {
         await client.connect();
-        const mapping:SeedMapping=string('mapping')?JSON.parse(await readFile(string('mapping')!,'utf8')) as SeedMapping:{};
-        if(string('schema'))mapping.schema=string('schema')!;if(string('table'))mapping.table=string('table')!;
-        const seedOptions:SeedOptions={dryRun:!values.apply,createSchema:Boolean(values['create-schema']),allowDowngrade:Boolean(values['allow-downgrade']),mapping,signal:controller.signal};
+        const seedOptions:import('./domain/seed.ts').ResourceSeedOptions={dryRun:!values.apply,createSchema:Boolean(values['create-schema']),signal:controller.signal};
+        if(string('sql-config'))seedOptions.sqlNames=await sqlNames();
         if(string('mode'))seedOptions.mode=string('mode') as 'upsert'|'insert-only';
-        const batchSize=number('batch-size'),revision=number('revision');if(batchSize!==undefined)seedOptions.batchSize=batchSize;if(revision!==undefined)seedOptions.revision=revision;
-        result=await seedEntities(client,input,seedOptions);
+        result=await seedResources(client,input,seedOptions);
       } finally {await client.end();}
     }
     console.log(JSON.stringify(result,null,2));

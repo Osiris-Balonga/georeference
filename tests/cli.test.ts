@@ -44,15 +44,15 @@ test('CLI generates country files in a consumer project without installing depen
   // No subcommand: the default flow generates JSON into data/georeference.
   const result=await invoke(['--source-file',source,'--country','CG']);
   assert.equal(JSON.parse(result.stdout).count,1);
-  const document=JSON.parse(await readFile(join(folder,'data/georeference/entities.json'),'utf8'));
-  assert.equal(document.entities[0].id,'geonames:101');assert.equal(document.entities[0].name,'Synthetic country');
+  const countriesData=JSON.parse(await readFile(join(folder,'data/georeference/countries.json'),'utf8'));
+  assert.match(countriesData[0].id,/^[\da-f-]{36}$/);assert.equal(countriesData[0].name,'Synthetic country');
   await invoke(['verify','--package','data/georeference']);
   assert.equal(await readFile(join(folder,'package.json'),'utf8'),packageText);
   assert.equal(await readFile(join(folder,'package-lock.json'),'utf8'),lockText);
   assert.deepEqual((await readdir(folder)).sort(),['countryInfo.txt','data','package-lock.json','package.json']);
   await assert.rejects(invoke(['countries','--source-file',source]),/exists/);
   await invoke(['countries','--source-file',source,'--format','csv','--output','data/csv']);
-  assert.match(await readFile(join(folder,'data/csv/entities.csv'),'utf8'),/Synthetic country/);
+  assert.match(await readFile(join(folder,'data/csv/pays.csv'),'utf8'),/Synthetic country/);
   await assert.rejects(invoke(['countries','--source-file',source,'--format','yaml','--output','data/bad']),/Unsupported export format/);
   await assert.rejects(invoke(['countries','--source-file',source,'--snapshot','missing.sqlite','--output','data/mixed']),/source-file.*snapshot|snapshot.*source-file/);
 });
@@ -61,24 +61,24 @@ test('CLI defaults to the bundled Congo reference and offers scoped administrati
   const folder=await mkdtemp(join(tmpdir(),'georeference-congo-cli-'));t.after(()=>rm(folder,{recursive:true,force:true}));
   const invoke=(args:string[])=>exec(process.execPath,[cli,...args],{cwd:folder,maxBuffer:1024*1024});
   const result=await invoke([]);assert.ok(JSON.parse(result.stdout).count>100);
-  const entities=JSON.parse(await readFile(join(folder,'data/georeference/entities.json'),'utf8')).entities;
-  assert.ok(entities.some(e=>e.kind==='neighborhood'&&e.name==='Mpila'));
+  const entities=JSON.parse(await readFile(join(folder,'data/georeference/neighborhoods.json'),'utf8'));
+  assert.ok(entities.some(e=>e.name==='Mpila'));
   const quarters=await invoke(['neighborhoods','--city','Brazzaville','--arrondissement','6','--country','CG','--output','quarters']);
   assert.ok(JSON.parse(quarters.stdout).count<entities.length);
-  const scoped=JSON.parse(await readFile(join(folder,'quarters/entities.json'),'utf8')).entities;
+  const scoped=JSON.parse(await readFile(join(folder,'quarters/neighborhoods.json'),'utf8'));
   assert.ok(scoped.some(e=>e.name==='Mpila'));assert.ok(!scoped.some(e=>e.name==='Pointe-Noire'));
   await invoke(['snapshot','--output','reference.sqlite']);
-  const inspected=await invoke(['inspect','--snapshot','reference.sqlite']);assert.equal(JSON.parse(inspected.stdout).count,entities.length);
+  const inspected=await invoke(['inspect','--snapshot','reference.sqlite']);assert.equal(JSON.parse(inspected.stdout).count,398);
   for(const code of ['CD','COD','FR'])await assert.rejects(invoke(['countries','--country',code,'--output','bad']),/Congo|CG/);
   assert.deepEqual((await readdir(folder)).sort(),['data','quarters','reference.sqlite']);
 });
 
 test('CLI refuses foreign snapshots and seeding packages before contacting a database',async t=>{
   const folder=await mkdtemp(join(tmpdir(),'georeference-foreign-cli-'));t.after(()=>rm(folder,{recursive:true,force:true}));
-  const {createSnapshot}=await import('../src/snapshot.ts');const {Snapshot}=await import('../src/snapshot.ts');const {exportSnapshot}=await import('../src/export.ts');
+  const {createSnapshot}=await import('../src/snapshot.ts');const {Snapshot}=await import('../src/snapshot.ts');const {exportResources:exportSnapshot}=await import('../src/domain/export.ts');
   const snapshot=join(folder,'foreign.sqlite');
   const metadata=JSON.parse(await readFile('tests/fixtures/metadata.json','utf8'));
-  const foreign={id:'test:cd',entityType:'country' as const,name:'Synthetic foreign country',countryId:'test:cd',parentId:null,codes:{iso2:'CD',iso3:'COD'}};
+  const foreign={id:'00000000-0000-4000-8000-000000000001',entityType:'country' as const,kind:'country' as const,name:'Synthetic foreign country',countryId:'00000000-0000-4000-8000-000000000001',parentId:null,codes:{iso2:'CD',iso3:'COD'}};
   await createSnapshot(snapshot,metadata,[foreign]);const opened=Snapshot.open(snapshot);
   const pkg=join(folder,'pkg');try{await exportSnapshot(opened,pkg,{format:'json'});}finally{opened.close();}
   await assert.rejects(run(['inspect','--snapshot',snapshot]),/Congo|CG/);

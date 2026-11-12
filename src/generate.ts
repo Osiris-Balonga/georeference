@@ -4,9 +4,8 @@ import { lstat,mkdtemp,readFile,rm,stat,writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Snapshot,createSnapshot } from './snapshot.ts';
-import { exportSnapshot } from './export.ts';
+import { exportResources,validateResourceRequest } from './domain/export.ts';
 import { importGeoNames } from './sources/geonames.ts';
-import { getBuiltinAdapters } from './adapters/index.ts';
 import { assertCongoEntities,loadCongoReference } from './congo.ts';
 import type { CongoReference } from './congo.ts';
 import { canonicalJson } from './validation.ts';
@@ -51,8 +50,7 @@ function sidecars(reference:CongoReference|undefined,snapshot:Snapshot):(plan:Ex
 export async function generateFiles(options:GenerateOptions):Promise<ExportManifest> {
   options.signal?.throwIfAborted();
   if(options.snapshot&&options.sourceFile)throw new Error('--snapshot and --source-file cannot be combined');
-  const adapter=getBuiltinAdapters().find(item=>item.format===options.request.format);
-  if(!adapter)throw new Error(`Unsupported export format: ${options.request.format}`);adapter.validate(options.request);
+  validateResourceRequest(options.request);
   try {await lstat(options.output);throw new Error('Export destination already exists');}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
   const reference=await loadCongoReference();
   const temporary=await mkdtemp(join(tmpdir(),'georeference-generate-'));
@@ -71,12 +69,13 @@ export async function generateFiles(options:GenerateOptions):Promise<ExportManif
         const source=join(temporary,'countryInfo.txt');await writeFile(source,bytes);
         const revision=createHash('sha256').update(bytes).digest('hex');
         const imported=await importGeoNames({countryInfo:source},{datasetVersion:'geonames-countryInfo-sha256:'+revision});
-        metadata=imported.metadata;entities=imported.entities.filter(entity=>entity.entityType==='country'&&entity.codes?.iso2==='CG');trusted=undefined;
+        const identity=reference.entities.find(e=>e.kind==='country')!.id;
+        metadata=imported.metadata;entities=imported.entities.filter(entity=>entity.entityType==='country'&&entity.codes?.iso2==='CG').map(entity=>({...entity,id:identity,countryId:identity,kind:'country' as const}));trusted=undefined;
       }
       assertCongoEntities(entities);
       const path=join(temporary,'snapshot.sqlite');await createSnapshot(path,metadata,entities);snapshot=Snapshot.open(path);
     }
     const request=scopedRequest([...snapshot.entities()],options);
-    return await exportSnapshot(snapshot,options.output,request,{...(options.signal?{signal:options.signal}:{}),geographicCoverage:'partial',sidecars:sidecars(trusted,snapshot)});
+    return await exportResources(snapshot,options.output,request,{...(options.signal?{signal:options.signal}:{}),geographicCoverage:'partial',...(request.audit?{sidecars:sidecars(trusted,snapshot)}:{})});
   } finally {snapshot?.close();await rm(temporary,{recursive:true,force:true});}
 }
