@@ -4,29 +4,30 @@ import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
 import { Snapshot, createSnapshot } from './snapshot.ts';
-import { exportSnapshot } from './export.ts';
 import { verifyPackage } from './package.ts';
 import { importGeoNames } from './sources/geonames.ts';
 import { generateFiles } from './generate.ts';
-import type { Entity, ExportRequest, SnapshotMetadata } from './types.ts';
+import { assertCongoEntities,loadCongoReference } from './congo.ts';
+import type { Entity, ExportRequest, SnapshotMetadata,GeographicKind } from './types.ts';
 import type { SeedMapping, SeedOptions } from './seeding/types.ts';
 
-const HELP=`GeoReference 1.0 — generate geographic files in your project
+const HELP=`GeoReference — Republic of Congo geographic files in your project
 
 Quick start (no permanent project dependency):
   npx georeference
-  npx georeference countries --country FR,CG --format csv --output ./data/countries
-  npx georeference generate --snapshot FILE --types locality --output ./data/places
+  npx georeference neighborhoods --city Brazzaville --arrondissement 6
+  npx georeference departments --format csv --output ./data/departments
 
-Without a command, generate countries as JSON in ./data/georeference.
-Country data is downloaded from GeoNames (CC BY 4.0). Use --source-file FILE
-for offline countryInfo.txt input. Output is a NEW directory of standalone
-files plus manifest.json; existing destinations are never overwritten.
+Without a command, generate the bundled Congo reference in ./data/georeference.
+No download is required. Coverage is PARTIAL and dated: see coverage.json and
+provenance.json. Coordinates and boundaries are not supplied by this reference.
+Output is a NEW directory; existing destinations are never overwritten.
 
 Commands:
   countries [--source-file FILE | --snapshot FILE] [export options]
+  departments | communes | cities | districts | arrondissements | neighborhoods | villages
   generate  [--source-file FILE | --snapshot FILE] [export options]
-  snapshot --input FILE --metadata FILE --output SNAPSHOT.sqlite
+  snapshot --output SNAPSHOT.sqlite [--input FILE --metadata FILE]
   geonames --countries countryInfo.txt --version LABEL --output SNAPSHOT.sqlite
            [--admin1 FILE] [--admin2 FILE] [--places FILE]
   inspect  --snapshot FILE
@@ -35,7 +36,9 @@ Commands:
   seed     --package DIRECTORY [--apply] [--create-schema] [--revision N]
 
 Formats: json, ndjson, csv, sql-postgres, sqlite, geojson
-Export: --country IDS_OR_CODES --subdivision IDS --types country,subdivision,locality
+Export: --country CG|COG --city NAME_OR_ID --arrondissement NAME_OR_ID
+        (numeric arrondissement requires --city)
+        --subdivision IDS --types country,subdivision,locality --kinds KINDS
         --coordinates --boundaries --no-ancestors --layout flat|hierarchical
         --compression none|gzip|zip --schema-mode schema-and-data|data-only
         --sql-mode upsert|insert-only --spreadsheet-safe
@@ -44,15 +47,17 @@ Seed:   --mode upsert|insert-only --batch-size N --schema NAME --table NAME
 Seeding is a read-only preview unless --apply is supplied.
 See README.md / README.fr.md for data licensing and full guides.
 `;
-const stringOptions=['input','metadata','output','source-file','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping'];
+const stringOptions=['input','metadata','output','source-file','countries','admin1','admin2','places','version','snapshot','format','country','subdivision','types','kinds','city','arrondissement','layout','compression','schema-mode','sql-mode','package','mode','batch-size','revision','schema','table','mapping'];
 const booleanOptions=['help','coordinates','boundaries','no-ancestors','spreadsheet-safe','apply','create-schema','allow-downgrade'];
 const supported:Record<string,string[]>={
   snapshot:['input','metadata','output'],geonames:['countries','admin1','admin2','places','version','output'],inspect:['snapshot'],verify:['package'],
-  export:['snapshot','output','format','country','subdivision','types','coordinates','boundaries','no-ancestors','layout','compression','schema-mode','sql-mode','spreadsheet-safe'],
+  export:['snapshot','output','format','country','subdivision','types','kinds','city','arrondissement','coordinates','boundaries','no-ancestors','layout','compression','schema-mode','sql-mode','spreadsheet-safe'],
   seed:['package','apply','create-schema','revision','mode','batch-size','schema','table','mapping','allow-downgrade']
 };
 supported.generate=[...supported.export!,'source-file'];
 supported.countries=supported.generate.filter(key=>key!=='types'&&key!=='subdivision');
+const kindCommands:Record<string,GeographicKind>={departments:'department',communes:'commune',cities:'commune',districts:'district',arrondissements:'arrondissement',neighborhoods:'neighborhood',villages:'village'};
+for(const command of Object.keys(kindCommands))supported[command]=supported.generate.filter(key=>key!=='kinds'&&key!=='types');
 async function* inputEntities(path:string,signal:AbortSignal):AsyncIterable<Entity> {
   if(path.endsWith('.json')) {
     const parsed=JSON.parse(await readFile(path,'utf8')) as unknown;
@@ -69,7 +74,7 @@ async function* inputEntities(path:string,signal:AbortSignal):AsyncIterable<Enti
 async function main():Promise<void> {
   const args=process.argv.slice(2);
   if(args[0]==='--help'||args[0]==='help') {console.log(HELP);return;}
-  const command=!args.length||args[0]!.startsWith('-')?'countries':args.shift()!;
+  const command=!args.length||args[0]!.startsWith('-')?'generate':args.shift()!;
   if(!supported[command]) throw new Error(`Unknown command: ${command}`);
   const options:Record<string,{type:'string'|'boolean'}>={};
   for(const key of stringOptions) options[key]={type:'string'};
@@ -86,7 +91,7 @@ async function main():Promise<void> {
   const number=(key:string)=>{const value=string(key);if(value===undefined)return undefined;if(!/^\d+$/.test(value)||!Number.isSafeInteger(Number(value))) throw new Error(`--${key} requires a nonnegative integer`);return Number(value);};
   const exportRequest=(format:string):ExportRequest=>{
     const request:ExportRequest={format};
-    for(const [flag,key] of [['country','countries'],['subdivision','subdivisions'],['types','entityTypes']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=list(flag);
+    for(const [flag,key] of [['country','countries'],['subdivision','subdivisions'],['types','entityTypes'],['kinds','kinds']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=list(flag);
     for(const [flag,key] of [['layout','layout'],['compression','compression'],['schema-mode','schemaMode'],['sql-mode','sqlMode']] as const) if(string(flag)!==undefined) (request as unknown as Record<string,unknown>)[key]=string(flag);
     if(values.coordinates)request.coordinates=true;if(values.boundaries)request.boundaries=true;if(values['no-ancestors'])request.includeAncestors=false;if(values['spreadsheet-safe'])request.spreadsheetSafe=true;
     return request;
@@ -94,30 +99,41 @@ async function main():Promise<void> {
   const controller=new AbortController();const abort=()=>controller.abort();process.once('SIGINT',abort);
   try {
     let result:unknown;
-    if(command==='countries'||command==='generate') {
+    if(command==='countries'||command==='generate'||kindCommands[command]) {
       const request=exportRequest(string('format')??'json');
       if(command==='countries') request.entityTypes=['country'];
+      if(kindCommands[command])request.kinds=[kindCommands[command]!];
       result=await generateFiles({output:string('output')??'data/georeference',request,
+        ...(string('city')?{city:string('city')!}:{}),...(string('arrondissement')?{arrondissement:string('arrondissement')!}:{}),
         ...(string('snapshot')?{snapshot:string('snapshot')!}:{}),...(string('source-file')?{sourceFile:string('source-file')!}:{}),signal:controller.signal});
     } else if(command==='snapshot') {
-      const metadata=JSON.parse(await readFile(string('metadata',true)!,'utf8')) as SnapshotMetadata;
+      let metadata:SnapshotMetadata,entities:Entity[];
+      if(string('input')||string('metadata')) {
+        metadata=JSON.parse(await readFile(string('metadata',true)!,'utf8')) as SnapshotMetadata;
+        entities=[];for await(const entity of inputEntities(string('input',true)!,controller.signal))entities.push(entity);
+      } else {const reference=await loadCongoReference();metadata=reference.metadata;entities=reference.entities;}
+      assertCongoEntities(entities);
       const output=string('output',true)!;
-      await createSnapshot(output,metadata,inputEntities(string('input',true)!,controller.signal));
+      await createSnapshot(output,metadata,entities);
       const snapshot=Snapshot.open(output);try{result={path:output,count:snapshot.count,datasetVersion:snapshot.metadata.datasetVersion};}finally{snapshot.close();}
     } else if(command==='geonames') {
       const paths={countryInfo:string('countries',true)!,...(string('admin1')?{admin1:string('admin1')!}:{}),...(string('admin2')?{admin2:string('admin2')!}:{}),...(string('places')?{places:string('places')!}:{})};
       const imported=await importGeoNames(paths,{datasetVersion:string('version',true)!});
-      await createSnapshot(string('output',true)!,imported.metadata,imported.entities);
-      result={count:imported.entities.length,metadata:imported.metadata};
+      const country=imported.entities.find(entity=>entity.entityType==='country'&&entity.codes?.iso2==='CG');
+      const entities=imported.entities.filter(entity=>entity.countryId===country?.id);assertCongoEntities(entities);
+      await createSnapshot(string('output',true)!,imported.metadata,entities);
+      result={count:entities.length,metadata:imported.metadata};
     } else if(command==='export'||command==='inspect') {
       const snapshot=Snapshot.open(string('snapshot',true)!);
       try {
+        assertCongoEntities(snapshot.entities());
         if(command==='inspect') {
           const counts={country:0,subdivision:0,locality:0};for(const entity of snapshot.entities())counts[entity.entityType]++;
           result={metadata:snapshot.metadata,count:snapshot.count,counts};
         } else {
           const request=exportRequest(string('format',true)!);
-          result=await exportSnapshot(snapshot,string('output',true)!,request,{signal:controller.signal});
+          result=await generateFiles({snapshot:string('snapshot',true)!,output:string('output',true)!,request,
+            ...(string('city')?{city:string('city')!}:{}),...(string('arrondissement')?{arrondissement:string('arrondissement')!}:{}),signal:controller.signal});
         }
       } finally{snapshot.close();}
     } else if(command==='verify') result=await verifyPackage(string('package',true)!);
@@ -125,6 +141,7 @@ async function main():Promise<void> {
       const packageDirectory=string('package',true)!;
       // Reject corrupted or unsupported packages before connecting to the database.
       const {readPackage}=await import('./package.ts');const input=await readPackage(packageDirectory);
+      assertCongoEntities(input.entities);
       const connectionString=process.env.DATABASE_URL;if(!connectionString) throw new Error('DATABASE_URL is required for seed');
       const {Client}=await import('pg');const {seedEntities}=await import('./seeding/index.ts');
       const client=new Client({connectionString});

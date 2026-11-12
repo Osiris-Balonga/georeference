@@ -1,4 +1,4 @@
-{"id":"example:country","entityType":"country","name":"Example Republic","countryId":"example:country","parentId":null,"codes":{"iso2":"XZ","iso3":"XZZ"},"names":{"en":"Example Republic","fr":"République exemple"},"boundary":{"type":"Polygon","coordinates":[[[10,0],[12,0],[12,2],[10,2],[10,0]]]}}
+{"id":"example:country","entityType":"country","name":"Synthetic Congo test country","countryId":"example:country","parentId":null,"codes":{"iso2":"CG","iso3":"COG"},"names":{"en":"Synthetic test fixture","fr":"Jeu de test fictif"},"boundary":{"type":"Polygon","coordinates":[[[10,0],[12,0],[12,2],[10,2],[10,0]]]}}
 {"id":"example:region","entityType":"subdivision","name":"Northern Region","countryId":"example:country","parentId":"example:country","level":1,"names":{"en":"Northern Region","fr":"Région du Nord"}}
 {"id":"example:district","entityType":"subdivision","name":"River District","countryId":"example:country","parentId":"example:region","level":2}
 {"id":"example:locality","entityType":"locality","name":"Harbor d'Été","countryId":"example:country","parentId":"example:district","coordinates":{"longitude":11,"latitude":1}}
