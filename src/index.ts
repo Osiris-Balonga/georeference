@@ -3,6 +3,12 @@ export {exportResources,registerResourceAdapter} from './domain/export.ts';
 export type {ResourceAdapter} from './domain/export.ts';
 export {toResourceTables,validateResourceTables,RESOURCE_NAMES} from './domain/model.ts';
 export type {ResourceName,ResourceRow,ResourceTables} from './domain/model.ts';
+export { GeographicCatalog, createCatalog, loadCatalog } from './domain/catalog.ts';
+export type {
+  Country, Department, Commune, District, Arrondissement, UrbanCommunity, RuralCommunity,
+  Neighborhood, Village, ResourceTypes, CatalogResources, CatalogMetadata, CatalogCoverage,
+  CommuneCoverage, DeepReadonly, ParentField, ResourceQuery, ResourceQueryResult,
+} from './domain/types.ts';
 export {readResourcePackage} from './domain/package.ts';
 export {seedResources} from './domain/seed.ts';
 export type {SqlNames} from './domain/sql.ts';
