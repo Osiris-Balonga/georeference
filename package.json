@@ -1,6 +1,7 @@
 {
   "name": "georeference",
   "version": "1.1.0",
+  "workspaces": ["apps/api"],
   "description": "Generate source-backed Republic of Congo geographic files with auditable partial coverage.",
   "type": "module",
   "license": "MIT",
@@ -39,7 +40,13 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --test --test-concurrency=2 tests/*.test.ts",
     "test:postgres": "node --test tests/postgres.integration.test.ts tests/domain-postgres.integration.test.ts",
-    "check": "npm run typecheck && npm test && npm run build",
+    "dev:api": "npm run build && npm run dev --workspace @georeference/api",
+    "build:api": "npm run build && npm run build --workspace @georeference/api",
+    "start:api": "npm run start --workspace @georeference/api",
+    "test:api": "npm run build && npm run test --workspace @georeference/api",
+    "typecheck:api": "npm run build && npm run typecheck --workspace @georeference/api",
+    "test:acceptance": "npm run build:api && node --test tests/acceptance/*.test.ts",
+    "check": "npm run typecheck && npm test && npm run build && npm run typecheck --workspace @georeference/api && npm run test --workspace @georeference/api && npm run build --workspace @georeference/api",
     "prepack": "npm run build"
   },
   "dependencies": {
