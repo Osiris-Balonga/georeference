@@ -4,6 +4,7 @@ export type {ResourceAdapter} from './domain/export.ts';
 export {toResourceTables,validateResourceTables,RESOURCE_NAMES} from './domain/model.ts';
 export type {ResourceName,ResourceRow,ResourceTables} from './domain/model.ts';
 export { GeographicCatalog, createCatalog, loadCatalog } from './domain/catalog.ts';
+export { CatalogQueryError, getResource, queryResources, queryRelated } from './domain/query.ts';
 export type {
   Country, Department, Commune, District, Arrondissement, UrbanCommunity, RuralCommunity,
   Neighborhood, Village, ResourceTypes, CatalogResources, CatalogMetadata, CatalogCoverage,
