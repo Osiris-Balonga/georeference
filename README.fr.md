@@ -1,6 +1,6 @@
 # GeoReference — République du Congo
 
-[English](README.md) · [Prise en main](docs/getting-started.fr.md) · [Formats](docs/formats.fr.md) · [Contribuer](CONTRIBUTING.fr.md)
+[English](README.md) · [Prise en main](docs/getting-started.fr.md) · [Formats](docs/formats.fr.md) · [API HTTP](docs/api.fr.md) · [Contribuer](CONTRIBUTING.fr.md)
 
 Récupérez les données géographiques de la République du Congo (CG/COG) sous forme de listes lisibles ou de ressources applicatives. Choisissez des onglets Excel par catégorie, des CSV avec noms de lieux, des collections JSON séparées ou des exports de bases avec UUID stables et tables métier configurables. Les fichiers générés ne nécessitent aucune dépendance permanente dans le projet.
 
@@ -41,7 +41,20 @@ Les communes/départements homonymes ont des UUID distincts. Le parent document�
 
 Générer des fichiers n'écrit pas dans une base. L'importeur PostgreSQL propose un aperçu en lecture seule et une application distincte ; les tables existantes doivent correspondre au schéma métier choisi. Il ne migre pas silencieusement une application et ne remappe pas des clés primaires arbitraires. Voir [l'import en base](docs/seeding.fr.md).
 
-Le SDK optionnel expose des ressources aux applications choisissant cette intégration. Son modèle prépare une future API ; **cette version ne déploie aucune API HTTP**. Voir [la prise en main](docs/getting-started.fr.md) et [l'architecture](docs/architecture.fr.md).
+Le SDK optionnel expose des ressources aux applications choisissant une intégration locale par paquet. Le dépôt contient aussi une application HTTP Fastify séparée utilisant les mêmes ressources géographiques et UUID stables. Elle consulte les données sans exporter de fichiers ni remplir une base. Voir [la prise en main](docs/getting-started.fr.md) et [l’architecture](docs/architecture.fr.md).
+
+## Lancer l’API HTTP en local
+
+Depuis le code source, utilisez Node.js 24.18.x et lancez :
+
+```sh
+npm ci
+npm run dev:api
+```
+
+Ouvrez `http://127.0.0.1:3000/docs` pour la documentation interactive. Les routes comprennent `/v1/communes`, `/v1/communes/{id}/arrondissements` et `/v1/arrondissements/{id}/neighborhoods`. L’API est publique en lecture seule, avec des ressources paginées et des métadonnées explicites de version/couverture partielle. Voir [le guide API](docs/api.fr.md) pour la configuration, les exemples et la distinction entre relations directes et descendantes.
+
+L’API se lance depuis ce dépôt ; il ne s’agit pas de l’annonce d’un service public hébergé. Le paquet publié `georeference@1.1.0` reste la CLI et le SDK optionnel. `npx georeference` continue de générer des fichiers autonomes et ne démarre pas de serveur.
 
 ## Documentation
 
@@ -53,11 +66,12 @@ Le SDK optionnel expose des ressources aux applications choisissant cette intég
 | [Import en base](docs/seeding.fr.md) | [Database import](docs/seeding.md) |
 | [Référentiel et sources](docs/congo-reference.fr.md) | [Reference and sources](docs/congo-reference.md) |
 | [Migration](docs/migration.fr.md) | [Migration](docs/migration.md) |
+| [API HTTP](docs/api.fr.md) | [HTTP API](docs/api.md) |
 | [Architecture](docs/architecture.fr.md) | [Architecture](docs/architecture.md) |
 | [Contribuer](CONTRIBUTING.fr.md) | [Contributing](CONTRIBUTING.md) |
 
 ## Développement et licence
 
-`npm run check` lance validation TypeScript, tests et compilation. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
+`npm run check` vérifie le cœur et l’API. Utilisez `npm run test:api` pour les comportements API, puis `npm run build:api` et `npm run start:api` pour le serveur compilé. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
 
 Code/documentation : [MIT](LICENSE), © 2026 Osiris Balonga. Les faits conservent provenance et conditions sources ; MIT ne relicencie pas les publications/cartes externes. Les fixtures fictives restent réservées aux tests. Voir [les licences](docs/data-sources.fr.md).

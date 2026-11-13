@@ -64,4 +64,4 @@ console.log(resources.neighborhoods);
 
 `exportResources` exporte une sélection d'instantané avec le modèle public ; `readResourcePackage` vérifie les paquets JSON/NDJSON de ressources pris en charge. L'instantané canonique et les anciens adaptateurs restent des composants de compatibilité, pas la présentation des fichiers publics. Voir [l'architecture](architecture.fr.md) et [la migration](migration.fr.md).
 
-Un export SQLite contient les tables métier ; ce n'est pas l'instantané interne consommé par `Snapshot.open`. Les ressources préparent une future API, mais aucun serveur HTTP n'est livré ici.
+Un export SQLite contient les tables métier ; ce n’est pas l’instantané interne consommé par `Snapshot.open`. Pour consulter les ressources par HTTP plutôt que générer des fichiers ou installer le SDK, lancez l’application API privée depuis le code source. Voir [le guide API](api.fr.md). Le paquet publié `georeference@1.1.0` ne démarre pas ce serveur.

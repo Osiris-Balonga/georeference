@@ -1,6 +1,6 @@
 # GeoReference — Republic of the Congo
 
-[Français](README.fr.md) · [Getting started](docs/getting-started.md) · [Formats](docs/formats.md) · [Contributing](CONTRIBUTING.md)
+[Français](README.fr.md) · [Getting started](docs/getting-started.md) · [Formats](docs/formats.md) · [HTTP API](docs/api.md) · [Contributing](CONTRIBUTING.md)
 
 Get Republic of the Congo (CG/COG) geographic data as readable lists or application resources. Choose Excel category tabs, CSV files with place names, separate JSON collections, or database exports with stable UUIDs and configurable business tables. Generated files need no permanent project dependency.
 
@@ -41,7 +41,20 @@ Same-name communes/departments have distinct UUIDs. A neighborhood's documented 
 
 Generating files does not write to a database. The PostgreSQL importer has a read-only preview and a separate apply step; existing tables must match the selected business schema. It does not silently migrate an application or remap arbitrary existing primary keys. See [database import](docs/seeding.md).
 
-The optional SDK exposes resources for applications choosing package integration. Its resource model prepares a future API; **this version deploys no HTTP API**. See [getting started](docs/getting-started.md) and [architecture](docs/architecture.md).
+The optional SDK exposes resources for applications choosing local package integration. The repository also includes a separate Fastify HTTP application using the same geographic resources and stable UUIDs. It queries the data without exporting files or seeding a database. See [getting started](docs/getting-started.md) and [architecture](docs/architecture.md).
+
+## Run the HTTP API locally
+
+From a source checkout, use Node.js 24.18.x and run:
+
+```sh
+npm ci
+npm run dev:api
+```
+
+Open `http://127.0.0.1:3000/docs` for interactive documentation. Routes include `/v1/communes`, `/v1/communes/{id}/arrondissements` and `/v1/arrondissements/{id}/neighborhoods`. The API is public and read-only, with paginated resources and explicit dataset/partial-coverage metadata. See the [API guide](docs/api.md) for configuration, examples and the difference between direct and descendant relationships.
+
+The API runs from this repository; this is not a public hosted-service announcement. The published `georeference@1.1.0` remains the CLI/optional SDK. Running `npx georeference` continues to generate standalone files and does not start a server.
 
 ## Documentation
 
@@ -53,11 +66,12 @@ The optional SDK exposes resources for applications choosing package integration
 | [Database import](docs/seeding.md) | [Import en base](docs/seeding.fr.md) |
 | [Reference and sources](docs/congo-reference.md) | [Référentiel et sources](docs/congo-reference.fr.md) |
 | [Migration](docs/migration.md) | [Migration](docs/migration.fr.md) |
+| [HTTP API](docs/api.md) | [API HTTP](docs/api.fr.md) |
 | [Architecture](docs/architecture.md) | [Architecture](docs/architecture.fr.md) |
 | [Contributing](CONTRIBUTING.md) | [Contribuer](CONTRIBUTING.fr.md) |
 
 ## Development and license
 
-`npm run check` runs TypeScript validation, behavior tests and build. Task PRs target `dev`; releases go from `dev` to `main`.
+`npm run check` validates the core and API. Use `npm run test:api` for API behavior, and `npm run build:api` then `npm run start:api` for the compiled server. Task PRs target `dev`; releases go from `dev` to `main`.
 
 Code/documentation: [MIT](LICENSE), © 2026 Osiris Balonga. Source facts retain provenance and applicable terms; MIT does not relicense external publications/maps. Synthetic fixtures are tests only. See [licensing](docs/data-sources.md).

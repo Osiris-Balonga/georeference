@@ -15,6 +15,16 @@ npm run check
 
 Cette vérification lance la validation TypeScript, les tests de comportement et la compilation. Les tests emploient des données fictives et des répertoires temporaires. Un test d'intégration PostgreSQL utilise `DATABASE_URL` lorsqu'elle est définie ; un test sauté ne prouve pas le fonctionnement du transport PostgreSQL. Ne pointez jamais des fixtures de tests destructives vers une base de production.
 
+Le dépôt possède un workspace API privé à côté du paquet CLI/SDK public. Installez depuis la racine avec le verrou commun ; ne commitez pas de verrou API séparé. Pour travailler sur HTTP :
+
+```sh
+npm run dev:api
+npm run typecheck:api
+npm run test:api
+```
+
+Pour le serveur compilé, lancez `npm run build:api`, puis `npm run start:api`. Cette compilation inclut le cœur partagé. `npm run build` et la génération du paquet public restent des opérations CLI/SDK. Lancez `npm run test:acceptance` pour la parité API/sources/exports et l’isolation de la CLI empaquetée. Voir [l’utilisation de l’API](docs/api.fr.md) et [l’architecture](docs/architecture.fr.md).
+
 ## Branches et pull requests
 
 - Créez une branche de tâche ciblée depuis `dev`, par exemple `feature/country-aliases`, `fix/csv-empty-values` ou `docs/import-guide`.
@@ -32,6 +42,8 @@ La protection repose sur les réglages du dépôt ; un fichier de workflow seul 
 Les résultats attendus sont indépendants de l'implémentation. N'adaptez pas les attentes à un code erroné. Un échec d'import de module ne prouve que l'absence de structure ; les assertions doivent aussi distinguer un résultat concret incorrect. Documentation et fichiers statiques utilisent des vérifications directes plutôt que des tests artificiels.
 
 Pour un adaptateur, couvrez IDs stables, noms non ASCII, distinction absence/null, options refusées, lisibilité de la sortie, annulation et pertes éventuelles. Les changements en base demandent une validation sémantique sur un moteur réel et un parcours d'intégration PostgreSQL. Toute dépendance d'exécution doit avoir une utilité concrète et une licence/maintenance vérifiées.
+
+Pour l’API, conservez les règles géographiques dans le catalogue partagé et ses requêtes. Testez la frontière HTTP avec le lanceur Node existant et `app.inject()` ; conservez une couverture du démarrage/arrêt d’un vrai serveur. Couvrez rattachements directs/descendants des quartiers, distinction entre IDs typés invalides/introuvables, listes vides partielles, pagination, cache conditionnel et limites de requêtes. Les schémas HTTP doivent correspondre aux ressources documentées et ne pas exposer les audits internes. Vérifiez que dépendances et code API n’entrent pas dans le paquet CLI public, puis comparez les UUID API/sources/exports lors d’un changement de projection.
 
 ## Documentation publique et exemples
 
