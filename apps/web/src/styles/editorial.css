@@ -1,9 +1,10 @@
 .page-head {
-  padding-block: 4rem 3rem;
+  padding-block: 2.5rem 2rem;
 }
 .page-head h1 {
   margin: 0.5rem 0 1rem;
   max-width: 950px;
+  font-size: clamp(2rem, 3.2vw, 2.85rem);
 }
 .page-head p {
   font-size: 1.05rem;
@@ -11,15 +12,18 @@
 .page-head.centered {
   text-align: center;
 }
+.page-head.centered h1 {
+  margin-inline: auto;
+}
 .page-head.centered p {
   margin-inline: auto;
   justify-content: center;
 }
 .editorial {
-  padding-bottom: 6rem;
+  padding-bottom: 3rem;
 }
 .editorial > section {
-  margin-block: 4rem 6rem;
+  margin-block: 3rem 4rem;
 }
 .editorial-split {
   display: grid;
@@ -53,12 +57,13 @@
   list-style: none;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem 3rem;
+  gap: 0.5rem 3rem;
   padding: 1rem 0;
 }
 .department-list a {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1rem;
   padding: 0.5rem 0;
 }
 .department-list span {
@@ -75,6 +80,58 @@
   align-items: center;
   flex-wrap: wrap;
   margin: 2rem 0;
+}
+.example-block .example-action {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.department-section .search-capsule {
+  width: 100%;
+  margin: 1.5rem 0 2rem;
+}
+.editorial > .breadcrumbs {
+  padding-top: 1rem;
+}
+.section-title p {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+.coverage-panel > h2 {
+  margin-top: 0;
+}
+.source-details {
+  margin-block: 1.25rem;
+  font-size: 0.85rem;
+}
+.source-details summary {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.usage-columns h3 {
+  margin: 0 0 0.6rem;
+  font-weight: 500;
+}
+.usage-columns p {
+  max-width: 27ch;
+  margin: 0 0 1rem;
+}
+.contribution h2 {
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+}
+.contribution small {
+  font-style: italic;
+}
+@media (max-width: 700px) {
+  .section-title {
+    display: block;
+  }
 }
 .example-block small {
   display: block;

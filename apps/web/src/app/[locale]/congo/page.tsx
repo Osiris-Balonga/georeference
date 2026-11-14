@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchForm } from "@/components/search-form";
 import { overview } from "@/lib/catalog";
 import { cityId, bacongoId, text, type Locale } from "@/lib/i18n";
 export const metadata = { title: "Le Congo · The Congo" };
@@ -11,6 +12,13 @@ export default async function Congo({
     { departments } = await overview();
   return (
     <div className="container editorial">
+      <nav
+        className="breadcrumbs"
+        aria-label={text(locale, "Fil d’Ariane", "Breadcrumb")}
+      >
+        <Link href={"/" + locale}>{text(locale, "Accueil", "Home")}</Link>
+        <span aria-current="page">{text(locale, "Le Congo", "The Congo")}</span>
+      </nav>
       <header className="page-head centered">
         <p className="eyebrow">République du Congo · CG / COG</p>
         <h1>
@@ -94,17 +102,20 @@ export default async function Congo({
         </div>
       </section>
       <section className="department-section" data-reveal>
-        <h2>
-          {text(
-            locale,
-            "Quel département souhaitez-vous explorer ?",
-            "Which department would you like to explore?",
-          )}
-        </h2>
-        <p>
-          {departments.length}{" "}
-          {text(locale, "départements répertoriés", "recorded departments")}
-        </p>
+        <div className="section-title">
+          <h2>
+            {text(
+              locale,
+              "Quel département souhaitez-vous explorer ?",
+              "Which department would you like to explore?",
+            )}
+          </h2>
+          <p>
+            {departments.length}{" "}
+            {text(locale, "départements répertoriés", "recorded departments")}
+          </p>
+        </div>
+        <SearchForm locale={locale} scope="departments" />
         <ul className="department-list">
           {departments.map((d) => (
             <li key={d.id}>
@@ -138,6 +149,12 @@ export default async function Congo({
           >
             La Glacière{" "}
             <small>({text(locale, "Quartier", "Neighborhood")})</small>
+          </Link>
+          <Link
+            className="outline-link example-action"
+            href={"/" + locale + "/places/" + cityId}
+          >
+            {text(locale, "Explorer Brazzaville", "Explore Brazzaville")} ↗
           </Link>
         </div>
         <p>

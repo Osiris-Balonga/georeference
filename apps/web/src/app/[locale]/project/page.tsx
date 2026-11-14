@@ -12,6 +12,15 @@ export default async function Project({
     c = await catalog();
   return (
     <article className="container editorial">
+      <nav
+        className="breadcrumbs"
+        aria-label={text(locale, "Fil d’Ariane", "Breadcrumb")}
+      >
+        <Link href={"/" + locale}>{text(locale, "Accueil", "Home")}</Link>
+        <span aria-current="page">
+          {text(locale, "Le projet", "The project")}
+        </span>
+      </nav>
       <header className="editorial-split page-head">
         <div>
           <p className="eyebrow">
@@ -98,17 +107,27 @@ export default async function Project({
           )}
         </p>
         <p className="dataset-version">{c.metadata.datasetVersion}</p>
-        <ul className="source-list">
-          {c.metadata.sources.map((s) => (
-            <li key={s.name}>
-              {/^https?:\/\//.test(s.url) ? (
-                <a href={s.url}>{s.name} ↗</a>
-              ) : (
-                <span>{s.name}</span>
-              )}
-            </li>
-          ))}
-        </ul>
+        <details className="source-details">
+          <summary>
+            {text(
+              locale,
+              "Consulter les sources utilisées",
+              "View source documents",
+            )}{" "}
+            ({c.metadata.sources.length})
+          </summary>
+          <ul className="source-list">
+            {c.metadata.sources.map((s) => (
+              <li key={s.name}>
+                {/^https?:\/\//.test(s.url) ? (
+                  <a href={s.url}>{s.name} ↗</a>
+                ) : (
+                  <span>{s.name}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
         <a href={"/docs/" + locale + "/reference"}>
           {text(
             locale,
@@ -119,13 +138,18 @@ export default async function Project({
         </a>
       </section>
       <section data-reveal>
-        <h2>
-          {text(
-            locale,
-            "À chacun sa façon d’explorer.",
-            "A way to explore for everyone.",
-          )}
-        </h2>
+        <div className="section-title">
+          <h2>
+            {text(
+              locale,
+              "À chacun sa façon d’explorer.",
+              "A way to explore for everyone.",
+            )}
+          </h2>
+          <a href={"/docs/" + locale + "/introduction"}>
+            {text(locale, "Voir la documentation", "Read the documentation")} ↗
+          </a>
+        </div>
         <div className="usage-columns">
           {[
             [
