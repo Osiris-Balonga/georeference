@@ -99,3 +99,7 @@ L'adaptateur XLSX crée les parties SpreadsheetML avec la dépendance ZIP exista
 L'importeur gère politique d'écriture, compatibilité, transactions et concurrence. Il consomme du JSON/NDJSON de ressources vérifié, pas la présentation humaine CSV/XLSX. Génération du schéma, application d'une migration et import d'un jeu de données sont distincts. Le parcours public métier n'est pas un mappeur arbitraire d'ORM/clés locales.
 
 Les paquets portent un résumé lisible de couverture. L'audit détaillé est facultatif et possède un rôle de métadonnée ; il ne devient jamais des lieux applicatifs. Vérifier l'intégrité ne certifie pas un inventaire géographique complet/actuel. Voir [la couverture](congo-reference.fr.md), [les formats](formats.fr.md) et [la migration](migration.fr.md).
+
+## Frontend public
+
+Le workspace privé apps/web ajoute Next.js, shadcn/ui et une exploration pilotée par l’URL. Un superviseur lance Next.js et Fastify en boucle locale derrière une origine publique unique. Les pages serveur réutilisent le catalogue immuable ; la recherche interactive consomme l’API. Voir [l’architecture du site](website.fr.md).

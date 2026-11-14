@@ -54,7 +54,7 @@ npm run dev:api
 
 Ouvrez `http://127.0.0.1:3000/docs` pour la documentation interactive. Les routes comprennent `/v1/communes`, `/v1/communes/{id}/arrondissements` et `/v1/arrondissements/{id}/neighborhoods`. L’API est publique en lecture seule, avec des ressources paginées et des métadonnées explicites de version/couverture partielle. Voir [le guide API](docs/api.fr.md) pour la configuration, les exemples et la distinction entre relations directes et descendantes.
 
-Consultez la [documentation produit et la référence API hébergées](https://two42places.onrender.com/). Elles présentent le CLI, les exports, l’import SQL et le SDK en français et en anglais. Le paquet npm reste la CLI et le SDK optionnel : `npx 242places` génère des fichiers autonomes. Voir [le déploiement](docs/deployment.fr.md) pour héberger vous-même l’API et la documentation.
+Explorez l’[annuaire public du Congo](https://two42places.onrender.com/) ou ouvrez la [documentation produit et la référence API](https://two42places.onrender.com/docs/fr/introduction). Les guides présentent le CLI, les exports, l’import SQL et le SDK en français et en anglais. Le paquet npm reste la CLI et le SDK optionnel : `npx 242places` génère des fichiers autonomes. Voir [le déploiement](docs/deployment.fr.md) pour héberger ensemble le site, l’API et la documentation.
 
 ## Documentation
 
@@ -73,6 +73,8 @@ Consultez la [documentation produit et la référence API hébergées](https://t
 
 ## Développement et licence
 
-`npm run check` vérifie le cœur et l’API. Utilisez `npm run test:api` pour les comportements API, puis `npm run build:api` et `npm run start:api` pour le serveur compilé. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
+`npm run check` vérifie le cœur, l’API et le site public. Utilisez `npm run test:api` pour les comportements API, puis `npm run build:api` et `npm run start:api` pour le serveur compilé. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
 
 Code/documentation : [MIT](LICENSE), © 2026 Osiris Balonga. Les faits conservent provenance et conditions sources ; MIT ne relicencie pas les publications/cartes externes. Les fixtures fictives restent réservées aux tests. Voir [les licences](docs/data-sources.fr.md).
+
+Site public : [lancement et architecture](docs/website.fr.md). Next.js et Fastify partagent le même référentiel Congo.

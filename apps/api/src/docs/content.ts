@@ -3,6 +3,7 @@ export type Locale = 'fr' | 'en';
 export interface Section { id: string; title: string; html: string }
 export interface Chapter { slug: string; title: string; description: string; sections: Section[]; api?: boolean }
 export const resources = [
+  ['congo', 'République du Congo', 'Republic of the Congo'], ['discovery', 'Lieux du Congo', 'Congo places'],
   ['countries', 'Pays', 'Countries'], ['departments', 'Départements', 'Departments'],
   ['communes', 'Communes', 'Communes'], ['districts', 'Districts', 'Districts'],
   ['arrondissements', 'Arrondissements', 'Arrondissements'],
@@ -14,6 +15,8 @@ export const resources = [
 
 const section = (id: string, title: string, html: string): Section => ({ id, title, html });
 const usage: Record<string, [string, string]> = {
+  congo: ['Point d’entrée du référentiel Congo-Brazzaville (CG / COG). Utilisez les collections de départements et la recherche de lieux sans sélectionner un autre pays.', 'Entry point for the Congo-Brazzaville reference (CG / COG). Use the departments and place search without selecting another country.'],
+  discovery: ['Recherchez par nom, catégorie ou territoire parent. Chaque résultat conserve son type et ses ancêtres ; les limites géographiques ne sont pas disponibles.', 'Search by name, category or parent territory. Each result retains its type and ancestors; geographic boundaries are unavailable.'],
   countries: ['Le référentiel couvre un pays : la République du Congo, identifiée par les codes CG et COG. Retrouvez ses départements à partir de son UUID.', 'The reference covers one country: the Republic of the Congo, identified by CG and COG. Retrieve its departments using its UUID.'],
   departments: ['Les départements sont rattachés au pays. Un département et une commune homonymes restent deux lieux distincts ; utilisez la catégorie adaptée à votre formulaire.', 'Departments belong to the country. A department and a commune sharing a name are distinct places; choose the category your form needs.'],
   communes: ['Pour le champ « ville » de votre formulaire, commencez ici. À partir de l’UUID d’une commune, chargez ses arrondissements ou tous ses quartiers connus.', 'Start here for your form’s city field. Use a commune’s UUID to load its arrondissements or all its known neighborhoods.'],
