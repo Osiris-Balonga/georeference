@@ -5,10 +5,10 @@ import { buildApp } from '../src/app.ts';
 test('Scalar serves local documentation with a fresh CSP nonce and no remote client services', async t => {
   const app = await buildApp({ rateLimitMax: 1000 });
   t.after(() => app.close());
-  const one = await app.inject('/docs/');
-  const two = await app.inject('/docs/');
+  const one = await app.inject('/docs/fr/communes');
+  const two = await app.inject('/docs/fr/communes');
   assert.equal(one.statusCode, 200);
-  assert.match(one.body, /Scalar/);
+  assert.match(one.body, /scalar-reference/);
   assert.doesNotMatch(one.body, /swagger-ui|cdn\.jsdelivr|fonts\.scalar\.com/);
   assert.match(one.body, /\/openapi\.json/);
   const policy = String(one.headers['content-security-policy']);
@@ -22,8 +22,8 @@ test('Scalar serves local documentation with a fresh CSP nonce and no remote cli
   assert.match(one.body, /disabled[^a-z]+true/);
   assert.match(one.body, /showDeveloperTools[^a-z]+never/);
   const bare = await app.inject('/docs');
-  assert.equal(bare.statusCode, 301);
-  assert.equal(bare.headers.location, '/docs/');
+  assert.equal(bare.statusCode, 302);
+  assert.equal(bare.headers.location, '/docs/fr/introduction');
   const spec = await app.inject('/openapi.json');
   assert.equal(spec.statusCode, 200);
   assert.ok(spec.json().paths['/v1/communes']);
