@@ -38,7 +38,7 @@ export function chapterSpecification(document: unknown, locale: Locale, slug: st
       operation.summary = locale === 'fr' ? (child === 'live' ? 'Vérifier le processus' : 'Vérifier la disponibilité')
         : (child === 'live' ? 'Check process liveness' : 'Check service readiness');
     } else {
-      operation.summary = locale === 'fr' ? `${detail ? 'Consulter une ressource' : 'Lister les'} ${name}${relationship ? ' par parent' : ''}`
+      operation.summary = locale === 'fr' ? `${detail ? 'Consulter par UUID :' : 'Lister les'} ${name}${relationship ? ' par parent' : ''}`
         : `${detail ? 'Get one resource from' : 'List'} ${name}${relationship ? ' by parent' : ''}`;
     }
     const geographicDescription = locale === 'fr'
