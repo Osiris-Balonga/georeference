@@ -161,14 +161,6 @@
     width: 100%;
     object-fit: cover;
   }
-  .footer-panorama p {
-    font-size: 0.55rem;
-  }
-  .footer-bottom {
-    font-size: 0.6rem;
-    gap: 1rem;
-    padding-bottom: 1.2rem;
-  }
   .page-head {
     padding-block: 2.5rem;
   }
@@ -447,8 +439,5 @@
   }
   .footer-panorama {
     padding-top: 1rem;
-  }
-  .footer-bottom {
-    padding-block: 1rem;
   }
 }

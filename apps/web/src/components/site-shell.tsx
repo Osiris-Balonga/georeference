@@ -70,7 +70,7 @@ export function Header({ locale }: { locale: Locale }) {
                   <Link href={"/" + locale + "/" + slug}>{name}</Link>
                 </SheetClose>
               ))}
-              <a href={"/docs/" + locale + "/introduction"}>Documentation ↗</a>
+              <a href={"/docs/" + locale + "/introduction"}>Documentation </a>
             </nav>
           </SheetContent>
         </Sheet>
@@ -94,6 +94,7 @@ export function Footer({ locale }: { locale: Locale }) {
       title: text(locale, "Le projet", "The project"),
       links: [
         ["project", text(locale, "À propos", "About")],
+        ["project#images", text(locale, "Crédits des images", "Image credits")],
         [
           "project#sources",
           text(locale, "Sources et couverture", "Sources and coverage"),
@@ -150,9 +151,9 @@ export function Footer({ locale }: { locale: Locale }) {
           ))}
           <div>
             <h3>{text(locale, "Développeurs", "Developers")}</h3>
-            <a href={"/docs/" + locale + "/introduction"}>Documentation ↗</a>
+            <a href={"/docs/" + locale + "/introduction"}>Documentation </a>
             <a href={"/docs/" + locale + "/cli"}>API / CLI</a>
-            <a href={github}>GitHub ↗</a>
+            <a href={github}>GitHub </a>
             <a
               href={
                 github +
@@ -161,7 +162,7 @@ export function Footer({ locale }: { locale: Locale }) {
                 ".md"
               }
             >
-              {text(locale, "Contribuer", "Contribute")} ↗
+              {text(locale, "Contribuer", "Contribute")}
             </a>
           </div>
           <div>
@@ -174,40 +175,16 @@ export function Footer({ locale }: { locale: Locale }) {
       </div>
       <div className="footer-panorama">
         <picture>
-          <source
-            media="(max-width: 600px)"
-            srcSet="/images/skyline-mobile.webp"
-            width="768"
-            height="512"
-          />
-          <source
-            media="(max-width: 1000px)"
-            srcSet="/images/skyline.webp"
-            width="2176"
-            height="726"
-          />
           <img
             src="/images/skyline-desktop.webp"
+            srcSet="/images/skyline-mobile.webp 640w, /images/skyline.webp 960w, /images/skyline-1440.webp 1440w, /images/skyline-desktop.webp 2172w"
+            sizes="100vw"
             alt=""
             width="2172"
             height="724"
             loading="lazy"
           />
         </picture>
-        <p className="container">
-          {text(
-            locale,
-            "Évocation illustrée de Brazzaville",
-            "An illustrated evocation of Brazzaville",
-          )}
-        </p>
-      </div>
-      <div className="container footer-bottom">
-        <span>
-          242Places ·{" "}
-          {text(locale, "République du Congo", "Republic of the Congo")}
-        </span>
-        <a href={github}>GitHub ↗</a>
       </div>
     </footer>
   );
