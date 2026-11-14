@@ -73,6 +73,8 @@ Consultez la [documentation produit et la référence API hébergées](https://t
 
 ## Développement et licence
 
-`npm run check` vérifie le cœur et l’API. Utilisez `npm run test:api` pour les comportements API, puis `npm run build:api` et `npm run start:api` pour le serveur compilé. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
+`npm run check` vérifie le cœur, l’API et le site public. Utilisez `npm run test:api` pour les comportements API, puis `npm run build:api` et `npm run start:api` pour le serveur compilé. Les PR de tâche ciblent `dev` ; les livraisons vont de `dev` à `main`.
 
 Code/documentation : [MIT](LICENSE), © 2026 Osiris Balonga. Les faits conservent provenance et conditions sources ; MIT ne relicencie pas les publications/cartes externes. Les fixtures fictives restent réservées aux tests. Voir [les licences](docs/data-sources.fr.md).
+
+Site public : [lancement et architecture](docs/website.fr.md). Next.js et Fastify partagent le même référentiel Congo.

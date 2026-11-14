@@ -73,6 +73,8 @@ Read the [hosted product documentation and API reference](https://two42places.on
 
 ## Development and license
 
-`npm run check` validates the core and API. Use `npm run test:api` for API behavior, and `npm run build:api` then `npm run start:api` for the compiled server. Task PRs target `dev`; releases go from `dev` to `main`.
+`npm run check` validates the core, API and public website. Use `npm run test:api` for API behavior, and `npm run build:api` then `npm run start:api` for the compiled server. Task PRs target `dev`; releases go from `dev` to `main`.
 
 Code/documentation: [MIT](LICENSE), © 2026 Osiris Balonga. Source facts retain provenance and applicable terms; MIT does not relicense external publications/maps. Synthetic fixtures are tests only. See [licensing](docs/data-sources.md).
+
+Public website: [run and architecture](docs/website.md). Next.js + Fastify share the same Congo catalog.

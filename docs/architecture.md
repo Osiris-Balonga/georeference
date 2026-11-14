@@ -99,3 +99,7 @@ The write-only XLSX adapter creates SpreadsheetML parts and uses the existing ZI
 The database importer owns write policy, schema compatibility, transaction boundaries and concurrency. It consumes verified JSON/NDJSON resources, not the human CSV/XLSX layout. SQL schema generation, applying a migration and importing a dataset remain distinct actions. The public business-table path is not an arbitrary ORM/local-key mapper.
 
 Default packages carry a readable coverage summary. Detailed audit information is opt-in and has metadata role; it never becomes application place rows. Integrity verification cannot certify a complete/current geographic inventory. See [coverage](congo-reference.md), [formats](formats.md) and [migration](migration.md).
+
+## Public frontend
+
+The private apps/web workspace adds Next.js, shadcn/ui and URL-driven exploration. A small supervisor runs Next.js and loopback Fastify behind one public origin. Server pages reuse the immutable catalog; interactive discovery uses the API. See [website architecture](website.md).
