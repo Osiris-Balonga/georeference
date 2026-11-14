@@ -15,6 +15,16 @@ npm run check
 
 The check runs TypeScript validation, behavior tests, and the build. Tests use synthetic data and temporary directories. A PostgreSQL integration test uses `DATABASE_URL` when provided; a skipped integration test is not evidence that PostgreSQL transport was verified. Never point destructive test fixtures at a production database.
 
+The repository has a private API workspace alongside the public CLI/SDK package. Install from the repository root with the single lockfile; do not commit a separate API lockfile. To work on HTTP behavior:
+
+```sh
+npm run dev:api
+npm run typecheck:api
+npm run test:api
+```
+
+For the compiled server, run `npm run build:api` then `npm run start:api`. The build includes the shared core. `npm run build` and public package generation remain CLI/SDK operations. Run `npm run test:acceptance` for API/source/export parity and packed CLI isolation. See [API usage](docs/api.md) and [architecture](docs/architecture.md).
+
 ## Branches and pull requests
 
 - Create a focused task branch from `dev`, for example `feature/country-aliases`, `fix/csv-empty-values`, or `docs/import-guide`.
@@ -32,6 +42,8 @@ Write a focused test from the expected behavior or reproduced bug, run it and ob
 Use independent expected values. Do not adjust expectations to fit a broken implementation. An import/module-missing failure only proves missing scaffolding; behavioral assertions must also distinguish a concrete wrong result. Documentation and static assets use direct checks rather than artificial tests.
 
 For format adapters, cover stable IDs, non-ASCII names, absent versus null fields, unsupported options, output readability, cancellation, and any representation loss. Database changes need real engine semantics and a PostgreSQL integration path. Any new runtime dependency needs a concrete purpose and a license/maintenance check.
+
+For the API, keep geographic rules in the shared catalog/query modules. Test HTTP boundaries with the existing Node test runner and `app.inject()`; retain real-server lifecycle coverage for startup/shutdown. Cover direct and descendant neighborhood relationships, invalid versus missing typed IDs, partial empty results, pagination, conditional caching and request limits. HTTP schemas must match documented resources and must not expose internal audit blobs. Verify that API dependencies and code do not enter the public CLI package, and compare API/source/export UUIDs when changing resource projection.
 
 ## Public documentation and examples
 
