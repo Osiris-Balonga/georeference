@@ -42,11 +42,11 @@ test('each API chapter loads only its own localized contract without changing th
     }
     assert.deepEqual(methods.get.parameters.map(p => p.schema), original.paths[path].get.parameters.map((p: { schema?: unknown }) => p.schema));
   }
-  const page = await app.inject('/docs/fr/communes');
-  assert.match(page.body, /id="scalar-reference"/);
+  const page = await app.inject('/docs/fr/communes/list');
+  assert.match(page.body, /id="operation-reference"/);
   assert.match(page.body, /"locale":"fr"/);
   assert.match(page.body, /"showSidebar":false/);
-  assert.match(page.body, /\/docs\/fr\/spec\/communes.json/);
+  assert.match(page.body, /\/docs\/fr\/communes\/list\/openapi.json/);
 });
 
 test('localized service chapters describe service state rather than geographic places', async t => {

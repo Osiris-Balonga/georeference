@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildApp } from '../src/app.ts';
 
-test('country list pilot serves native Scalar separately from the existing chapter styles', async t => {
+test('country list serves native Scalar separately from guide styles', async t => {
   const app = await buildApp({ rateLimitMax: 1000 });
   t.after(() => app.close());
   const response = await app.inject('/docs/fr/countries/list');
@@ -14,8 +14,8 @@ test('country list pilot serves native Scalar separately from the existing chapt
   assert.match(response.body, /"theme":"default"/);
   assert.match(response.body, /role="status"/);
   const old = await app.inject('/docs/fr/countries');
-  assert.equal(old.statusCode, 200);
-  assert.match(old.body, /"layout":"classic"/);
+  assert.equal(old.statusCode, 302);
+  assert.equal(old.headers.location, '/docs/fr/countries/list');
 });
 
 test('country list pilot projects only GET countries with its real response and unchanged schemas', async t => {

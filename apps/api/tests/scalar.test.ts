@@ -5,10 +5,10 @@ import { buildApp } from '../src/app.ts';
 test('Scalar serves local documentation with a fresh CSP nonce and no remote client services', async t => {
   const app = await buildApp({ rateLimitMax: 1000 });
   t.after(() => app.close());
-  const one = await app.inject('/docs/fr/communes');
-  const two = await app.inject('/docs/fr/communes');
+  const one = await app.inject('/docs/fr/communes/list');
+  const two = await app.inject('/docs/fr/communes/list');
   assert.equal(one.statusCode, 200);
-  assert.match(one.body, /scalar-reference/);
+  assert.match(one.body, /operation-reference/);
   assert.doesNotMatch(one.body, /swagger-ui|cdn\.jsdelivr|fonts\.scalar\.com/);
   assert.match(one.body, /\/openapi\.json/);
   const policy = String(one.headers['content-security-policy']);
