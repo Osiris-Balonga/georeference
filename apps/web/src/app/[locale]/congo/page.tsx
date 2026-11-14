@@ -119,7 +119,7 @@ export default async function Congo({
           </p>
         </div>
       </section>
-      <section className="department-section" data-reveal>
+      <section className="department-section">
         <div className="section-title">
           <h2>
             {text(
