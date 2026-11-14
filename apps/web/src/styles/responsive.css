@@ -6,7 +6,7 @@
     padding-top: 4rem;
   }
   .map-scene {
-    height: 580px;
+    min-height: 580px;
   }
   .stats {
     padding-block: 4rem;
@@ -79,10 +79,6 @@
   .hero-intro > p:not(.eyebrow) {
     font-size: 0.9rem;
   }
-  .hero-intro .eyebrow {
-    margin-bottom: 1.2rem;
-    font-size: 0.75rem;
-  }
   .search-capsule {
     gap: 0.4rem;
     padding: 8px 8px 8px 14px;
@@ -91,7 +87,6 @@
     font-size: 0.82rem;
   }
   .map-scene {
-    height: 420px;
     min-height: 420px;
   }
   .map-art {
@@ -104,13 +99,6 @@
   }
   .place-preview > img {
     height: 140px;
-  }
-  .map-place-name {
-    bottom: 30px;
-  }
-  .map-disclaimer {
-    left: 1.2rem;
-    font-size: 0.56rem;
   }
   .stats {
     display: grid;
@@ -419,9 +407,6 @@
   .hero-intro {
     padding-top: 16px;
   }
-  .hero-intro .eyebrow {
-    margin: 0 0 12px;
-  }
   .hero-intro h1 {
     font-size: 2.55rem;
     margin-bottom: 12px;
@@ -434,7 +419,6 @@
     padding-block: 7px;
   }
   .map-scene {
-    height: 330px;
     min-height: 330px;
   }
   .place-preview {
@@ -448,9 +432,6 @@
   }
   .place-preview p {
     margin-bottom: 0.7rem;
-  }
-  .map-place-name {
-    bottom: 14px;
   }
 }
 

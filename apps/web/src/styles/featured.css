@@ -1,0 +1,49 @@
+.featured-discovery {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 900px);
+  min-width: 0;
+}
+.featured-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  padding: 12px 24px 32px;
+}
+.featured-cards .place-preview {
+  width: 100%;
+  min-width: 0;
+}
+.image-credits {
+  font-size: 0.9rem;
+  scroll-margin-top: 2rem;
+}
+.image-credits ul {
+  padding-left: 1.1rem;
+  line-height: 2;
+}
+.image-credits a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 700px) {
+  .map-scene {
+    padding-top: 3rem;
+  }
+  .featured-cards {
+    display: flex;
+    gap: 1rem;
+    padding-inline: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .featured-cards::-webkit-scrollbar {
+    display: none;
+  }
+  .featured-cards .place-preview {
+    flex: 0 0 min(280px, calc(100vw - 84px));
+    scroll-snap-align: start;
+  }
+}

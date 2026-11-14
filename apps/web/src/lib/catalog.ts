@@ -14,6 +14,23 @@ export async function overview() {
     departments: c.resources.departments,
     coverage: c.coverage,
     version: c.metadata.datasetVersion,
+    featured: (["brazzaville", "pointe-noire", "dolisie"] as const).map(
+      (key, index) => {
+        const name = ["Brazzaville", "Pointe-Noire", "Dolisie"][index];
+        const city = c.resources.communes.find((row) => row.name === name)!;
+        const coverage = c.coverage.communes.find((row) => row.id === city.id)!;
+        return {
+          key,
+          id: city.id,
+          name: city.name,
+          department: c.resources.departments.find(
+            (row) => row.id === city.departmentId,
+          )!.name,
+          arrondissements: coverage.arrondissements,
+          neighborhoods: coverage.namedNeighborhoods,
+        };
+      },
+    ),
   };
 }
 export async function details(id: string) {

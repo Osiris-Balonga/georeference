@@ -1,4 +1,6 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { CityImage } from "@/components/city-image";
 import { SearchForm } from "@/components/search-form";
 import { overview } from "@/lib/catalog";
 import { cityId, bacongoId, text, type Locale } from "@/lib/i18n";
@@ -40,21 +42,16 @@ export default async function Congo({
       </header>
       <section className="editorial-split" data-reveal>
         <figure>
-          <img
-            src="/images/riverfront.webp"
-            width="768"
-            height="512"
-            alt={text(
-              locale,
-              "Évocation de Brazzaville au bord du fleuve",
-              "An evocation of Brazzaville by the river",
-            )}
+          <CityImage
+            city="brazzaville"
+            alt="Brazzaville — Quartier OCH"
+            sizes="(max-width:700px) calc(100vw - 40px), 640px"
           />
           <figcaption>
             {text(
               locale,
-              "Vue illustrative de Brazzaville",
-              "Illustrative view of Brazzaville",
+              "Brazzaville — Quartier OCH",
+              "Brazzaville — Quartier OCH",
             )}
           </figcaption>
         </figure>
@@ -76,15 +73,15 @@ export default async function Congo({
                     <li>
                       {text(
                         locale,
-                        "Communes → arrondissements, quartiers",
-                        "Communes → arrondissements, neighborhoods",
+                        "Communes : arrondissements, quartiers",
+                        "Communes : arrondissements, neighborhoods",
                       )}
                     </li>
                     <li>
                       {text(
                         locale,
-                        "Districts → communautés, villages",
-                        "Districts → communities, villages",
+                        "Districts : communautés, villages",
+                        "Districts : communities, villages",
                       )}
                     </li>
                   </ul>
@@ -121,7 +118,7 @@ export default async function Congo({
             <li key={d.id}>
               <Link href={"/" + locale + "/places/" + d.id}>
                 {d.name}
-                <span aria-hidden="true">→</span>
+                <ArrowRight size={18} aria-hidden="true" />
               </Link>
             </li>
           ))}
@@ -139,11 +136,11 @@ export default async function Congo({
           <Link href={"/" + locale + "/places/" + cityId}>
             Brazzaville <small>({text(locale, "Commune", "Commune")})</small>
           </Link>
-          <span>→</span>
+          <ArrowRight size={18} aria-hidden="true" />
           <Link href={"/" + locale + "/places/" + bacongoId}>
             Bacongo <small>(Arrondissement)</small>
           </Link>
-          <span>→</span>
+          <ArrowRight size={18} aria-hidden="true" />
           <Link
             href={"/" + locale + "/places/e2917417-ab73-4f0a-9345-50d1039702ae"}
           >
@@ -154,7 +151,7 @@ export default async function Congo({
             className="outline-link example-action"
             href={"/" + locale + "/places/" + cityId}
           >
-            {text(locale, "Explorer Brazzaville", "Explore Brazzaville")} ↗
+            {text(locale, "Explorer Brazzaville", "Explore Brazzaville")}
           </Link>
         </div>
         <p>

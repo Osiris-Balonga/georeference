@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { FeaturedPlaces } from "@/components/featured-places";
+import { CityImage } from "@/components/city-image";
 import { notFound } from "next/navigation";
-import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 import { overview } from "@/lib/catalog";
 import { cityId, text, type Locale } from "@/lib/i18n";
@@ -10,16 +12,12 @@ export default async function Home({
   params: Promise<{ locale: Locale }>;
 }) {
   const { locale } = await params,
-    { coverage } = await overview();
+    { coverage, featured } = await overview();
   if (locale !== "fr" && locale !== "en") notFound();
   return (
     <>
       <section className="home-hero">
         <div className="hero-intro container">
-          <p className="eyebrow">
-            <MapPin size={15} />
-            {text(locale, "Les lieux du Congo", "The places of the Congo")}
-          </p>
           <h1>
             {text(locale, "Un pays à découvrir.", "A country to discover.")}
             <br />
@@ -49,55 +47,7 @@ export default async function Home({
             width="1536"
             height="1024"
           />
-          <Link
-            href={"/" + locale + "/places/" + cityId}
-            className="place-preview"
-          >
-            <img
-              src="/images/riverfront.webp"
-              alt={text(
-                locale,
-                "Évocation illustrée de Brazzaville",
-                "Illustrative view of Brazzaville",
-              )}
-              width="360"
-              height="220"
-              fetchPriority="high"
-            />
-            <div>
-              <small>{text(locale, "Commune", "Commune")}</small>
-              <h2>Brazzaville</h2>
-              <p>
-                {text(
-                  locale,
-                  "Département de Brazzaville",
-                  "Department of Brazzaville",
-                )}
-              </p>
-              <span>
-                {
-                  coverage.communes.find((x) => x.id === cityId)
-                    ?.arrondissements
-                }{" "}
-                {text(
-                  locale,
-                  "arrondissements répertoriés",
-                  "recorded arrondissements",
-                )}{" "}
-                <ArrowRight size={17} />
-              </span>
-            </div>
-          </Link>
-          <span className="map-place-name" aria-hidden="true">
-            Brazzaville
-          </span>
-          <p className="map-disclaimer">
-            {text(
-              locale,
-              "Carte et visuel illustratifs · géométries non disponibles",
-              "Illustrative map and image · geographic boundaries unavailable",
-            )}
-          </p>
+          <FeaturedPlaces locale={locale} cities={featured} />
         </div>
       </section>
       <section className="container stats" data-reveal>
@@ -152,27 +102,23 @@ export default async function Home({
         </div>
         <div className="hierarchy-preview">
           <span>République du Congo</span>
-          <span>↳ Brazzaville</span>
-          <span>↳ Bacongo</span>
+          <span> Brazzaville</span>
+          <span> Bacongo</span>
           <Link href={"/" + locale + "/congo"}>
             {text(
               locale,
               "Comprendre les liens",
               "Understand the relationships",
             )}{" "}
-            →
           </Link>
         </div>
         <Link
           href={"/" + locale + "/places/" + cityId}
           className="destination-preview"
         >
-          <img
-            src="/images/riverfront.webp"
-            width="420"
-            height="240"
-            alt=""
-            loading="lazy"
+          <CityImage
+            city="brazzaville"
+            sizes="(max-width:700px) calc(100vw - 40px), 400px"
           />
           <span>
             {text(

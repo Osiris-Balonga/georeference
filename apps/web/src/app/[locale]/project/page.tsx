@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { CityImage } from "@/components/city-image";
 import { catalog } from "@/lib/catalog";
 import { text, type Locale } from "@/lib/i18n";
 import { Database, Globe, Code } from "lucide-react";
+import { imageCredits, photoLicense } from "@/lib/image-credits";
 export const metadata = { title: "Le projet · The project" };
 export default async function Project({
   params,
@@ -42,9 +44,17 @@ export default async function Project({
           </p>
         </div>
         <figure>
-          <img src="/images/riverfront.webp" alt="" width="768" height="512" />
+          <CityImage
+            city="brazzaville"
+            alt="Brazzaville — Quartier OCH"
+            sizes="(max-width:700px) calc(100vw - 40px), 640px"
+          />
           <figcaption>
-            {text(locale, "Visuel illustratif", "Illustrative image")}
+            {text(
+              locale,
+              "Brazzaville — Quartier OCH",
+              "Brazzaville — Quartier OCH",
+            )}
           </figcaption>
         </figure>
       </header>
@@ -120,7 +130,7 @@ export default async function Project({
             {c.metadata.sources.map((s) => (
               <li key={s.name}>
                 {/^https?:\/\//.test(s.url) ? (
-                  <a href={s.url}>{s.name} ↗</a>
+                  <a href={s.url}>{s.name} </a>
                 ) : (
                   <span>{s.name}</span>
                 )}
@@ -134,7 +144,6 @@ export default async function Project({
             "Détail des sources et de la couverture",
             "Detailed sources and coverage",
           )}{" "}
-          ↗
         </a>
       </section>
       <section data-reveal>
@@ -147,7 +156,7 @@ export default async function Project({
             )}
           </h2>
           <a href={"/docs/" + locale + "/introduction"}>
-            {text(locale, "Voir la documentation", "Read the documentation")} ↗
+            {text(locale, "Voir la documentation", "Read the documentation")}
           </a>
         </div>
         <div className="usage-columns">
@@ -196,12 +205,37 @@ export default async function Project({
                       : "/docs/" + locale + "/" + slug
                   }
                 >
-                  {text(locale, "Découvrir", "Discover")} ↗
+                  {text(locale, "Découvrir", "Discover")}
                 </Link>
               </div>
             );
           })}
         </div>
+      </section>
+      <section id="images" className="image-credits" data-reveal>
+        <h2>{text(locale, "Crédits des images", "Image credits")}</h2>
+        <p>
+          {text(
+            locale,
+            "Photographies redimensionnées et compressées en WebP ; leur cadrage s’adapte à l’écran.",
+            "Photographs resized and compressed as WebP; display framing adapts to the screen.",
+          )}
+        </p>
+        <ul>
+          {imageCredits.map((image) => (
+            <li key={image.url}>
+              <a href={image.url}>{image.title}</a> — {image.author} ·{" "}
+              <a href={photoLicense}>CC BY-SA 4.0</a>
+            </li>
+          ))}
+        </ul>
+        <p>
+          {text(
+            locale,
+            "La carte décorative, le panorama de Brazzaville dans le footer et ses ciels sont des illustrations. Ils ne représentent pas des limites géographiques mesurées.",
+            "The decorative map, footer panorama of Brazzaville and its skies are illustrations. They do not depict surveyed geographic boundaries.",
+          )}
+        </p>
       </section>
       <section className="contribution" data-reveal>
         <div>
@@ -224,7 +258,7 @@ export default async function Project({
           className="docs-link"
           href="https://github.com/Osiris-Balonga/242places"
         >
-          {text(locale, "Contribuer sur GitHub", "Contribute on GitHub")} ↗
+          {text(locale, "Contribuer sur GitHub", "Contribute on GitHub")}
         </a>
         <small>
           {text(
