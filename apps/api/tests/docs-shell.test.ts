@@ -29,7 +29,7 @@ test('every guide code block offers a localized copy control and guide headings 
   const app = await buildApp({ rateLimitMax: 1000 });
   t.after(() => app.close());
   for (const locale of ['fr', 'en']) {
-    for (const guide of ['introduction', 'quickstart', 'model', 'requests']) {
+    for (const guide of ['introduction', 'cli', 'exports', 'sql', 'seeding', 'sdk', 'quickstart', 'model', 'requests']) {
       const response = await app.inject(`/docs/${locale}/${guide}`);
       const blocks = [...response.body.matchAll(/<pre>/g)].length;
       const controls = [...response.body.matchAll(/data-copy-code/g)].length;

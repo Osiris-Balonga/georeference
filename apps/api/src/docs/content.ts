@@ -1,3 +1,4 @@
+import { productChapters } from './product.ts';
 export type Locale = 'fr' | 'en';
 export interface Section { id: string; title: string; html: string }
 export interface Chapter { slug: string; title: string; description: string; sections: Section[]; api?: boolean }
@@ -35,6 +36,7 @@ export function chapters(locale: Locale): Chapter[] {
       section('overview', fr ? 'Un référentiel, trois façons de l’utiliser' : 'One reference, three ways to use it', fr
         ? '<p>242Places fournit les données géographiques de la République du Congo : départements, communes, arrondissements, quartiers et villages. Choisissez le mode d’intégration qui correspond à votre projet.</p><dl class="ways"><div><dt>API HTTP</dt><dd>Interrogez les lieux à la demande, sans héberger le référentiel dans votre application.</dd></div><div><dt>Fichiers autonomes</dt><dd>Générez du JSON, CSV, Excel ou SQL avec la CLI. Aucune dépendance permanente dans votre projet.</dd></div><div><dt>SDK optionnel</dt><dd>Consultez le référentiel localement depuis votre code JavaScript ou TypeScript.</dd></div></dl>'
         : '<p>242Places provides geographic data for the Republic of the Congo: departments, communes, arrondissements, neighborhoods and villages. Choose the integration that fits your project.</p><dl class="ways"><div><dt>HTTP API</dt><dd>Query places on demand without hosting the reference in your application.</dd></div><div><dt>Standalone files</dt><dd>Generate JSON, CSV, Excel or SQL with the CLI. No permanent project dependency.</dd></div><div><dt>Optional SDK</dt><dd>Query the reference locally from JavaScript or TypeScript.</dd></div></dl>'),
+      section('choose', fr ? 'Choisir votre intégration' : 'Choose your integration', `<p>${link('cli', fr ? 'Générer des fichiers avec le CLI' : 'Generate files with the CLI')} · ${link('exports', 'JSON / CSV / Excel')} · ${link('sql', 'SQL / SQLite')} · ${link('seeding', fr ? 'Importer en base' : 'Import into a database')} · ${link('sdk', fr ? 'Utiliser le SDK' : 'Use the SDK')}</p>`),
       section('start', fr ? 'Commencer par une ville' : 'Start with a city', fr
         ? `<p>Pour alimenter un formulaire, commencez par les communes. Récupérez ensuite les arrondissements de la ville choisie, puis ses quartiers.</p><pre><code>GET /v1/communes?q=Brazzaville</code></pre><p>${link('quickstart', 'Suivre le premier appel')} ou ${link('communes', 'consulter la référence des communes')}.</p>`
         : `<p>For a location form, start with communes. Then retrieve the selected city’s arrondissements and neighborhoods.</p><pre><code>GET /v1/communes?q=Brazzaville</code></pre><p>${link('quickstart', 'Make your first request')} or ${link('communes', 'browse the commune reference')}.</p>`),
@@ -42,6 +44,7 @@ export function chapters(locale: Locale): Chapter[] {
         ? `<p>Le périmètre est la République du Congo (CG / COG), et non la République démocratique du Congo. La couverture reste partielle : une liste vide ne prouve pas l’absence d’un lieu. Les identifiants sont des UUID stables, partagés par l’API et les exports.</p><p>${link('reference', 'Vérifier la version et la couverture')} avant d’exploiter les données.</p>`
         : `<p>The scope is the Republic of the Congo (CG / COG), not the Democratic Republic of the Congo. Coverage remains partial: an empty list does not prove a place is absent. Stable UUIDs are shared by the API and file exports.</p><p>${link('reference', 'Check the dataset version and coverage')} before using the data.</p>`),
     ] },
+    ...productChapters(locale),
     { slug: 'quickstart', title: fr ? 'Premier appel' : 'Quickstart', description: fr
       ? 'De Brazzaville à ses quartiers, en quelques requêtes.' : 'From Brazzaville to its neighborhoods in a few requests.', sections: [
       section('request', fr ? 'Votre première requête' : 'Your first request', fr

@@ -7,7 +7,7 @@ test('documentation has addressable bilingual chapters and a page-local table of
   t.after(() => app.close());
   const root = await app.inject('/docs/');
   assert.equal(root.statusCode, 302);
-  assert.equal(root.headers.location, '/docs/fr/introduction');
+  assert.equal(root.headers.location, '/docs/en/introduction');
   const fr = await app.inject('/docs/fr/introduction');
   assert.equal(fr.statusCode, 200);
   assert.match(fr.body, /<html lang="fr"/);

@@ -23,7 +23,7 @@ test('Scalar serves local documentation with a fresh CSP nonce and no remote cli
   assert.match(one.body, /showDeveloperTools[^a-z]+never/);
   const bare = await app.inject('/docs');
   assert.equal(bare.statusCode, 302);
-  assert.equal(bare.headers.location, '/docs/fr/introduction');
+  assert.equal(bare.headers.location, '/docs/en/introduction');
   const spec = await app.inject('/openapi.json');
   assert.equal(spec.statusCode, 200);
   assert.ok(spec.json().paths['/v1/communes']);

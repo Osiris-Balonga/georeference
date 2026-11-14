@@ -4,6 +4,7 @@ import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
 import { registerDocs } from '../docs/routes.ts';
 import { serviceVersion } from '../routes/reference.ts';
+import { preferredLocale } from '../docs/preferences.ts';
 
 export async function registerOpenApi(app: FastifyInstance, catalog: GeographicCatalog): Promise<void> {
   await app.register(swagger, {
@@ -18,7 +19,8 @@ export async function registerOpenApi(app: FastifyInstance, catalog: GeographicC
     routePrefix: '/docs',
     hooks: { preHandler: async (request, reply) => {
       if (request.url.split('?')[0]?.replace(/\/$/, '') === '/docs') {
-        return reply.redirect('/docs/fr/introduction', 302);
+        const locale = preferredLocale(request.headers['accept-language'], request.headers.cookie);
+        return reply.header('Cache-Control', 'no-store').header('Vary', 'Accept-Language, Cookie').redirect(`/docs/${locale}/introduction`, 302);
       }
     } },
     configuration: {
@@ -28,5 +30,6 @@ export async function registerOpenApi(app: FastifyInstance, catalog: GeographicC
     },
   });
   app.get('/openapi.json', { schema: { hide: true } }, () => app.swagger());
+  app.get('/', { schema: { hide: true } }, (_request, reply) => reply.header('Cache-Control', 'no-store').redirect('/docs', 302));
   registerDocs(app, catalog);
 }

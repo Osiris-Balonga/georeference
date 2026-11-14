@@ -36,9 +36,11 @@ filter.addEventListener('input', () => {
   navigation.scrollTop = 0;
 });
 const theme = document.querySelector('.docs-theme');
-let light = false;
-try { light = localStorage.getItem('georeference-theme') === 'light'; } catch {}
+let light = document.documentElement.dataset.theme === 'light';
+let explicitTheme = false;
+try { explicitTheme = ['light', 'dark'].includes(localStorage.getItem('242places-theme')); } catch {}
 function syncTheme() {
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
   document.body.classList.toggle('light-mode', light);
   document.body.classList.toggle('dark-mode', !light);
   theme.setAttribute('aria-pressed', String(light));
@@ -46,9 +48,22 @@ function syncTheme() {
 }
 syncTheme();
 theme.addEventListener('click', () => {
+  explicitTheme = true;
   light = !light; syncTheme();
-  try { localStorage.setItem('georeference-theme', light ? 'light' : 'dark'); } catch {}
+  try { localStorage.setItem('242places-theme', light ? 'light' : 'dark'); } catch {}
   window.dispatchEvent(new CustomEvent('docs:theme', {detail: light ? 'light' : 'dark'}));
+});
+try {
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', event => {
+    if (explicitTheme) return;
+    light = event.matches; syncTheme();
+    window.dispatchEvent(new CustomEvent('docs:theme', {detail: light ? 'light' : 'dark'}));
+  });
+} catch {}
+document.querySelectorAll('[data-locale]').forEach(link => {
+  link.addEventListener('click', () => {
+    document.cookie = '242places-locale=' + link.dataset.locale + '; Path=/; Max-Age=31536000; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+  });
 });
 document.querySelectorAll('[data-copy-code]').forEach(button => {
   let timer;
