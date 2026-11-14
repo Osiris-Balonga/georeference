@@ -122,7 +122,16 @@ async function mount() {
       requestAnimationFrame(() => {
         let fragment = operationFragment;
         try { fragment = decodeURIComponent(location.hash.slice(1)) || fragment; } catch {}
-        const target = document.getElementById(slug + '/' + fragment) ?? document.getElementById(slug + '/' + operationFragment);
+        const operation = document.getElementById(slug + '/' + operationFragment);
+        const target = document.getElementById(slug + '/' + fragment) ?? operation;
+        const main = document.getElementById('reference-main');
+        const sizePage = () => {
+          if (!operation) return;
+          const offset = operation.getBoundingClientRect().top - main.getBoundingClientRect().top;
+          main.style.minHeight = 'calc(100dvh - ' + document.querySelector('.reference-header').clientHeight + 'px + ' + offset + 'px)';
+        };
+        sizePage();
+        window.addEventListener('resize', sizePage);
         if (target) window.scrollTo({top: scrollY + target.getBoundingClientRect().top - document.querySelector('.reference-header').clientHeight, behavior: 'instant'});
       });
     };
