@@ -22,5 +22,11 @@ export async function details(id: string) {
     ...placeSummary(c, id),
     ancestors: placeAncestors(c, id),
     children: discoverPlaces(c, { parent: id, direct: true, limit: 20 }),
+    descendantCounts: Object.fromEntries(
+      Object.entries(c.resources).map(([key, rows]) => [
+        key,
+        rows.filter((row) => c.hasAncestor(row.id, id)).length,
+      ]),
+    ),
   };
 }

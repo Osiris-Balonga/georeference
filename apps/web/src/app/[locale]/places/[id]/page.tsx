@@ -5,13 +5,16 @@ import { details } from "@/lib/catalog";
 import { text, label, type Locale } from "@/lib/i18n";
 import { Explorer } from "@/components/explorer";
 import { ShareLink } from "@/components/share-link";
+import { describePlace } from "@/lib/place-description";
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: Locale; id: string }>;
 }) {
   try {
-    return { title: (await details((await params).id)).name };
+    const { id, locale } = await params,
+      place = await details(id);
+    return { title: place.name, description: describePlace(place, locale) };
   } catch {
     return { title: "242Places" };
   }
@@ -53,15 +56,7 @@ export default async function PlacePage({
       <div className="page-head">
         <span className="kind-label">{label(place.resource, locale)}</span>
         <h1>{place.name}</h1>
-        {place.ancestors.at(-1) && (
-          <p>
-            {text(locale, "Rattaché à", "Part of")}{" "}
-            <Link href={"/" + locale + "/places/" + place.ancestors.at(-1)!.id}>
-              {place.ancestors.at(-1)!.name}
-            </Link>{" "}
-            · {label(place.ancestors.at(-1)!.resource, locale)}
-          </p>
-        )}
+        <p className="place-description">{describePlace(place, locale)}</p>
       </div>
       <div className="place-detail-grid">
         <div>
