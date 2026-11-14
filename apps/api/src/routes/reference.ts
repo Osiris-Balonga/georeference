@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { FastifyInstance } from 'fastify';
 import { Type } from 'typebox';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { RESOURCE_NAMES, type GeographicCatalog } from 'georeference';
+import { RESOURCE_NAMES, type GeographicCatalog } from '242places';
 import { errorResponses, metadata, noQuery, uuid } from '../schemas/common.ts';
 import { meta } from './resources.ts';
 
@@ -29,16 +29,25 @@ export function registerReferenceRoutes(app: FastifyInstance, catalog: Geographi
   typedApp.get('/v1/dataset', { schema: {
     tags: ['reference'], summary: 'Describe the deployed Congo reference and its sources', querystring: noQuery,
     response: { 200: Type.Object({ data: dataset, meta: metadata }), ...errorResponses },
-  } }, () => ({ data: {
-    apiVersion: 'v1' as const, serviceVersion, contractVersion: catalog.metadata.contractVersion,
-    datasetVersion: catalog.metadata.datasetVersion, country: { iso2: 'CG' as const, iso3: 'COG' as const },
-    reviewedAt: catalog.coverage.reviewedAt, sources: [...catalog.metadata.sources],
-  }, meta: meta(catalog) }));
+  } }, () => datasetResponse(catalog));
   typedApp.get('/v1/coverage', { schema: {
     tags: ['reference'], summary: 'Describe known counts and dated partial geographic coverage', querystring: noQuery,
     response: { 200: Type.Object({ data: coverage, meta: metadata }), ...errorResponses },
-  } }, () => ({ data: {
+  } }, () => coverageResponse(catalog));
+}
+
+export function datasetResponse(catalog: GeographicCatalog) {
+  return { data: {
+    apiVersion: 'v1' as const, serviceVersion, contractVersion: catalog.metadata.contractVersion,
+    datasetVersion: catalog.metadata.datasetVersion, country: { iso2: 'CG' as const, iso3: 'COG' as const },
+    reviewedAt: catalog.coverage.reviewedAt,
+    sources: catalog.metadata.sources.map(({ name, url, license, attribution, revision }) => ({ name, url, license, attribution, revision })),
+  }, meta: meta(catalog) };
+}
+
+export function coverageResponse(catalog: GeographicCatalog) {
+  return { data: {
     ...catalog.coverage, sourceDates: [...catalog.coverage.sourceDates],
     communes: catalog.coverage.communes.map(commune => ({ ...commune, observationDates: [...commune.observationDates] })),
-  }, meta: meta(catalog) }));
+  }, meta: meta(catalog) };
 }

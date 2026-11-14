@@ -8,6 +8,20 @@ The bundled reference covers **Republic of the Congo, CG/COG**, exclusively. It 
 
 The catalog combines observations made at different dates. Government electoral tables and municipal tables supply dated neighborhood names; later laws establish changed administrative parents; a 2025 national table corroborates departmental membership. Read the generated `README.txt` for a coverage summary. Add `--audit` for detailed `coverage.json` and per-resource `provenance.json`. Do not infer a new observation date from the software release date.
 
+## Current administrative revision `cg-reference-2026-11-14.1`
+
+The maintainer confirms that the cascade received on November 14, 2026 comes from a public-administration contact. It enriches the reference to 4,353 entities, including 782 neighborhoods and 3,285 villages. All 398 earlier UUIDs are retained. Existing canonical names retain their accents; supplied variants and corrections remain traceable in evidence.
+
+All 4,385 rows are accounted for: 4,335 imported, 3 identical duplicates, 10 collection tiers named after their commune, and 37 unresolved rows (26 missing parents, 9 missing names, 2 unclassified centers). The 35 code/name collisions preserve separate places with distinct UUIDs. Seventeen historical neighborhoods absent or unresolved in the cascade remain available. The country is retained separately.
+
+CU/CR labels are transcribed as urban/rural communities according to the supplied administrative source. Its CR-parented neighborhoods expose `ruralCommunityId`. These are supplied source relationships, not independent legal certification. A singleton “Commune (Arrondissement)” collection does not automatically create an administrative arrondissement; its children remain under the commune.
+
+The geographic transcription without personal metadata is in the [normalized source](../reference/sources/administrative-cascade.json). The [audit](../reference/cascade-audit.json) records each row disposition. `npm run data:check` verifies byte-for-byte reproduction with the persistent identity registry. `observedAt: null` distinguishes an unknown observation date from the `receivedAt` receipt date. Upstream reuse terms are unspecified; the code MIT license does not replace them.
+
+For an existing SQL database, add the nullable `rural_community_id` column, its rural-community foreign key and update the exactly-one-parent constraint before applying new data. Exports generate the complete schema for a new database and do not silently migrate existing tables. Older JSON without this field remains readable.
+
+The previous documentary revision below remains the history of earlier sources.
+
 ### Curated revision `cg-reference-2026-11-12.2`
 
 This revision has **398 entities**: 1 country, 15 departments, 16 communes, 23 arrondissements, 89 districts, 4 urban communities, and 250 named neighborhoods. These are reference counts, **not verified national totals** for every kind. It also records 10 unresolved jurisdiction labels and 29 historical code-only neighborhood observations remaining unnamed after the 2024 cross-reference. Such observations are gaps, not extra named entities. No complete named-village inventory is claimed.

@@ -2,6 +2,12 @@
 
 [English](migration.md) · [Accueil](../README.fr.md) · [Formats](formats.fr.md)
 
+## Passer à 242Places
+
+Le produit s’appelle désormais 242Places. Utilisez `npx 242places` pour les fichiers, ou installez `242places` uniquement pour le SDK optionnel. Les imports utilisent `242places` et `242places/seeding`. La génération écrit par défaut dans `./data/242places` ; `--output` conserve le dossier de votre choix. Les versions déjà publiées sous `georeference` restent disponibles pour les installations existantes. Le renommage conserve les UUID, les versions des données, les champs métier, les routes HTTP `/v1` et les noms internes des snapshots et journaux d’import. Les fichiers déjà générés ne sont pas réécrits.
+
+## Ancien contrat d’export
+
 La version 1.1.0 modifie volontairement les sorties publiques de npm 1.0.0 et des anciens exports de développement. Conservez fichiers/sauvegardes, générez dans un nouveau dossier et comparez avant remplacement.
 
 | Ancienne sortie | Nouvelle sortie |

@@ -2,7 +2,7 @@
 
 [Français](api.fr.md) · [Home](../README.md) · [Architecture](architecture.md)
 
-The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Run it from a source checkout. The published `georeference@1.1.0` package remains the standalone file generator and optional local SDK; running `npx georeference` does not start this server. This guide describes local operation, not an already deployed public service.
+The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Use the [hosted documentation and API](https://two42places.onrender.com/) or run it from a source checkout. The `242places@1.2.1` npm package remains the standalone file generator and optional local SDK; running `npx 242places` does not start this server. See [deployment](deployment.md) for hosting configuration.
 
 ## Run locally
 
@@ -22,6 +22,26 @@ npm run start:api
 
 `build:api` builds the shared core before the API. `npm run build` still builds the CLI/SDK package. The API is a private npm workspace with its own HTTP dependencies; it is not installed as a permanent dependency when generating files in another project.
 
+## Interactive reference with Scalar
+
+Open `http://127.0.0.1:3000/` or `/docs` after starting the API. The site root leads to documentation. On first entry, a French primary browser language opens French; all other or unavailable languages open English. Explicit `/docs/fr/...` and `/docs/en/...` links remain authoritative. Choosing FR/EN keeps the chapter and stores a language cookie for later entry visits. The theme follows the system before the first paint, falling back to dark when unavailable. A manual theme choice is stored locally and takes precedence; without it, system theme changes are followed. Blocked storage does not prevent use.
+
+Guides and operations share one header, navigation, page filter and light/dark controls. Product chapters cover CLI generation, JSON/CSV/Excel, SQL/SQLite, database import and the optional SDK. API guides cover the first request, relationships and errors. Chapters have independent addresses, previous/next navigation, page-local contents and copy controls. Mobile navigation uses the menu button.
+
+Guides cover the first request, place relationships, pagination and errors. Every API operation has its own page using Scalar's native modern layout and default components: parameters on the left, request and response examples on the right when space permits. The reference navigation groups lists, UUID lookups and relationships by resource; it also includes dataset, coverage and health operations. There is no additional contents column on operation pages. Older category URLs redirect to their first operation.
+
+Operation pages start at their natural top. Scalar's document overview, server/client-library introduction and category summary are omitted from this dedicated view, so scrolling upward does not reveal duplicate headings or empty panels. Older category/operation hash links normalize to the page URL; explicit field and response deep links remain supported. Choose the snippet language directly from the operation's native code example. A small presentation adapter targets pinned Scalar1.78.1; check the hidden overview frames, single visible page heading and normal top-of-page position when upgrading. No initial scroll offset or calculated page height is used.
+
+On `/docs/en/communes/list`, open **Test Request**, enter `q=Brazzaville`, then send the request. Use `/docs/en/communes/get` for a UUID lookup or `/docs/en/arrondissements/by-communes` for the arrondissements of a commune. Geographic examples and suggested UUIDs come from the loaded catalog; an empty category never receives an invented example. Language links keep the current operation. Native copy buttons, response schemas and the request client remain available. These requests use the API's normal validation and rate limits.
+
+The native request client fills the viewport, with its close button integrated into its toolbar. Close it or press Escape to return to the operation at the same reading position. The host keeps the operation URL stable while Scalar manages the client and keyboard focus. Request controls and response panels keep Scalar's behavior and styling. The small window-frame CSS adapter targets the pinned Scalar version; verify full-screen sizing and keyboard return when upgrading Scalar.
+
+`@fastify/swagger` generates `/openapi.json` directly from the route schemas; **Scalar replaces Swagger UI**, not the OpenAPI generator. Each operation page serves its isolated projection at the same address followed by `/openapi.json`, preserving parameter and response schemas. The older category projections at `/docs/{fr|en}/spec/{chapter}.json` remain available, as does the full contract at `/openapi.json`. No duplicate handwritten schemas are maintained. English/French chapter content, UI labels and operation descriptions are provided; technical field names, URLs, JSON keys and place names retain their original identifiers.
+
+Fastify serves the reading shell, styles and small navigation script; Scalar's JavaScript loads only on API reference chapters, locally. Default remote fonts, telemetry, AI assistance and developer promotion tools are disabled; requests go directly to this API without a hosted Scalar proxy. No Scalar account, frontend framework or paid service is required. The documentation uses a per-response CSP nonce; its HTML must not be cached by a reverse proxy. The current root-relative URLs assume the API is hosted at the origin root, not under a rewritten path prefix.
+
+See the official [Fastify integration](https://scalar.com/products/api-references/integrations/fastify) and [configuration reference](https://scalar.com/products/api-references/configuration). The UI comes from Scalar; this repository's usage guides remain available in English and French.
+
 ## Resources and filters
 
 Use `GET` to retrieve JSON or `HEAD` for the corresponding headers. Each resource has a list route and a detail route, for example `/v1/communes` and `/v1/communes/{id}`. IDs are persistent UUIDs, shared with JSON and database exports.
@@ -35,7 +55,7 @@ Use `GET` to retrieve JSON or `HEAD` for the corresponding headers. Each resourc
 | `/v1/arrondissements` | Arrondissements | `communeId` |
 | `/v1/urban-communities` | Urban communities | `districtId` |
 | `/v1/rural-communities` | Rural communities | `districtId` |
-| `/v1/neighborhoods` | Neighborhoods | `communeId`, `arrondissementId`, `urbanCommunityId` |
+| `/v1/neighborhoods` | Neighborhoods | `communeId`, `arrondissementId`, `urbanCommunityId`, `ruralCommunityId` |
 | `/v1/villages` | Villages | `districtId`, `ruralCommunityId`, `urbanCommunityId` |
 
 List routes accept `q`, `limit` and `offset`. Search is a case/accent-insensitive substring match on names; it does not merge places with similar names. `q` is limited to 100 trimmed characters. The default `limit` is 50, the maximum is 100, and `offset` starts at 0. Results have a deterministic name/UUID order. Unknown parameters and invalid values are rejected.
@@ -107,7 +127,7 @@ For example, the commune detail `/v1/communes/be83c679-2667-4935-9dad-0f63456298
     "departmentId": "bf82f843-df29-444b-ba2d-fc9df50f220f"
   },
   "meta": {
-    "datasetVersion": "cg-reference-2026-11-12.2",
+    "datasetVersion": "cg-reference-2026-11-14.1",
     "coverageStatus": "partial"
   }
 }
@@ -115,7 +135,7 @@ For example, the commune detail `/v1/communes/be83c679-2667-4935-9dad-0f63456298
 
 `/v1/dataset` describes the deployed reference through `apiVersion`, `serviceVersion`, `contractVersion`, `datasetVersion`, `country`, `reviewedAt` and `sources`. Source metadata includes usage rights and revision information. `/v1/coverage` provides known resource `counts`, `sourceDates` and `communes` coverage summaries, with `status: "partial"` and `completeGeographicInventory: false`. Both endpoints use the same `data`/`meta` envelope. Detailed source anomalies are not inserted into ordinary place responses.
 
-The bundled reference currently contains 398 records, including 16 communes and 250 named neighborhoods. Brazzaville has 9 documented arrondissements and 74 named neighborhoods. These counts describe covered records, not certified current geographic totals. There are currently no curated village or rural-community rows. An empty list means no matching known observations; it does not prove that those places do not exist. Coordinates and boundaries are not inferred. See [reference and sources](congo-reference.md).
+The enriched reference contains **4,353 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 92 districts, 47 urban communities, 92 rural communities, 782 neighborhoods and 3,285 villages. Existing UUIDs are retained. The maintainer-supplied administrative cascade was received on November 14, 2026; its observation dates are unknown. Coverage remains partial and geometry is not invented. Brazzaville has 9 arrondissements and 88 known neighborhoods. See [reference and sources](congo-reference.md).
 
 The URL prefix `/v1` (`apiVersion`) versions the HTTP contract. `serviceVersion` versions the API software, `contractVersion` identifies the underlying data contract, and `datasetVersion` identifies the factual reference. A server serves its deployed dataset; older datasets are not automatically queryable through it. Record the dataset version with stored results, and use pinned release data when you need to reproduce an export.
 
@@ -160,3 +180,5 @@ The tests include HTTP injection and a real server lifecycle. `npm run test:acce
 ## Files and database imports
 
 The API queries data; it does not seed your database or execute export SQL. Use the [CLI](generation.md) to generate standalone JSON, CSV, Excel or database exports. Use the explicit [import workflow](seeding.md) to write a verified resource package into PostgreSQL. The optional local SDK is a third integration choice and does not require this HTTP service.
+
+Neighborhoods may also belong to a rural community: `GET /v1/rural-communities/{id}/neighborhoods`. The `ruralCommunityId` field exposes that parent without inventing a commune.

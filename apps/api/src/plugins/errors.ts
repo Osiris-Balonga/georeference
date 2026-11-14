@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { CatalogQueryError } from 'georeference';
+import { CatalogQueryError } from '242places';
 
 export function errorBody(request: FastifyRequest, code: string, message: string) {
   return { error: { code, message, requestId: request.id } };

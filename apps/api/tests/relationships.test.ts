@@ -6,6 +6,19 @@ const brazzaville = 'be83c679-2667-4935-9dad-0f63456298ad';
 const talangai = '362c342f-6cc9-4976-afa9-cbea0bfd35cc';
 const impfondo = '1035216a-3521-4110-90ba-5d90c940fb84';
 
+test('rural-community neighborhoods are navigable without changing their source parent',async t=>{
+ const app=await buildApp();t.after(()=>app.close());
+ const rural=await app.inject('/v1/rural-communities?q=Kakamoeka');
+ assert.equal(rural.statusCode,200);assert.equal(rural.json().data.length,1);
+ const id=rural.json().data[0].id;
+ const nested=await app.inject(`/v1/rural-communities/${id}/neighborhoods`);
+ assert.equal(nested.statusCode,200);
+ assert.ok(nested.json().data.some(row=>row.name==='Loulimba'));
+ assert.ok(nested.json().data.every(row=>row.ruralCommunityId===id&&row.communeId===null));
+ const filtered=await app.inject(`/v1/neighborhoods?ruralCommunityId=${id}`);
+ assert.deepEqual(filtered.json().data,nested.json().data);
+});
+
 test('form navigation retrieves Brazzaville, Talangaï and the real Mpila neighborhood', async t => {
   const app = await buildApp();
   t.after(() => app.close());
@@ -19,7 +32,7 @@ test('form navigation retrieves Brazzaville, Talangaï and the real Mpila neighb
     row.id === '952458ea-c0ea-4ba8-9569-096d48c88048' && row.name === 'Mpila'));
   assert.ok(neighborhoods.json().data.every((row: {arrondissementId:string}) => row.arrondissementId === talangai));
   const commune = await app.inject(`/v1/communes/${brazzaville}/neighborhoods?limit=100`);
-  assert.equal(commune.json().meta.total, 74);
+  assert.equal(commune.json().meta.total, 88);
   assert.ok(commune.json().data.some((row: {name:string}) => row.name === 'Mpila'));
 });
 

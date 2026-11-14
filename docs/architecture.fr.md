@@ -29,7 +29,7 @@ Un registre versionné attribue les UUID une seule fois. Noms et codes sources n
 
 `toResourceTables` projette les entités internes validées en tables de ressources typées. `exportResources` est le parcours public d'export ; `readResourcePackage` valide les paquets pris en charge et leur identité. Instantanés canoniques, anciens adaptateurs et seeder restent des composants de compatibilité. Leur mélange générique d'entités n'est plus la sortie par défaut de la CLI ni le contrat public de ressources.
 
-Le dépôt source contient une application API Fastify dans un workspace npm privé, alimentée par ces ressources. La CLI publiée `georeference@1.1.0` continue de générer des fichiers autonomes ; elle ne démarre pas l’API. Requêtes HTTP, fichiers générés et SDK installé optionnel sont des choix de consommation distincts. L’import en base reste une écriture explicite. Voir [le guide API](api.fr.md) pour le lancement local et le contrat HTTP ; aucune adresse publique d’hébergement n’est implicite.
+Le dépôt source contient une application API Fastify dans un workspace npm privé, alimentée par ces ressources. La CLI publiée `242places@1.2.1` continue de générer des fichiers autonomes ; elle ne démarre pas l’API. Requêtes HTTP, fichiers générés et SDK installé optionnel sont des choix de consommation distincts. L’import en base reste une écriture explicite. Voir [le guide API](api.fr.md) pour le lancement local et le contrat HTTP ; aucune adresse publique d’hébergement n’est implicite.
 
 ## Cœur partagé et application HTTP privée
 

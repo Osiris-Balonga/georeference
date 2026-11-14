@@ -1,5 +1,5 @@
 import { Type, type TSchema } from 'typebox';
-import type { ParentField, ResourceName } from 'georeference';
+import type { ParentField, ResourceName } from '242places';
 import { uuid } from './common.ts';
 
 const nullableUuid = Type.Union([uuid, Type.Null()]);
@@ -30,7 +30,7 @@ export const resourceSchemas: Record<ResourceName, TSchema> = {
   urbanCommunities: resource('UrbanCommunity', { districtId: uuid }),
   ruralCommunities: resource('RuralCommunity', { districtId: uuid }),
   neighborhoods: resource('Neighborhood', { communeId: nullableUuid,
-    arrondissementId: nullableUuid, urbanCommunityId: nullableUuid }),
+    arrondissementId: nullableUuid, urbanCommunityId: nullableUuid, ruralCommunityId: Type.Optional(nullableUuid) }),
   villages: resource('Village', { districtId: nullableUuid,
     ruralCommunityId: nullableUuid, urbanCommunityId: nullableUuid }),
 };
@@ -43,6 +43,6 @@ export const resourcePaths: Record<ResourceName, string> = {
 export const parentFields: Record<ResourceName, readonly ParentField[]> = {
   countries: [], departments: ['countryId'], communes: ['departmentId'], districts: ['departmentId'],
   arrondissements: ['communeId'], urbanCommunities: ['districtId'], ruralCommunities: ['districtId'],
-  neighborhoods: ['communeId', 'arrondissementId', 'urbanCommunityId'],
+  neighborhoods: ['communeId', 'arrondissementId', 'urbanCommunityId', 'ruralCommunityId'],
   villages: ['districtId', 'ruralCommunityId', 'urbanCommunityId'],
 };

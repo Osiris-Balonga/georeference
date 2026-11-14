@@ -12,7 +12,7 @@ Only records with an admissible named observation and documented parent enter a 
 
 ## Rights and attribution
 
-GeoReference's code and documentation are [MIT licensed](../LICENSE). Source facts keep their provenance and applicable source terms. Congo's [law 24-82 of July 7, 1982](https://www.sgg.cg/textes-officiels/lois/1982/congo-loi-1982-24.pdf), article 14 on page 4, excludes statutory, judicial, and administrative decision texts and official translations from that copyright law. The reference curates administrative facts from those instruments; it does not claim a blanket MIT license over government websites, maps, photographs, or unrelated reports.
+242Places's code and documentation are [MIT licensed](../LICENSE). Source facts keep their provenance and applicable source terms. Congo's [law 24-82 of July 7, 1982](https://www.sgg.cg/textes-officiels/lois/1982/congo-loi-1982-24.pdf), article 14 on page 4, excludes statutory, judicial, and administrative decision texts and official translations from that copyright law. The reference curates administrative facts from those instruments; it does not claim a blanket MIT license over government websites, maps, photographs, or unrelated reports.
 
 Preserve source instrument/date/page/article and available SHA-256 revisions when redistributing a generated dataset. The municipal tables contribute factual names, codes, and parents only; no report prose, graphics, or general open-data license is republished or asserted. A checksum identifies source bytes or export integrity, not authorship or current geographic completeness. An outside source added later must have its own rights assessment; public readability alone is not an open-data license.
 

@@ -14,6 +14,7 @@ export interface Arrondissement extends BaseResource { communeId: string; number
 export interface UrbanCommunity extends BaseResource { districtId: string }
 export interface RuralCommunity extends BaseResource { districtId: string }
 export interface Neighborhood extends BaseResource {
+  ruralCommunityId?: string | null;
   communeId: string | null;
   arrondissementId: string | null;
   urbanCommunityId: string | null;

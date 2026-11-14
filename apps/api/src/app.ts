@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { loadCatalog, type GeographicCatalog } from 'georeference';
+import { loadCatalog, type GeographicCatalog } from '242places';
 import { registerErrors } from './plugins/errors.ts';
 import { registerOpenApi } from './plugins/openapi.ts';
 import { registerSecurity } from './plugins/security.ts';
@@ -29,7 +29,7 @@ export async function buildApp(options: AppOptions = {}) {
   registerErrors(app);
   registerCache(app);
   await registerSecurity(app, options.rateLimitMax ?? 60);
-  await registerOpenApi(app);
+  await registerOpenApi(app, catalog);
   app.addHook('preValidation', async request => {
     const query = request.query as Record<string, unknown>;
     if (query && typeof query.q === 'string') query.q = query.q.trim();

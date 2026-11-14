@@ -41,7 +41,7 @@ test('PostgreSQL transport executes domain SQL and seeds stable UUIDs with atomi
   tables.neighborhoods[0]!.name='Changed synthetic neighborhood';
   assert.equal((await seedResources(client,input,{...options,dryRun:false})).updated,1);
   assert.equal((await client.query(`SELECT name FROM ${identifier(seedSchema)}.quarters WHERE id=$1`,[ids.neighborhood])).rows[0]?.name,'Changed synthetic neighborhood');
-  await client.query(`CREATE SCHEMA ${identifier(rollbackSchema)}; CREATE TABLE ${identifier(rollbackSchema)}.neighborhoods (id UUID PRIMARY KEY,name TEXT NOT NULL,commune_id UUID,arrondissement_id UUID,urban_community_id UUID,coordinates JSONB,boundary JSONB,business_required TEXT NOT NULL)`);
+  await client.query(`CREATE SCHEMA ${identifier(rollbackSchema)}; CREATE TABLE ${identifier(rollbackSchema)}.neighborhoods (id UUID PRIMARY KEY,name TEXT NOT NULL,commune_id UUID,arrondissement_id UUID,urban_community_id UUID,rural_community_id UUID,coordinates JSONB,boundary JSONB,business_required TEXT NOT NULL)`);
   await assert.rejects(seedResources(client,input,{sqlNames:{schema:rollbackSchema},createSchema:true,dryRun:false}),/business_required|not-null/);
   assert.equal((await client.query('SELECT count(*)::int n FROM information_schema.tables WHERE table_schema=$1 AND table_name=$2',[rollbackSchema,'countries'])).rows[0]?.n,0);
   assert.equal((await client.query(`SELECT count(*)::int n FROM ${identifier(rollbackSchema)}.neighborhoods`)).rows[0]?.n,0);
