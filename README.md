@@ -33,7 +33,7 @@ A CSV contains one table, not tabs. Choose XLSX for a multi-sheet workbook. CSV/
 
 ## A dated, partial Congo reference
 
-The curated reference contains **398 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 89 districts, 4 urban communities and 250 named neighborhoods. These are covered records, not certified national totals for every category. Observations span 2022–2025; no exhaustive current village/neighborhood inventory or geometry is claimed.
+The enriched reference contains **4,353 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 92 districts, 47 urban communities, 92 rural communities, 782 neighborhoods and 3,285 villages. Existing UUIDs are retained. The maintainer-supplied administrative cascade was received on November 14, 2026; its observation dates are unknown. Coverage remains partial and geometry is not invented.
 
 Same-name communes/departments have distinct UUIDs. A neighborhood's documented parent can be a commune, arrondissement or urban community. Empty results mean missing observations, not proof that no places exist. See [the reference and sources](docs/congo-reference.md).
 

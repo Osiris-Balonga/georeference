@@ -35,7 +35,7 @@ Use `GET` to retrieve JSON or `HEAD` for the corresponding headers. Each resourc
 | `/v1/arrondissements` | Arrondissements | `communeId` |
 | `/v1/urban-communities` | Urban communities | `districtId` |
 | `/v1/rural-communities` | Rural communities | `districtId` |
-| `/v1/neighborhoods` | Neighborhoods | `communeId`, `arrondissementId`, `urbanCommunityId` |
+| `/v1/neighborhoods` | Neighborhoods | `communeId`, `arrondissementId`, `urbanCommunityId`, `ruralCommunityId` |
 | `/v1/villages` | Villages | `districtId`, `ruralCommunityId`, `urbanCommunityId` |
 
 List routes accept `q`, `limit` and `offset`. Search is a case/accent-insensitive substring match on names; it does not merge places with similar names. `q` is limited to 100 trimmed characters. The default `limit` is 50, the maximum is 100, and `offset` starts at 0. Results have a deterministic name/UUID order. Unknown parameters and invalid values are rejected.
@@ -107,7 +107,7 @@ For example, the commune detail `/v1/communes/be83c679-2667-4935-9dad-0f63456298
     "departmentId": "bf82f843-df29-444b-ba2d-fc9df50f220f"
   },
   "meta": {
-    "datasetVersion": "cg-reference-2026-11-12.2",
+    "datasetVersion": "cg-reference-2026-11-14.1",
     "coverageStatus": "partial"
   }
 }
@@ -115,7 +115,7 @@ For example, the commune detail `/v1/communes/be83c679-2667-4935-9dad-0f63456298
 
 `/v1/dataset` describes the deployed reference through `apiVersion`, `serviceVersion`, `contractVersion`, `datasetVersion`, `country`, `reviewedAt` and `sources`. Source metadata includes usage rights and revision information. `/v1/coverage` provides known resource `counts`, `sourceDates` and `communes` coverage summaries, with `status: "partial"` and `completeGeographicInventory: false`. Both endpoints use the same `data`/`meta` envelope. Detailed source anomalies are not inserted into ordinary place responses.
 
-The bundled reference currently contains 398 records, including 16 communes and 250 named neighborhoods. Brazzaville has 9 documented arrondissements and 74 named neighborhoods. These counts describe covered records, not certified current geographic totals. There are currently no curated village or rural-community rows. An empty list means no matching known observations; it does not prove that those places do not exist. Coordinates and boundaries are not inferred. See [reference and sources](congo-reference.md).
+The enriched reference contains **4,353 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 92 districts, 47 urban communities, 92 rural communities, 782 neighborhoods and 3,285 villages. Existing UUIDs are retained. The maintainer-supplied administrative cascade was received on November 14, 2026; its observation dates are unknown. Coverage remains partial and geometry is not invented. Brazzaville has 9 arrondissements and 88 known neighborhoods. See [reference and sources](congo-reference.md).
 
 The URL prefix `/v1` (`apiVersion`) versions the HTTP contract. `serviceVersion` versions the API software, `contractVersion` identifies the underlying data contract, and `datasetVersion` identifies the factual reference. A server serves its deployed dataset; older datasets are not automatically queryable through it. Record the dataset version with stored results, and use pinned release data when you need to reproduce an export.
 
@@ -160,3 +160,5 @@ The tests include HTTP injection and a real server lifecycle. `npm run test:acce
 ## Files and database imports
 
 The API queries data; it does not seed your database or execute export SQL. Use the [CLI](generation.md) to generate standalone JSON, CSV, Excel or database exports. Use the explicit [import workflow](seeding.md) to write a verified resource package into PostgreSQL. The optional local SDK is a third integration choice and does not require this HTTP service.
+
+Neighborhoods may also belong to a rural community: `GET /v1/rural-communities/{id}/neighborhoods`. The `ruralCommunityId` field exposes that parent without inventing a commune.

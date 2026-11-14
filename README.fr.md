@@ -33,7 +33,7 @@ Un CSV contient une table, pas des onglets. Choisissez XLSX pour un classeur à 
 
 ## Un référentiel Congo daté et partiel
 
-Le référentiel vérifié contient **398 enregistrements** : 1 pays, 15 départements, 16 communes, 23 arrondissements, 89 districts, 4 communautés urbaines et 250 quartiers nommés. Ce sont les enregistrements couverts, pas des totaux nationaux certifiés pour chaque catégorie. Les observations datent de 2022–2025 ; aucun inventaire actuel exhaustif des villages/quartiers ni aucune géométrie ne sont annoncés.
+Le référentiel enrichi contient **4 353 enregistrements** : 1 pays, 15 départements, 16 communes, 23 arrondissements, 92 districts, 47 communautés urbaines, 92 communautés rurales, 782 quartiers et 3 285 villages. Les UUID existants sont conservés. La cascade administrative fournie par le mainteneur a été reçue le 14 novembre 2026 ; ses dates d’observation sont inconnues. La couverture reste partielle et aucune géométrie n’est inventée.
 
 Les communes/départements homonymes ont des UUID distincts. Le parent documenté d'un quartier peut être une commune, un arrondissement ou une communauté urbaine. Un résultat vide signale un manque d'observations, pas l'absence de lieux. Voir [le référentiel et ses sources](docs/congo-reference.fr.md).
 
