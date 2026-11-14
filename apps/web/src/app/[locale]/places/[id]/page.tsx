@@ -6,6 +6,7 @@ import { text, label, type Locale } from "@/lib/i18n";
 import { Explorer } from "@/components/explorer";
 import { ShareLink } from "@/components/share-link";
 import { describePlace } from "@/lib/place-description";
+import { pageMetadata, siteOrigin, jsonLd } from "@/lib/seo";
 export async function generateMetadata({
   params,
 }: {
@@ -14,7 +15,12 @@ export async function generateMetadata({
   try {
     const { id, locale } = await params,
       place = await details(id);
-    return { title: place.name, description: describePlace(place, locale) };
+    return pageMetadata(
+      locale,
+      "/places/" + id,
+      place.name + " · " + label(place.resource, locale),
+      describePlace(place, locale),
+    );
   } catch {
     return { title: "242Places" };
   }
@@ -39,6 +45,36 @@ export default async function PlacePage({
   }
   return (
     <section className="container place-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                name: text(locale, "Accueil", "Home"),
+                url: siteOrigin + "/" + locale,
+              },
+              ...place.ancestors
+                .filter((p) => p.resource !== "countries")
+                .map((p) => ({
+                  name: p.name + " (" + label(p.resource, locale) + ")",
+                  url: siteOrigin + "/" + locale + "/places/" + p.id,
+                })),
+              {
+                name: place.name,
+                url: siteOrigin + "/" + locale + "/places/" + id,
+              },
+            ].map((item, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: item.name,
+              item: item.url,
+            })),
+          }),
+        }}
+      />
       <nav
         className="breadcrumbs"
         aria-label={text(locale, "Fil d’Ariane", "Breadcrumb")}
@@ -109,7 +145,7 @@ export default async function PlacePage({
               )}
             </p>
             <Link href={"/" + locale + "/project#sources"}>
-              {text(locale, "Consulter les sources", "View sources")} →
+              {text(locale, "Consulter les sources", "View sources")}
             </Link>
           </div>
           <Link href={"/" + locale + "/explore?parent=" + id}>
@@ -118,7 +154,6 @@ export default async function PlacePage({
               "Explorer tous les descendants",
               "Explore all descendants",
             )}{" "}
-            →
           </Link>
           <ShareLink locale={locale} />
         </aside>

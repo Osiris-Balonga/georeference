@@ -3,8 +3,10 @@ import { headers } from "next/headers";
 import "@fontsource-variable/inter";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { siteOrigin } from "@/lib/seo";
 export const metadata: Metadata = {
-  icons: {icon: '/favicon.svg'},
+  metadataBase: new URL(siteOrigin),
+  icons: { icon: "/favicon.svg" },
   title: { default: "242Places · Congo", template: "%s · 242Places" },
   description:
     "Explore the places and administrative relationships of the Republic of the Congo.",

@@ -4,7 +4,28 @@ import { catalog } from "@/lib/catalog";
 import { text, type Locale } from "@/lib/i18n";
 import { Database, Globe, Code } from "lucide-react";
 import { imageCredits, photoLicense } from "@/lib/image-credits";
-export const metadata = { title: "Le projet · The project" };
+import { pageMetadata } from "@/lib/seo";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  return pageMetadata(
+    locale,
+    "/project",
+    text(
+      locale,
+      "Le projet, les sources et la couverture",
+      "The project, sources and coverage",
+    ),
+    text(
+      locale,
+      "Comprenez le projet 242Places, ses sources administratives, sa couverture partielle et les possibilités de contribution et de réutilisation des données du Congo.",
+      "Learn about 242Places, its administrative sources, partial coverage, contribution options and ways to reuse the Republic of the Congo data.",
+    ),
+  );
+}
 export default async function Project({
   params,
 }: {

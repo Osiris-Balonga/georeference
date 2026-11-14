@@ -2,7 +2,25 @@ import { Suspense } from "react";
 import { overview } from "@/lib/catalog";
 import { Explorer } from "@/components/explorer";
 import { text, type Locale } from "@/lib/i18n";
-export const metadata = { title: "Explorer · Explore" };
+import { pageMetadata } from "@/lib/seo";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  return pageMetadata(
+    locale,
+    "/explore",
+    text(locale, "Rechercher un lieu au Congo", "Find a place in the Congo"),
+    text(
+      locale,
+      "Recherchez et filtrez les lieux de la République du Congo par catégorie et par territoire.",
+      "Search and filter places of the Republic of the Congo by category and territory.",
+    ),
+    false,
+  );
+}
 export default async function ExplorePage({
   params,
 }: {

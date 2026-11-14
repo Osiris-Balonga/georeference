@@ -6,6 +6,28 @@ import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 import { overview } from "@/lib/catalog";
 import { cityId, text, type Locale } from "@/lib/i18n";
+import { pageMetadata, siteOrigin, jsonLd } from "@/lib/seo";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  return pageMetadata(
+    locale,
+    "",
+    text(
+      locale,
+      "Lieux du Congo : villes, quartiers et villages",
+      "Explore the Republic of the Congo",
+    ),
+    text(
+      locale,
+      "Découvrez les lieux de la République du Congo : départements, communes, arrondissements, quartiers et villages, avec leurs rattachements et leurs sources.",
+      "Discover the places of the Republic of the Congo: departments, communes, arrondissements, neighborhoods and villages, with their relationships and sources.",
+    ),
+  );
+}
 export default async function Home({
   params,
 }: {
@@ -16,6 +38,19 @@ export default async function Home({
   if (locale !== "fr" && locale !== "en") notFound();
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": siteOrigin + "/#website",
+            name: "242Places",
+            url: siteOrigin + "/",
+            inLanguage: ["fr", "en"],
+          }),
+        }}
+      />
       <section className="home-hero">
         <div className="hero-intro container">
           <h1>

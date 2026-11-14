@@ -60,7 +60,34 @@ test("production gateway serves the public site, native docs and actual Congo da
       assert.match(html, new RegExp('<html[^>]+lang="' + locale + '"'));
       assert.match(html, /242Places/);
       assert.match(html, /skyline.webp/);
-      if (path.startsWith("/places")) assert.match(html, /Bacongo/);
+      const canonical =
+        "https://two42places.onrender.com/" + locale + path.split("?")[0];
+      assert.ok(
+        html.includes('rel="canonical" href="' + canonical + '"'),
+        "self canonical: " + path,
+      );
+      assert.match(html, /name="twitter:card" content="summary_large_image"/);
+      assert.match(html, /property="og:image"/);
+      assert.match(html, /hrefLang="fr"|hreflang="fr"/);
+      if (path.startsWith("/explore"))
+        assert.match(html, /name="robots" content="noindex, follow"/);
+      if (path.startsWith("/places")) {
+        assert.match(html, /Bacongo/);
+        assert.match(
+          html,
+          locale === "fr"
+            ? /Le référentiel y recense 9 quartiers/
+            : /9 recorded neighborhoods/,
+        );
+      }
+      if (path === "") {
+        assert.doesNotMatch(
+          html,
+          /map-disclaimer|map-place-name|Les lieux du Congo|The places of the Congo/,
+        );
+        assert.match(html, /Pointe-Noire/);
+        assert.match(html, /Dolisie/);
+      }
     }
   const json = await (
     await fetch(
@@ -78,7 +105,35 @@ test("production gateway serves the public site, native docs and actual Congo da
   assert.match(await docs.text(), /data-brand-pin/);
   assert.match(docs.headers.get("content-security-policy"), /nonce-/);
   assert.equal((await fetch(origin + "/docs/assets/logo.svg")).status, 200);
-  for (const asset of ["skyline", "skyline-desktop", "skyline-mobile", "riverfront", "map"]) {
+  const robots = await (await fetch(origin + "/robots.txt")).text();
+  assert.match(
+    robots,
+    /Sitemap: https:\/\/two42places\.onrender\.com\/sitemap.xml/,
+  );
+  const sitemap = await (await fetch(origin + "/sitemap.xml")).text();
+  assert.equal((sitemap.match(/<loc>/g) ?? []).length, 8712);
+  assert.match(sitemap, /\/fr\/places\/05d80510-ca0a-4fee-ae4f-44f17e3a8173/);
+  assert.doesNotMatch(sitemap, /\?q=|\/explore/);
+  for (const locale of ["fr", "en"]) {
+    const image = await fetch(origin + "/" + locale + "/opengraph-image");
+    assert.equal(image.status, 200);
+    assert.match(image.headers.get("content-type"), /image\/png/);
+    const png = Buffer.from(await image.arrayBuffer());
+    assert.equal(png.readUInt32BE(16), 1200);
+    assert.equal(png.readUInt32BE(20), 630);
+  }
+  for (const asset of [
+    "skyline",
+    "skyline-desktop",
+    "skyline-mobile",
+    "skyline-1440",
+    "brazzaville-384",
+    "pointe-noire-384",
+    "dolisie-384",
+    "footer-sky-day",
+    "footer-sky-night",
+    "map",
+  ]) {
     const response = await fetch(origin + "/images/" + asset + ".webp");
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type"), /image\/webp/);

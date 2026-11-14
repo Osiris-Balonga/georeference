@@ -4,7 +4,28 @@ import { CityImage } from "@/components/city-image";
 import { SearchForm } from "@/components/search-form";
 import { overview } from "@/lib/catalog";
 import { cityId, bacongoId, text, type Locale } from "@/lib/i18n";
-export const metadata = { title: "Le Congo · The Congo" };
+import { pageMetadata } from "@/lib/seo";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  return pageMetadata(
+    locale,
+    "/congo",
+    text(
+      locale,
+      "Comprendre les territoires du Congo",
+      "Understand the Congo’s territories",
+    ),
+    text(
+      locale,
+      "Explorez les départements et les liens entre communes, arrondissements, quartiers et villages de la République du Congo.",
+      "Explore the departments and relationships between communes, arrondissements, neighborhoods and villages of the Republic of the Congo.",
+    ),
+  );
+}
 export default async function Congo({
   params,
 }: {
