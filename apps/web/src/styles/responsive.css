@@ -87,9 +87,6 @@
     gap: 0.4rem;
     padding: 8px 8px 8px 14px;
   }
-  .search-capsule select {
-    display: none;
-  }
   .search-capsule input {
     font-size: 0.82rem;
   }
@@ -174,7 +171,7 @@
   .footer-panorama img {
     max-height: none;
     width: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
   .footer-panorama p {
     font-size: 0.55rem;
@@ -467,9 +464,6 @@
   }
   .footer-panorama {
     padding-top: 1rem;
-  }
-  .footer-panorama img {
-    max-height: 30svh;
   }
   .footer-bottom {
     padding-block: 1rem;

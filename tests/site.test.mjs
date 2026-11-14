@@ -78,7 +78,7 @@ test("production gateway serves the public site, native docs and actual Congo da
   assert.match(await docs.text(), /data-brand-pin/);
   assert.match(docs.headers.get("content-security-policy"), /nonce-/);
   assert.equal((await fetch(origin + "/docs/assets/logo.svg")).status, 200);
-  for (const asset of ["skyline", "riverfront", "map"]) {
+  for (const asset of ["skyline", "skyline-desktop", "skyline-mobile", "riverfront", "map"]) {
     const response = await fetch(origin + "/images/" + asset + ".webp");
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type"), /image\/webp/);

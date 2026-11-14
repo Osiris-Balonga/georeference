@@ -173,13 +173,27 @@ export function Footer({ locale }: { locale: Locale }) {
         </div>
       </div>
       <div className="footer-panorama">
-        <img
-          src="/images/skyline.webp"
-          alt=""
-          width="2176"
-          height="726"
-          loading="lazy"
-        />
+        <picture>
+          <source
+            media="(max-width: 600px)"
+            srcSet="/images/skyline-mobile.webp"
+            width="768"
+            height="512"
+          />
+          <source
+            media="(max-width: 1000px)"
+            srcSet="/images/skyline.webp"
+            width="2176"
+            height="726"
+          />
+          <img
+            src="/images/skyline-desktop.webp"
+            alt=""
+            width="2172"
+            height="724"
+            loading="lazy"
+          />
+        </picture>
         <p className="container">
           {text(
             locale,
