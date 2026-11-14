@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "../styles/base.css";
+@import "../styles/home.css";
+@import "../styles/footer.css";
+@import "../styles/editorial.css";
+@import "../styles/explorer.css";
+@import "../styles/motion.css";
+@import "../styles/responsive.css";
+@custom-variant dark (&:is([data-theme=dark] *));
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--background);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--background);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--foreground);
+  --color-primary-foreground: var(--background);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--surface);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: #bc3429;
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--pin);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --font-sans: "Inter Variable", sans-serif;
+}
+:root {
+  --background: #fff;
+  --foreground: #191a1c;
+  --surface: #f5f6f8;
+  --muted: #616570;
+  --border: #d6d8dc;
+  --pin: #df5138;
+  --pin-text: #bc402a;
+  --footer: #faf7f3;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --background: #101113;
+  --foreground: #f3f3f2;
+  --surface: #1b1d21;
+  --muted: #b0b3bc;
+  --border: #41454c;
+  --pin: #f77d63;
+  --pin-text: #f77d63;
+  --footer: #181715;
+  color-scheme: dark;
+}
