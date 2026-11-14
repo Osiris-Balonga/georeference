@@ -4,7 +4,7 @@ export default function NotFound() {
     <main className="container page-head">
       <h1>404</h1>
       <p>Lieu ou page introuvable · Place or page not found.</p>
-      <Link href="/">242Places →</Link>
+      <Link href="/">242Places </Link>
     </main>
   );
 }

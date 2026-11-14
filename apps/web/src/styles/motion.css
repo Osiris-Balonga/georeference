@@ -1,5 +1,5 @@
 .page-enter {
-  animation: page-arrival 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: page-arrival 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 @keyframes page-arrival {
   from {

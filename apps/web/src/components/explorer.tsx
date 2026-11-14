@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { FloatingSearch } from "./floating-search";
 import {
   Select,
   SelectContent,
@@ -71,31 +72,33 @@ export function Explorer({
   });
   return (
     <div className={"explorer " + (parent ? "embedded" : "")}>
-      <form
-        role="search"
-        className="explorer-search"
-        onSubmit={(e) => {
-          e.preventDefault();
-          update({ q: draft });
-        }}
-      >
-        <Search size={20} />
-        <Input
-          name="q"
-          aria-label={text(locale, "Rechercher un lieu", "Search places")}
-          placeholder={text(
-            locale,
-            "Rechercher un lieu…",
-            "Search for a place…",
-          )}
-          maxLength={100}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <Button type="submit">
-          {text(locale, "Rechercher", "Search")} <ArrowRight size={16} />
-        </Button>
-      </form>
+      <FloatingSearch>
+        <form
+          role="search"
+          className="explorer-search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            update({ q: draft });
+          }}
+        >
+          <Search size={20} />
+          <Input
+            name="q"
+            aria-label={text(locale, "Rechercher un lieu", "Search places")}
+            placeholder={text(
+              locale,
+              "Rechercher un lieu…",
+              "Search for a place…",
+            )}
+            maxLength={100}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <Button type="submit">
+            {text(locale, "Rechercher", "Search")} <ArrowRight size={16} />
+          </Button>
+        </form>
+      </FloatingSearch>
       <div className="explorer-body">
         <aside className="filters">
           <h2>{text(locale, "Affiner la recherche", "Refine your search")}</h2>
@@ -284,7 +287,7 @@ export function Explorer({
               "Partial coverage: a missing place may simply not be documented.",
             )}{" "}
             <Link href={"/" + locale + "/project#sources"}>
-              {text(locale, "Sources", "Sources")} ↗
+              {text(locale, "Sources", "Sources")}
             </Link>
           </p>
         </section>

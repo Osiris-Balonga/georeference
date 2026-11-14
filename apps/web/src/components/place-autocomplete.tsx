@@ -187,8 +187,8 @@ export function PlaceAutocomplete({
           <p className="suggestion-hint">
             {text(
               locale,
-              "↑ ↓ pour choisir · Entrée pour ouvrir · Échap pour fermer",
-              "↑ ↓ to choose · Enter to open · Escape to close",
+              "Touches Haut/Bas pour choisir · Entrée pour ouvrir · Échap pour fermer",
+              "Up/Down keys to choose · Enter to open · Escape to close",
             )}
           </p>
         </div>

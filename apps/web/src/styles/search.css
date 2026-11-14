@@ -1,3 +1,54 @@
+.search-anchor,
+.search-dock {
+  display: flow-root;
+}
+.search-dock[data-floating="true"] {
+  position: fixed;
+  z-index: 40;
+  top: 16px;
+  left: 50%;
+  width: min(690px, calc(100% - 2.5rem));
+  transform: translateX(-50%);
+  animation: search-arrival 0.22s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.search-dock[data-floating="true"] form {
+  margin-bottom: 0;
+  box-shadow:
+    0 12px 36px #00000020,
+    0 2px 6px #00000010;
+}
+@keyframes search-arrival {
+  from {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (max-width: 700px) {
+  .search-dock[data-floating="true"] {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    animation-name: search-arrival-mobile;
+  }
+  .search-dock[data-floating="true"] .suggestion-panel {
+    top: auto;
+    bottom: calc(100% + 18px);
+    max-height: min(380px, 45svh);
+  }
+  @keyframes search-arrival-mobile {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
 .place-autocomplete {
   flex: 1;
   min-width: 0;
@@ -81,5 +132,12 @@
   .suggestion-panel {
     inset: calc(100% + 62px) auto auto -34px;
     width: calc(100vw - 2.5rem);
+  }
+  .search-dock[data-floating="true"] .home-category {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
+  .search-dock[data-floating="true"] .suggestion-panel {
+    bottom: calc(100% + 62px);
   }
 }
