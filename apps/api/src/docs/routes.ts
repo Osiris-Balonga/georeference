@@ -1,15 +1,36 @@
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
+import type { GeographicCatalog } from 'georeference';
+import { countryListSpecification, renderCountryList } from './country-list.ts';
+import { countryListStyles, countryListClient } from './country-list-assets.ts';
 import { chapters, type Locale } from './content.ts';
 import { docsStyles } from './styles.ts';
 import { docsClient } from './client.ts';
 import { renderChapter } from './render.ts';
 import { chapterSpecification } from './specification.ts';
 
-export function registerDocs(app: FastifyInstance): void {
+export function registerDocs(app: FastifyInstance, catalog: GeographicCatalog): void {
   const hidden = { schema: { hide: true } };
   app.get('/docs/assets/docs.css', hidden, (_request, reply) => reply.type('text/css').send(docsStyles));
   app.get('/docs/assets/client.js', hidden, (_request, reply) => reply.type('application/javascript').send(docsClient));
+  app.get('/docs/assets/country-list.css', hidden, (_request, reply) => reply.type('text/css').send(countryListStyles));
+  app.get('/docs/assets/country-list.js', hidden, (_request, reply) => reply.type('application/javascript').send(countryListClient));
+  app.get<{ Params: { locale: string } }>('/docs/:locale/countries/list/openapi.json', hidden, (request, reply) => {
+    const { locale } = request.params;
+    if (locale !== 'fr' && locale !== 'en') return reply.callNotFound();
+    return countryListSpecification(app.swagger(), locale, catalog);
+  });
+  app.get<{ Params: { locale: string } }>('/docs/:locale/countries/list', hidden, (request, reply) => {
+    const { locale } = request.params;
+    if (locale !== 'fr' && locale !== 'en') return reply.callNotFound();
+    const nonce = randomBytes(18).toString('base64');
+    reply.header('Content-Security-Policy', [
+      "default-src 'self'", `script-src 'self' 'nonce-${nonce}'`, "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:", "font-src 'self'", "connect-src 'self'", "worker-src 'self' blob:",
+      "object-src 'none'", "base-uri 'self'", "frame-ancestors 'none'",
+    ].join('; '));
+    return reply.header('Cache-Control', 'no-store').type('text/html').send(renderCountryList(locale, nonce));
+  });
   app.get<{ Params: { locale: string; page: string } }>('/docs/:locale/:page', hidden, (request, reply) => {
     const { locale, page } = request.params;
     if (locale !== 'fr' && locale !== 'en') return reply.callNotFound();

@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify';
+import type { GeographicCatalog } from 'georeference';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
 import { registerDocs } from '../docs/routes.ts';
 import { serviceVersion } from '../routes/reference.ts';
 
-export async function registerOpenApi(app: FastifyInstance): Promise<void> {
+export async function registerOpenApi(app: FastifyInstance, catalog: GeographicCatalog): Promise<void> {
   await app.register(swagger, {
     openapi: {
       openapi: '3.0.3',
@@ -27,5 +28,5 @@ export async function registerOpenApi(app: FastifyInstance): Promise<void> {
     },
   });
   app.get('/openapi.json', { schema: { hide: true } }, () => app.swagger());
-  registerDocs(app);
+  registerDocs(app, catalog);
 }
