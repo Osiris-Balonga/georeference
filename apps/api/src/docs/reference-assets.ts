@@ -1,4 +1,4 @@
-/** Shell styles only. Scalar owns all typography, geometry and controls inside the reference. */
+/** Shell styles and client-window geometry. Scalar owns operation and client components. */
 export const referenceStyles = String.raw`
 :root { --scalar-custom-header-height: 64px; }
 body { margin: 0; background: #0f0f0f; }
@@ -43,6 +43,16 @@ body.light-mode { background: #fff; }
 .light-mode .reference-navigation a, .light-mode .reference-header-label, .light-mode .reference-header button, .light-mode .reference-header nav a { color: #555; }
 .light-mode .reference-navigation a:hover, .light-mode .reference-navigation .reference-active, .light-mode .reference-header button:hover, .light-mode .reference-header nav a:hover { background: #f1f1f1; color: #1b1b1b; }
 .light-mode .reference-skeleton div, .light-mode .reference-error { background: #f1f1f1; color: #1b1b1b; }
+/* Pinned Scalar 1.78.1: resize only its modal frame and place its native close control in the toolbar. */
+.reference-layout .scalar .scalar-client--open > .scalar-client {
+  width: 100%; max-width: none; height: 100dvh; max-height: 100dvh;
+  margin: 0; border: 0; border-radius: 0;
+}
+.reference-layout .scalar-client--open .app-exit-button {
+  position: static; inset: auto; min-width: 40px; min-height: 40px;
+  border-radius: var(--scalar-radius); color: var(--scalar-color-2); background: transparent;
+}
+.reference-layout .scalar-client--open .app-exit-button:hover { color: var(--scalar-color-1); background: var(--scalar-background-2); }
 @media (max-width: 760px) {
   .reference-header { padding: 0 16px; gap: 12px; }
   .reference-header .reference-menu { display: inline-flex; }
@@ -60,10 +70,14 @@ export const referenceClient = String.raw`
 const menu = document.querySelector('.reference-menu');
 const navigation = document.querySelector('.reference-navigation');
 const active = navigation.querySelector('[aria-current="page"]');
-if (active) navigation.scrollTop = Math.max(0, active.offsetTop - navigation.clientHeight / 2);
+function revealActive() {
+  if (active) navigation.scrollTop = Math.max(0, active.offsetTop - navigation.clientHeight / 2);
+}
+revealActive();
 menu.addEventListener('click', () => {
   const open = navigation.dataset.open !== 'true';
   navigation.dataset.open = String(open); menu.setAttribute('aria-expanded', String(open));
+  if (open) { revealActive(); active?.focus({preventScroll: true}); }
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && navigation.dataset.open === 'true') {

@@ -67,3 +67,13 @@ test('category bookmarks redirect to their first operation and navigation includ
   assert.match(page.body, /href="\/docs\/fr\/districts\/list"/);
   assert.match(page.body, /href="\/docs\/fr\/rural-communities\/list"/);
 });
+
+test('request-client pagination examples match the API defaults instead of starting invalid', async t => {
+  const app = await buildApp({ rateLimitMax: 1000 });
+  t.after(() => app.close());
+  const actual = (await app.inject('/v1/communes')).json();
+  const spec = (await app.inject('/docs/fr/communes/list/openapi.json')).json();
+  const parameters = spec.paths['/v1/communes'].get.parameters;
+  assert.equal(parameters.find((item: { name: string }) => item.name === 'limit').example, actual.meta.limit);
+  assert.equal(parameters.find((item: { name: string }) => item.name === 'offset').example, actual.meta.offset);
+});

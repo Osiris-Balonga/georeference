@@ -86,6 +86,13 @@ export function operationSpecification(document: unknown, locale: Locale, operat
     get.description = chapters(locale).find(chapter => chapter.slug === operation.group)!.sections[0]!.html.replace(/<\/?p>/g, '');
   }
   const example = operationExample(catalog, operation);
+  const pagination = (example.response as { meta?: { limit?: number; offset?: number } } | undefined)?.meta;
+  for (const parameter of get.parameters ?? []) {
+    if (parameter.name === 'limit' || parameter.name === 'offset') {
+      const value = pagination?.[parameter.name];
+      if (value !== undefined) Object.assign(parameter, { example: value });
+    }
+  }
   if (example.id) {
     const parameter = get.parameters?.find(item => item.name === 'id');
     if (parameter) Object.assign(parameter, { example: example.id });
