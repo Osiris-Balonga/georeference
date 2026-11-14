@@ -22,6 +22,16 @@ npm run start:api
 
 `build:api` builds the shared core before the API. `npm run build` still builds the CLI/SDK package. The API is a private npm workspace with its own HTTP dependencies; it is not installed as a permanent dependency when generating files in another project.
 
+## Interactive reference with Scalar
+
+Open `http://127.0.0.1:3000/docs` after starting the API. The URL redirects to `/docs/`. Scalar displays the resource groups, parameters, response schemas and request examples. Choose an operation, open **Test Request**, enter any query parameters, then **Send** to call your running API. For example, test `GET /v1/communes` with `q=Brazzaville`, then copy its UUID to a commune relationship route. These requests use the same validation and rate limits as other API clients.
+
+`@fastify/swagger` generates `/openapi.json` directly from the route schemas; **Scalar replaces Swagger UI**, not the OpenAPI generator. There is no second handwritten contract to maintain. New routes and schema changes appear in the reference when the server restarts.
+
+The API serves Scalar's JavaScript locally. Default remote fonts, telemetry, AI assistance and developer promotion tools are disabled; requests go directly to this API without a hosted Scalar proxy. No Scalar account or paid service is required. The documentation uses a per-response CSP nonce; its HTML must not be cached by a reverse proxy. The current root-relative URLs assume the API is hosted at the origin root, not under a rewritten path prefix.
+
+See the official [Fastify integration](https://scalar.com/products/api-references/integrations/fastify) and [configuration reference](https://scalar.com/products/api-references/configuration). The UI comes from Scalar; this repository's usage guides remain available in English and French.
+
 ## Resources and filters
 
 Use `GET` to retrieve JSON or `HEAD` for the corresponding headers. Each resource has a list route and a detail route, for example `/v1/communes` and `/v1/communes/{id}`. IDs are persistent UUIDs, shared with JSON and database exports.

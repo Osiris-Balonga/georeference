@@ -22,6 +22,16 @@ npm run start:api
 
 `build:api` compile le cœur partagé avant l’API. `npm run build` compile toujours le paquet CLI/SDK. L’API est un workspace npm privé avec ses dépendances HTTP ; elle ne devient pas une dépendance permanente du projet dans lequel vous générez des fichiers.
 
+## Documentation interactive avec Scalar
+
+Ouvrez `http://127.0.0.1:3000/docs` après avoir démarré l’API. L’adresse redirige vers `/docs/`. Scalar présente les catégories de ressources, paramètres, schémas de réponse et exemples de requêtes. Choisissez une opération, ouvrez **Test Request**, renseignez les paramètres éventuels, puis utilisez **Send** pour interroger votre API. Essayez par exemple `GET /v1/communes` avec `q=Brazzaville`, puis copiez son UUID dans une route de relation de commune. Ces requêtes suivent les mêmes validations et limites de débit que les autres clients API.
+
+`@fastify/swagger` génère `/openapi.json` directement depuis les schémas des routes ; **Scalar remplace Swagger UI**, pas le générateur OpenAPI. Il n’y a pas de second contrat à maintenir manuellement. Les nouvelles routes et modifications de schéma apparaissent dans la documentation au redémarrage du serveur.
+
+L’API sert localement le JavaScript de Scalar. Les polices distantes par défaut, la télémétrie, l’assistance IA et les outils promotionnels développeur sont désactivés ; les requêtes vont directement à cette API sans proxy hébergé par Scalar. Aucun compte Scalar ni service payant n’est nécessaire. La documentation utilise un nonce CSP différent à chaque réponse ; son HTML ne doit pas être mis en cache par un reverse proxy. Les adresses relatives à la racine supposent que l’API est hébergée à la racine du domaine, sans réécriture sous un préfixe de chemin.
+
+Consultez l’[intégration Fastify officielle](https://scalar.com/products/api-references/integrations/fastify) et la [configuration de Scalar](https://scalar.com/products/api-references/configuration). L’interface provient de Scalar ; les guides d’utilisation du dépôt restent disponibles en français et en anglais.
+
 ## Ressources et filtres
 
 Utilisez `GET` pour récupérer le JSON ou `HEAD` pour les en-têtes correspondants. Chaque ressource possède une liste et un accès au détail, par exemple `/v1/communes` et `/v1/communes/{id}`. Les identifiants sont des UUID persistants, communs aux exports JSON et de bases de données.
