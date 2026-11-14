@@ -18,6 +18,8 @@ En développement, lancez l’API sur 3001 avec `npm run dev:api` et la variable
 
 ## Recherche et navigation
 
+La recherche d’accueil propose des lieux après deux caractères et une pause de saisie de 250 ms, selon la catégorie du select shadcn. Chaque proposition affiche son type et ses ancêtres pour distinguer les homonymes. Les flèches choisissent une proposition, Entrée ouvre sa fiche UUID, Échap ferme les suggestions sans effacer la saisie. Sans sélection, la soumission ouvre l’explorateur avec `q` et `resource`. Une panne des suggestions n’empêche pas cette recherche. La page Congo réutilise le contrôle limité aux départements.
+
 Les paramètres `q`, `resource`, `parent` et `offset` portent l’état partageable. Recherche et filtres créent une entrée d’historique ; changer un filtre remet la pagination à zéro. Précédent/suivant du navigateur et changement de langue conservent la recherche. La saisie est soumise explicitement. TanStack Query met les réponses en cache cinq minutes et annule les requêtes devenues inutiles. Chargement, erreur, liste vide et réinitialisation sont prévus. Select et Sheet de shadcn/ui conservent les interactions clavier et le focus de Radix.
 
 Les pages serveur lisent le catalogue versionné partagé ; l’explorateur consomme l’API. Aucun second stock de données ni duplication des règles de rattachement. Les libellés sont traduits, les noms propres conservés. Département et commune homonymes restent distincts par leur catégorie et UUID.
@@ -26,7 +28,9 @@ L’entrée pays publique est `GET /v1/congo`. `GET /v1/search` réunit recherch
 
 ## Affichage et vérification
 
-Le contenu est limité à 1280 px sur grands écrans ; fonds et footer prennent toute la largeur. Le footer a une hauteur minimale d’un viewport et peut grandir sur mobile. Le panorama est contenu sans recadrer les monuments. Les animations d’apparition et d’arrivée de page sont désactivées avec la préférence de mouvement réduit. Polices et images sont locales ; la provenance des illustrations est décrite dans `apps/web/public/images/README.md`.
+Le contenu est limité à 1280 px sur grands écrans ; fonds et footer prennent toute la largeur. Le footer a une hauteur minimale d’un viewport et peut grandir sur mobile. Le panorama sélectionne des compositions distinctes pour desktop, tablette et mobile. Son cadre desktop recadre le ciel transparent en préservant le haut des monuments ; sur écran court, la navigation devient compacte plutôt que de réduire l’image. Les animations d’apparition et d’arrivée de page sont désactivées avec la préférence de mouvement réduit. Polices et images sont locales ; la provenance des illustrations est décrite dans `apps/web/public/images/README.md`.
+
+Les champs de recherche partagent un soulignement de focus discret ; les liens et boutons de catégorie gardent un focus clavier visible. La page Projet replie les documents sources dans un détail ouvrable, tout en gardant les limites de couverture visibles. Les tests de composants React Testing Library/jsdom sont inclus dans `npm run test:web` : sélection clavier, catégorie, recherche limitée aux départements et repli en cas d’échec réseau.
 
 `npm run check` contrôle cœur/API/web et compile Next.js. `npm run test:site` lance le serveur combiné compilé et contrôle langues, pages, ressources, CSP de la doc et données réelles. `SITE_URL` permet de viser un serveur local déjà lancé. La vérification navigateur couvre séparément les interactions et les dimensions.
 

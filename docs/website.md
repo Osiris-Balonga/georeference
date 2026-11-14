@@ -18,6 +18,8 @@ For frontend development, run the API on port 3001 in one terminal (`PORT=3001 n
 
 ## URL state and data
 
+Homepage search also offers place suggestions after two characters and a 250ms typing pause, scoped by the shadcn category selector. Each result shows its type and ancestors to distinguish homonyms. Arrow keys choose a suggestion, Enter opens its stable UUID profile, and Escape closes suggestions without discarding the typed search. Submitting without a selection opens the explorer with `q` and `resource`. Failed suggestions still permit a full search. The Congo overview reuses this control scoped to departments.
+
 Explorer URLs use `q`, `resource`, `parent` and `offset`. Submitting a search or choosing a filter adds a browser history entry; changing filters resets pagination, while page changes retain filters. Back/forward and locale changes preserve the query. No auto-submission on each keystroke. TanStack Query caches requests for five minutes and cancels stale requests using AbortSignal. Error, empty and skeleton states are provided. Category controls use shadcn/ui Select and mobile navigation uses Sheet, with focus handling from Radix. The components configuration and CSS semantic tokens are in the web workspace.
 
 Server-rendered pages read the same versioned catalog through the Node SDK, loaded natively to retain file-relative data paths. Interactive exploration consumes the HTTP API. No second data store or duplicated administrative rules. Names remain unchanged between locales; labels and explanatory copy are translated. UUIDs remain canonical; same-name department/commune records stay separate.
@@ -26,7 +28,9 @@ Server-rendered pages read the same versioned catalog through the Node SDK, load
 
 ## Layout, artwork and motion
 
-Reading content is capped at 1280px. Footer/background surfaces fill the viewport width; the footer uses a minimum viewport height, allowing content-fit growth on mobile. Its panorama uses object containment to keep monuments visible. Hero composition adapts to short desktop viewports. Reveal and route-arrival transitions use opacity/transform; controls are interruptible. Reduced-motion preferences disable motion and smooth scrolling. Fonts and artwork are served locally; generated illustrative artwork provenance is documented in `apps/web/public/images/README.md`.
+Reading content is capped at 1280px. Footer/background surfaces fill the viewport width; the footer uses a minimum viewport height, allowing content-fit growth on mobile. Its full-width picture selects separate desktop, tablet and compact mobile illustrations. The desktop frame trims transparent sky while keeping monument tops visible; short-screen navigation is compacted rather than shrinking the image. Hero composition adapts to short desktop viewports. Reveal and route-arrival transitions use opacity/transform; controls are interruptible. Reduced-motion preferences disable motion and smooth scrolling. Fonts and artwork are served locally; generated illustrative artwork provenance is documented in `apps/web/public/images/README.md`.
+
+Search inputs share one understated focus underline; keyboard focus on links and category buttons remains visible. The project page keeps source documents in an expandable disclosure, with coverage caveats always visible. Component interaction tests run with React Testing Library and jsdom in `npm run test:web`, covering keyboard selection, category scoping, department-only search and failed-request fallback.
 
 ## Validation and hosting
 
