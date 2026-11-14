@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { GeographicCatalog } from 'georeference';
+import type { GeographicCatalog } from '242places';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
 import { registerDocs } from '../docs/routes.ts';
@@ -9,9 +9,9 @@ export async function registerOpenApi(app: FastifyInstance, catalog: GeographicC
   await app.register(swagger, {
     openapi: {
       openapi: '3.0.3',
-      info: { title: 'GeoReference API', version: serviceVersion,
+      info: { title: '242Places API', version: serviceVersion,
         description: 'Read-only Republic of Congo geographic reference. Coverage is dated and partial; counts describe known records.' },
-      servers: [{ url: '/', description: 'Current GeoReference API origin' }],
+      servers: [{ url: '/', description: 'Current 242Places API origin' }],
     },
   });
   await app.register(scalar, {
@@ -22,7 +22,7 @@ export async function registerOpenApi(app: FastifyInstance, catalog: GeographicC
       }
     } },
     configuration: {
-      title: 'GeoReference API', url: '/openapi.json',
+      title: '242Places API', url: '/openapi.json',
       withDefaultFonts: false, telemetry: false, agent: { disabled: true }, proxyUrl: '',
       showDeveloperTools: 'never',
     },

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { FastifyInstance } from 'fastify';
 import { Type } from 'typebox';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { RESOURCE_NAMES, type GeographicCatalog } from 'georeference';
+import { RESOURCE_NAMES, type GeographicCatalog } from '242places';
 import { errorResponses, metadata, noQuery, uuid } from '../schemas/common.ts';
 import { meta } from './resources.ts';
 

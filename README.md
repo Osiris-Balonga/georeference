@@ -1,19 +1,19 @@
-# GeoReference — Republic of the Congo
+# 242Places — Republic of the Congo
 
 [Français](README.fr.md) · [Getting started](docs/getting-started.md) · [Formats](docs/formats.md) · [HTTP API](docs/api.md) · [Contributing](CONTRIBUTING.md)
 
 Get Republic of the Congo (CG/COG) geographic data as readable lists or application resources. Choose Excel category tabs, CSV files with place names, separate JSON collections, or database exports with stable UUIDs and configurable business tables. Generated files need no permanent project dependency.
 
-Version **1.1.0** provides the Congo resource exports. Use `npx georeference@1.1.0` to select this version explicitly. Version 1.0.0 used the previous country-list output.
+Version **1.2.0** provides the Congo resource exports. Use `npx 242places@1.2.0` to select this version explicitly. Earlier releases were published under the georeference package name.
 
 ## Try the data
 
 Use Node.js **24.18.x** and npm:
 
 ```sh
-npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
-npx georeference@1.1.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx 242places@1.2.0 generate --format xlsx --output ./exports/congo-excel
+npx 242places@1.2.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx 242places@1.2.0 generate --format json --output ./exports/congo-json
 ```
 
 Open `congo.xlsx` for category worksheets, CSV files for readable lists, or JSON arrays such as `communes.json`, `arrondissements.json` and `neighborhoods.json` for applications. Each new output directory includes a human coverage/date summary in `README.txt` and technical integrity metadata in `manifest.json`. Detailed evidence is optional with `--audit`. Existing destinations are refused.
@@ -54,7 +54,7 @@ npm run dev:api
 
 Open `http://127.0.0.1:3000/docs` for interactive documentation. Routes include `/v1/communes`, `/v1/communes/{id}/arrondissements` and `/v1/arrondissements/{id}/neighborhoods`. The API is public and read-only, with paginated resources and explicit dataset/partial-coverage metadata. See the [API guide](docs/api.md) for configuration, examples and the difference between direct and descendant relationships.
 
-The API runs from this repository; this is not a public hosted-service announcement. The published `georeference@1.1.0` remains the CLI/optional SDK. Running `npx georeference` continues to generate standalone files and does not start a server.
+The API runs from this repository; this is not a public hosted-service announcement. The published `242places@1.2.0` remains the CLI/optional SDK. Running `npx 242places` continues to generate standalone files and does not start a server.
 
 ## Documentation
 

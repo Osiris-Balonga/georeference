@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { GeographicCatalog, ResourceName } from 'georeference';
+import type { GeographicCatalog, ResourceName } from '242places';
 import { registerRelationshipRoute, registerResourceRoutes } from './resources.ts';
 
 export function registerPlacesRoutes(app: FastifyInstance, catalog: GeographicCatalog): void {

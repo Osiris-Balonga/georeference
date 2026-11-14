@@ -2,7 +2,7 @@
 
 [Français](api.fr.md) · [Home](../README.md) · [Architecture](architecture.md)
 
-The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Run it from a source checkout. The published `georeference@1.1.0` package remains the standalone file generator and optional local SDK; running `npx georeference` does not start this server. This guide describes local operation, not an already deployed public service.
+The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Run it from a source checkout. The published `242places@1.2.0` package remains the standalone file generator and optional local SDK; running `npx 242places` does not start this server. This guide describes local operation, not an already deployed public service.
 
 ## Run locally
 

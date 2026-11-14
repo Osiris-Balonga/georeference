@@ -1,19 +1,19 @@
-# GeoReference — République du Congo
+# 242Places — République du Congo
 
 [English](README.md) · [Prise en main](docs/getting-started.fr.md) · [Formats](docs/formats.fr.md) · [API HTTP](docs/api.fr.md) · [Contribuer](CONTRIBUTING.fr.md)
 
 Récupérez les données géographiques de la République du Congo (CG/COG) sous forme de listes lisibles ou de ressources applicatives. Choisissez des onglets Excel par catégorie, des CSV avec noms de lieux, des collections JSON séparées ou des exports de bases avec UUID stables et tables métier configurables. Les fichiers générés ne nécessitent aucune dépendance permanente dans le projet.
 
-La version **1.1.0** fournit les exports de ressources Congo. Utilisez `npx georeference@1.1.0` pour choisir explicitement cette version. La version 1.0.0 utilisait l’ancien export de liste de pays.
+La version **1.2.0** fournit les exports de ressources Congo. Utilisez `npx 242places@1.2.0` pour choisir explicitement cette version. Les versions précédentes étaient publiées sous le nom de paquet georeference.
 
 ## Essayer les données
 
 Utilisez Node.js **24.18.x** et npm :
 
 ```sh
-npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
-npx georeference@1.1.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx 242places@1.2.0 generate --format xlsx --output ./exports/congo-excel
+npx 242places@1.2.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx 242places@1.2.0 generate --format json --output ./exports/congo-json
 ```
 
 Ouvrez `congo.xlsx` pour consulter les onglets, les CSV pour les listes, ou des tableaux JSON comme `communes.json`, `arrondissements.json` et `neighborhoods.json` pour les applications. Chaque nouveau dossier contient un résumé humain de couverture/dates dans `README.txt` et les métadonnées techniques d'intégrité dans `manifest.json`. Les preuves détaillées sont facultatives avec `--audit`. Les destinations existantes sont refusées.
@@ -54,7 +54,7 @@ npm run dev:api
 
 Ouvrez `http://127.0.0.1:3000/docs` pour la documentation interactive. Les routes comprennent `/v1/communes`, `/v1/communes/{id}/arrondissements` et `/v1/arrondissements/{id}/neighborhoods`. L’API est publique en lecture seule, avec des ressources paginées et des métadonnées explicites de version/couverture partielle. Voir [le guide API](docs/api.fr.md) pour la configuration, les exemples et la distinction entre relations directes et descendantes.
 
-L’API se lance depuis ce dépôt ; il ne s’agit pas de l’annonce d’un service public hébergé. Le paquet publié `georeference@1.1.0` reste la CLI et le SDK optionnel. `npx georeference` continue de générer des fichiers autonomes et ne démarre pas de serveur.
+L’API se lance depuis ce dépôt ; il ne s’agit pas de l’annonce d’un service public hébergé. Le paquet publié `242places@1.2.0` reste la CLI et le SDK optionnel. `npx 242places` continue de générer des fichiers autonomes et ne démarre pas de serveur.
 
 ## Documentation
 

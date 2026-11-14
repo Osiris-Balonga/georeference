@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildApp } from '../src/app.ts';
-import { loadCatalog } from 'georeference';
+import { loadCatalog } from '242places';
 
 test('every public GET has a bilingual isolated native reference page and an executable example', async t => {
   const app = await buildApp({ rateLimitMax: 10000 });

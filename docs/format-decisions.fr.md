@@ -12,7 +12,7 @@ La complexité inclut génération et validation d'interopérabilité : **faible
 
 ## Comparaison
 
-| Format | Usages concrets | Pertinence pour GeoReference | Complexité de génération | Dépendances | Limites principales | Priorité |
+| Format | Usages concrets | Pertinence pour 242Places | Complexité de génération | Dépendances | Limites principales | Priorité |
 |---|---|---|---|---|---|---|
 | JSON | Ressources applicatives classées par catégorie | Très forte pour les intégrations | Faible | Sérialisation JSON native et flux | Tableaux indentés plus faciles à parcourir ; les gros fichiers restent coûteux en mémoire ; ancien arbre mélangé hors contrat public | **V1**, `json` |
 | JSON Lines / NDJSON | Import de ressources par lots et lecture progressive | Très forte pour les pipelines | Faible | Sérialisation JSON native et flux | Un objet par ligne dans chaque catégorie ; métadonnées séparées ; une grande géométrie reste un grand enregistrement | **V1**, `ndjson` |
@@ -54,4 +54,4 @@ L'[architecture à adaptateurs](architecture.fr.md) ajoute un encodage sans dép
 
 Avant d'annoncer un format, identifiez destinataire/lecteur réel, versions testées, pertes déclarées, couverture géométrique, licences, limites de ressources et relecture indépendante. Pour GeoParquet, choisissez le profil d'interopérabilité selon les lecteurs visés sans supposer que la spécification la plus récente est partout disponible ; le site actuel comprend la version 2.0. La documentation du pilote Parquet GDAL décrit ses profils GeoParquet pris en charge. Références : [GeoParquet](https://geoparquet.org/), [pilote Parquet GDAL](https://gdal.org/en/stable/drivers/vector/parquet.html).
 
-Pour un public SIG bureautique, GeoPackage peut précéder Parquet ; pour l'analyse en entrepôt, l'ordre peut s'inverser. Préservez l'ID stable GeoReference en attribut même si le format utilise son propre identifiant technique de ligne. Validez tables/encodage GeoPackage avec un lecteur conforme ; voir [le pilote GeoPackage GDAL](https://gdal.org/en/stable/drivers/vector/gpkg.html). Ces évaluations n'activent aucun format absent de la CLI V1 livrée.
+Pour un public SIG bureautique, GeoPackage peut précéder Parquet ; pour l'analyse en entrepôt, l'ordre peut s'inverser. Préservez l'ID stable 242Places en attribut même si le format utilise son propre identifiant technique de ligne. Validez tables/encodage GeoPackage avec un lecteur conforme ; voir [le pilote GeoPackage GDAL](https://gdal.org/en/stable/drivers/vector/gpkg.html). Ces évaluations n'activent aucun format absent de la CLI V1 livrée.

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { Type } from 'typebox';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { getResource, queryRelated, queryResources, type GeographicCatalog,
-  type ParentField, type ResourceName, type ResourceQuery } from 'georeference';
+  type ParentField, type ResourceName, type ResourceQuery } from '242places';
 import { errorResponses, idParams, listMetadata, metadata, noQuery,
   paginationProperties, paginationQuery, uuid } from '../schemas/common.ts';
 import { parentFields, resourcePaths, resourceSchemas } from '../schemas/resources.ts';

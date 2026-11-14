@@ -29,7 +29,7 @@ A versioned identity registry assigns UUIDs once. Names and source codes are not
 
 `toResourceTables` projects validated internal entities to typed resource tables. `exportResources` is the public resource export path; `readResourcePackage` validates supported resource packages and their identity. Internal canonical snapshots and legacy adapters/seeding remain compatibility components. Their generic entity dump is not the new CLI default and must not be mistaken for the public resource contract.
 
-The source repository includes a Fastify API application in a private npm workspace, backed by these resources. The published `georeference@1.1.0` CLI continues to generate standalone files; it does not start the API. HTTP queries, generated data and an optional installed SDK are separate consumption choices. Database import remains an explicit write action. See the [API guide](api.md) for local setup and the HTTP contract; no public hosting address is implied.
+The source repository includes a Fastify API application in a private npm workspace, backed by these resources. The published `242places@1.2.0` CLI continues to generate standalone files; it does not start the API. HTTP queries, generated data and an optional installed SDK are separate consumption choices. Database import remains an explicit write action. See the [API guide](api.md) for local setup and the HTTP contract; no public hosting address is implied.
 
 ## Shared core and private HTTP application
 

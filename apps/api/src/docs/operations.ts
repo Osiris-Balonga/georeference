@@ -1,4 +1,4 @@
-import { getResource, queryRelated, queryResources, type GeographicCatalog, type ResourceName } from 'georeference';
+import { getResource, queryRelated, queryResources, type GeographicCatalog, type ResourceName } from '242places';
 import { resourcePaths } from '../schemas/resources.ts';
 import { meta } from '../routes/resources.ts';
 import { coverageResponse, datasetResponse } from '../routes/reference.ts';

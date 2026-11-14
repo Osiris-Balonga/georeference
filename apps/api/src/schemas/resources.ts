@@ -1,5 +1,5 @@
 import { Type, type TSchema } from 'typebox';
-import type { ParentField, ResourceName } from 'georeference';
+import type { ParentField, ResourceName } from '242places';
 import { uuid } from './common.ts';
 
 const nullableUuid = Type.Union([uuid, Type.Null()]);

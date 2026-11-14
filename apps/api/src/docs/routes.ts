@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance, FastifyReply } from 'fastify';
-import type { GeographicCatalog } from 'georeference';
+import type { GeographicCatalog } from '242places';
 import { renderReference } from './reference.ts';
 import { referenceStyles, referenceClient } from './reference-assets.ts';
 import { referenceOperations, operationSpecification, operationAddress, type ReferenceOperation } from './operations.ts';

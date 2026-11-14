@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { loadCatalog, type GeographicCatalog } from 'georeference';
+import { loadCatalog, type GeographicCatalog } from '242places';
 import { registerErrors } from './plugins/errors.ts';
 import { registerOpenApi } from './plugins/openapi.ts';
 import { registerSecurity } from './plugins/security.ts';

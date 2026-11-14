@@ -1,4 +1,4 @@
-# Contributing to GeoReference
+# Contributing to 242Places
 
 [Français](CONTRIBUTING.fr.md) · [Home](README.md)
 

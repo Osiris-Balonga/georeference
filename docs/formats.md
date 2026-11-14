@@ -2,7 +2,7 @@
 
 [Français](formats.fr.md) · [Home](../README.md) · [Full format assessment](format-decisions.md)
 
-The 1.1.0 CLI exports selected Congo data as resources, not a mixed entity dump. UUIDs identify application records. Human lists show names by default. All formats share the reference's partial, dated coverage; no format supplies missing geography.
+The 1.2.0 CLI exports selected Congo data as resources, not a mixed entity dump. UUIDs identify application records. Human lists show names by default. All formats share the reference's partial, dated coverage; no format supplies missing geography.
 
 ## Files and worksheets
 

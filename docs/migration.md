@@ -2,6 +2,12 @@
 
 [Français](migration.fr.md) · [Home](../README.md) · [Formats](formats.md)
 
+## Moving to 242Places
+
+The product is now 242Places. Use `npx 242places` for files, or install `242places` only when using the optional SDK. Imports use `242places` and `242places/seeding`. Default generation now writes to `./data/242places`; an explicit `--output` keeps your chosen location. Earlier published versions retain the `georeference` package name so existing installations remain available. Stable UUIDs, dataset versions, resource fields, HTTP `/v1` routes and internal snapshot/import-ledger names are preserved by this rename. Existing generated files are not rewritten.
+
+## Earlier export contract
+
 Version 1.1.0 deliberately changes public output from npm 1.0.0 and earlier development exports. Keep existing files/backups, generate into a new directory and compare before replacing application data.
 
 | Earlier output | New resource output |

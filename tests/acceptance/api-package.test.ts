@@ -21,14 +21,14 @@ async function npm(args: string[], cwd = repository) {
 }
 
 test('the API workspace resolves the local core package', async () => {
-  await npm(['ls', 'georeference', '--workspace', '@georeference/api', '--json']);
+  await npm(['ls', '242places', '--workspace', '@242places/api', '--json']);
   const script = `
     import assert from 'node:assert/strict';
     import { realpath } from 'node:fs/promises';
     import { fileURLToPath } from 'node:url';
-    const actual = await realpath(fileURLToPath(import.meta.resolve('georeference')));
+    const actual = await realpath(fileURLToPath(import.meta.resolve('242places')));
     assert.equal(actual, await realpath(process.argv[1]));
-    const core = await import('georeference');
+    const core = await import('242places');
     assert.equal(typeof core.loadCongoReference, 'function');
     console.log('local core linked');
   `;
@@ -39,10 +39,10 @@ test('the API workspace resolves the local core package', async () => {
 
 test('the packed CLI stays standalone and API responses preserve source/export identities',
   { timeout: 240_000 }, async t => {
-    const directory = await mkdtemp(join(tmpdir(), 'georeference-api-acceptance-'));
+    const directory = await mkdtemp(join(tmpdir(), '242places-api-acceptance-'));
     t.after(async () => {
       assert.equal(dirname(resolve(directory)), resolve(tmpdir()));
-      assert.match(basename(directory), /^georeference-api-acceptance-/);
+      assert.match(basename(directory), /^242places-api-acceptance-/);
       await rm(directory, { recursive: true, force: true });
     });
     const packed = JSON.parse((await npm(['pack', '--ignore-scripts', '--json',
@@ -55,13 +55,13 @@ test('the packed CLI stays standalone and API responses preserve source/export i
     const output = join(directory, 'data');
     const archive = join(directory, packed.filename);
     await npm(['exec', '--yes', '--cache', cache, '--package', archive, '--',
-      'georeference', 'generate', '--output', output, '--format', 'json'], directory);
+      '242places', 'generate', '--output', output, '--format', 'json'], directory);
     assert.deepEqual((await readdir(directory)).filter(name => name !== 'npm-cache').sort(),
       ['data', packed.filename].sort());
     const installs = await readdir(join(cache, '_npx'));
     assert.equal(installs.length, 1);
     const modules = join(cache, '_npx', installs[0]!, 'node_modules');
-    const installed = JSON.parse(await readFile(join(modules, 'georeference/package.json'), 'utf8'));
+    const installed = JSON.parse(await readFile(join(modules, '242places/package.json'), 'utf8'));
     assert.ok(!Object.keys(installed.dependencies ?? {}).some(name => /fastify|typebox|scalar/.test(name)));
     assert.ok(!(await readdir(modules)).some(name => /^(fastify|@fastify|typebox|@scalar)$/.test(name)));
 
@@ -79,7 +79,7 @@ test('the packed CLI stays standalone and API responses preserve source/export i
       '--input-type=module', '-e', guardCheck], { cwd: directory });
     const offlineOutput = join(directory, 'offline-data');
     await execute(process.execPath, ['--import', pathToFileURL(networkGuard).href,
-      join(modules, 'georeference/dist/cli.js'), 'generate', '--output', offlineOutput,
+      join(modules, '242places/dist/cli.js'), 'generate', '--output', offlineOutput,
       '--format', 'json', '--city', 'Brazzaville'], { cwd: directory });
     assert.equal(JSON.parse(await readFile(join(offlineOutput, 'neighborhoods.json'), 'utf8')).length, 88);
 
