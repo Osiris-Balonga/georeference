@@ -64,4 +64,4 @@ console.log(resources.neighborhoods);
 
 `exportResources` exports selected snapshots using the public resource model; `readResourcePackage` verifies supported JSON/NDJSON resource packages. The internal canonical snapshot and legacy adapters are compatibility building blocks, not the public file layout. See [architecture](architecture.md) and [migration](migration.md).
 
-A SQLite export is a database of business tables, not the internal snapshot consumed by `Snapshot.open`. Resource functions prepare a future API, but no HTTP server is shipped here.
+A SQLite export is a database of business tables, not the internal snapshot consumed by `Snapshot.open`. To query resources over HTTP instead of generating files or installing the SDK, run the private API application from a source checkout. See the [API guide](api.md). The published `georeference@1.1.0` package does not start this server.
