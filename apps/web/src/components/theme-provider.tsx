@@ -1,66 +1,64 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-type Theme = "system" | "light" | "dark";
+type Theme = "light" | "dark";
+type Preference = Theme | "system";
 const Context = createContext<{ theme: Theme; cycle: () => void }>({
-  theme: "system",
+  theme: "dark",
   cycle: () => {},
 });
-const storedTheme = (): Theme => {
+function storedTheme(): Preference {
   try {
-    const value = localStorage.getItem("242places-theme");
-    return value === "light" || value === "dark" ? value : "system";
+    const saved = localStorage.getItem("242places-theme");
+    return saved === "light" || saved === "dark" ? saved : "system";
   } catch {
     return "system";
   }
-};
-function apply(theme: Theme) {
-  let resolved: Theme = theme;
-  if (theme === "system") {
-    try {
-      resolved =
-        typeof matchMedia === "function" &&
-        matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
-    } catch {
-      resolved = "dark";
-    }
+}
+function resolveTheme(preference: Preference): Theme {
+  if (preference !== "system") return preference;
+  try {
+    return typeof matchMedia === "function" &&
+      matchMedia("(prefers-color-scheme: light)").matches
+      ? "light"
+      : "dark";
+  } catch {
+    return "dark";
   }
-  document.documentElement.dataset.theme = resolved;
 }
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [preference, setPreference] = useState<Preference>();
+  const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => {
-    const saved = storedTheme();
-    setTheme(saved);
-    apply(saved);
-    const storage = (event: StorageEvent) => {
-      if (event.key === "242places-theme") {
-        const saved = storedTheme();
-        setTheme(saved);
-        apply(saved);
-      }
+    setPreference(storedTheme());
+    const sync = (event: StorageEvent) => {
+      if (event.key === "242places-theme" || event.key === null)
+        setPreference(storedTheme());
     };
-    window.addEventListener("storage", storage);
-    return () => window.removeEventListener("storage", storage);
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
   }, []);
   useEffect(() => {
-    apply(theme);
-    if (theme !== "system" || typeof matchMedia !== "function") return;
-    const media = matchMedia("(prefers-color-scheme: light)");
-    const sync = () => apply("system");
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [theme]);
-  function cycle() {
-    const next =
-      theme === "system" ? "light" : theme === "light" ? "dark" : "system";
-    setTheme(next);
-    apply(next);
+    if (!preference) return;
+    const sync = () => {
+      const next = resolveTheme(preference);
+      document.documentElement.dataset.theme = next;
+      setTheme(next);
+    };
+    sync();
+    if (preference !== "system" || typeof matchMedia !== "function") return;
     try {
-      next === "system"
-        ? localStorage.removeItem("242places-theme")
-        : localStorage.setItem("242places-theme", next);
+      const media = matchMedia("(prefers-color-scheme: light)");
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    } catch {}
+  }, [preference]);
+  function cycle() {
+    const next = theme === "light" ? "dark" : "light";
+    setPreference(next);
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("242places-theme", next);
     } catch {}
   }
   return (

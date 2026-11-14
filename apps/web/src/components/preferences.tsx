@@ -2,13 +2,17 @@
 import { useTheme } from "./theme-provider";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { text } from "@/lib/i18n";
 export function Preferences({ locale }: { locale: Locale }) {
   const path = usePathname(),
     params = useSearchParams();
   const { theme, cycle } = useTheme();
+  const themeAction =
+    theme === "dark"
+      ? text(locale, "Activer le thème clair", "Switch to light mode")
+      : text(locale, "Activer le thème sombre", "Switch to dark mode");
   const target = locale === "fr" ? "en" : "fr";
   return (
     <div className="preferences">
@@ -31,16 +35,10 @@ export function Preferences({ locale }: { locale: Locale }) {
       <button
         type="button"
         onClick={cycle}
-        aria-label={text(locale, "Thème actuel : ", "Current theme: ") + theme}
-        title={theme}
+        aria-label={themeAction}
+        title={themeAction}
       >
-        {theme === "system" ? (
-          <Monitor />
-        ) : theme === "light" ? (
-          <Sun />
-        ) : (
-          <Moon />
-        )}
+        {theme === "light" ? <Sun /> : <Moon />}
       </button>
     </div>
   );
