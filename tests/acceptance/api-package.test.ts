@@ -62,8 +62,8 @@ test('the packed CLI stays standalone and API responses preserve source/export i
     assert.equal(installs.length, 1);
     const modules = join(cache, '_npx', installs[0]!, 'node_modules');
     const installed = JSON.parse(await readFile(join(modules, 'georeference/package.json'), 'utf8'));
-    assert.ok(!Object.keys(installed.dependencies ?? {}).some(name => /fastify|typebox/.test(name)));
-    assert.ok(!(await readdir(modules)).some(name => /^(fastify|@fastify|typebox)$/.test(name)));
+    assert.ok(!Object.keys(installed.dependencies ?? {}).some(name => /fastify|typebox|scalar/.test(name)));
+    assert.ok(!(await readdir(modules)).some(name => /^(fastify|@fastify|typebox|@scalar)$/.test(name)));
 
     const networkGuard = fileURLToPath(new URL('./deny-network.mjs', import.meta.url));
     const guardCheck = `
