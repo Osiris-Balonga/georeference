@@ -12,7 +12,7 @@ export function renderChapter(locale: Locale, chapter: Chapter, nonce: string): 
   const direction = (item: Chapter | undefined, label: string) => item ? `<a href="${href(item.slug)}"><span>${label}</span>${item.title}</a>` : '';
   const config = {
     url: `/docs/${locale}/spec/${chapter.slug}.json`, layout: 'classic', showSidebar: false,
-    hideModels: true, hideClientButton: true, hideDarkModeToggle: true,
+    hideModels: true, hideClientButton: true, hideDarkModeToggle: true, hideSearch: true,
     withDefaultFonts: false, telemetry: false, agent: { disabled: true }, proxyUrl: '',
     showDeveloperTools: 'never', urlRouting: false, localization: { locale }, theme: 'none',
   };

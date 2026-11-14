@@ -1,15 +1,23 @@
 export const docsClient = String.raw`
 const root = document.documentElement;
+let apiReference;
+let apiOptions;
 const themeButton = document.querySelector('[data-theme-toggle]');
 let savedTheme;
 try { savedTheme = localStorage.getItem('georeference-theme'); } catch {}
 if (savedTheme === 'light' || savedTheme === 'dark') root.dataset.theme = savedTheme;
-function syncTheme() { themeButton?.setAttribute('aria-pressed', String(root.dataset.theme === 'light')); }
+function syncTheme() {
+  const light = root.dataset.theme === 'light';
+  document.body.classList.toggle('light-mode', light);
+  document.body.classList.toggle('dark-mode', !light);
+  themeButton?.setAttribute('aria-pressed', String(light));
+}
 syncTheme();
 themeButton?.addEventListener('click', () => {
   root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
   try { localStorage.setItem('georeference-theme', root.dataset.theme); } catch {}
   syncTheme();
+  if (apiReference) apiReference.updateConfiguration({...apiOptions, forceDarkModeState: root.dataset.theme});
 });
 const menu = document.querySelector('[data-menu]');
 const sidebar = document.querySelector('.sidebar');
@@ -56,7 +64,8 @@ if (config) {
       if (!response.ok) throw new Error('OpenAPI ' + response.status);
       options.content = await response.json();
       delete options.url;
-      window.Scalar.createApiReference('#scalar-reference', {...options, onLoaded: () => { loading.hidden = true; }});
+      apiOptions = {...options, forceDarkModeState: root.dataset.theme, onLoaded: () => { loading.hidden = true; }};
+      apiReference = window.Scalar.createApiReference('#scalar-reference', apiOptions);
     } catch { fail(); }
   }
   if (window.Scalar) mount(); else fail();
