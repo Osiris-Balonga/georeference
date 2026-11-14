@@ -2,7 +2,7 @@
 
 [Français](api.fr.md) · [Home](../README.md) · [Architecture](architecture.md)
 
-The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Use the [hosted documentation and API](https://two42places.onrender.com/) or run it from a source checkout. The `242places@1.2.0` npm package remains the standalone file generator and optional local SDK; running `npx 242places` does not start this server. See [deployment](deployment.md) for hosting configuration.
+The repository includes a public, read-only Fastify API for Republic of the Congo (CG/COG) resources. Use the [hosted documentation and API](https://two42places.onrender.com/) or run it from a source checkout. The `242places@1.2.1` npm package remains the standalone file generator and optional local SDK; running `npx 242places` does not start this server. See [deployment](deployment.md) for hosting configuration.
 
 ## Run locally
 

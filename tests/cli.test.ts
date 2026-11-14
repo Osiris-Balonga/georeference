@@ -46,6 +46,8 @@ test('CLI generates country files in a consumer project without installing depen
   assert.equal(JSON.parse(result.stdout).count,1);
   const countriesData=JSON.parse(await readFile(join(folder,'data/242places/countries.json'),'utf8'));
   assert.match(countriesData[0].id,/^[\da-f-]{36}$/);assert.equal(countriesData[0].name,'Synthetic country');
+  const manifest=JSON.parse(await readFile(join(folder,'data/242places/manifest.json'),'utf8'));
+  assert.equal(manifest.generatorVersion,'1.2.1','exports identify the released generator, independently of adapter/dataset versions');
   await invoke(['verify','--package','data/242places']);
   assert.equal(await readFile(join(folder,'package.json'),'utf8'),packageText);
   assert.equal(await readFile(join(folder,'package-lock.json'),'utf8'),lockText);

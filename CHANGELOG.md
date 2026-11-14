@@ -1,5 +1,11 @@
 # Changelog / Historique
 
+## 1.2.1 — 2026-11-14
+
+English: exported manifests now read their generator version from the installed package metadata, preventing version drift. Geographic UUIDs and data are unchanged.
+
+Français : les manifestes d’export lisent désormais la version du générateur dans le paquet installé, afin d’éviter un décalage de version. Les UUID géographiques et les données sont inchangés.
+
 ## 1.2.0 — 2026-11-14
 
 ### English

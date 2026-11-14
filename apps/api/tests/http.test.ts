@@ -92,7 +92,7 @@ test('dataset and coverage endpoints expose concise source-backed summaries', as
   const dataset = await app.inject('/v1/dataset');
   assert.equal(dataset.statusCode, 200);
   assert.equal(dataset.json().data.apiVersion, 'v1');
-  assert.equal(dataset.json().data.serviceVersion, '1.2.0');
+  assert.equal(dataset.json().data.serviceVersion, '1.2.1');
   assert.equal(dataset.json().data.contractVersion, '1.0');
   assert.deepEqual(dataset.json().data.country, { iso2: 'CG', iso3: 'COG' });
   assert.ok(dataset.json().data.sources.every((source: {url:string;license:string}) => source.url && source.license));

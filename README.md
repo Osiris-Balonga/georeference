@@ -4,16 +4,16 @@
 
 Get Republic of the Congo (CG/COG) geographic data as readable lists or application resources. Choose Excel category tabs, CSV files with place names, separate JSON collections, or database exports with stable UUIDs and configurable business tables. Generated files need no permanent project dependency.
 
-Version **1.2.0** provides the Congo resource exports. Use `npx 242places@1.2.0` to select this version explicitly. Earlier releases were published under the georeference package name.
+Version **1.2.1** provides the Congo resource exports. Use `npx 242places@1.2.1` to select this version explicitly. Earlier releases were published under the georeference package name.
 
 ## Try the data
 
 Use Node.js **24.18.x** and npm:
 
 ```sh
-npx 242places@1.2.0 generate --format xlsx --output ./exports/congo-excel
-npx 242places@1.2.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-npx 242places@1.2.0 generate --format json --output ./exports/congo-json
+npx 242places@1.2.1 generate --format xlsx --output ./exports/congo-excel
+npx 242places@1.2.1 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx 242places@1.2.1 generate --format json --output ./exports/congo-json
 ```
 
 Open `congo.xlsx` for category worksheets, CSV files for readable lists, or JSON arrays such as `communes.json`, `arrondissements.json` and `neighborhoods.json` for applications. Each new output directory includes a human coverage/date summary in `README.txt` and technical integrity metadata in `manifest.json`. Detailed evidence is optional with `--audit`. Existing destinations are refused.

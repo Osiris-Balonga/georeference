@@ -4,16 +4,16 @@
 
 Récupérez les données géographiques de la République du Congo (CG/COG) sous forme de listes lisibles ou de ressources applicatives. Choisissez des onglets Excel par catégorie, des CSV avec noms de lieux, des collections JSON séparées ou des exports de bases avec UUID stables et tables métier configurables. Les fichiers générés ne nécessitent aucune dépendance permanente dans le projet.
 
-La version **1.2.0** fournit les exports de ressources Congo. Utilisez `npx 242places@1.2.0` pour choisir explicitement cette version. Les versions précédentes étaient publiées sous le nom de paquet georeference.
+La version **1.2.1** fournit les exports de ressources Congo. Utilisez `npx 242places@1.2.1` pour choisir explicitement cette version. Les versions précédentes étaient publiées sous le nom de paquet georeference.
 
 ## Essayer les données
 
 Utilisez Node.js **24.18.x** et npm :
 
 ```sh
-npx 242places@1.2.0 generate --format xlsx --output ./exports/congo-excel
-npx 242places@1.2.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-npx 242places@1.2.0 generate --format json --output ./exports/congo-json
+npx 242places@1.2.1 generate --format xlsx --output ./exports/congo-excel
+npx 242places@1.2.1 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx 242places@1.2.1 generate --format json --output ./exports/congo-json
 ```
 
 Ouvrez `congo.xlsx` pour consulter les onglets, les CSV pour les listes, ou des tableaux JSON comme `communes.json`, `arrondissements.json` et `neighborhoods.json` pour les applications. Chaque nouveau dossier contient un résumé humain de couverture/dates dans `README.txt` et les métadonnées techniques d'intégrité dans `manifest.json`. Les preuves détaillées sont facultatives avec `--audit`. Les destinations existantes sont refusées.
@@ -67,7 +67,7 @@ Consultez la [documentation produit et la référence API hébergées](https://t
 | [Référentiel et sources](docs/congo-reference.fr.md) | [Reference and sources](docs/congo-reference.md) |
 | [Migration](docs/migration.fr.md) | [Migration](docs/migration.md) |
 | [API HTTP](docs/api.fr.md) | [HTTP API](docs/api.md) |
-| [Deployment](docs/deployment.md) | [Déploiement](docs/deployment.fr.md) |
+| [Déploiement](docs/deployment.fr.md) | [Deployment](docs/deployment.md) |
 | [Architecture](docs/architecture.fr.md) | [Architecture](docs/architecture.md) |
 | [Contribuer](CONTRIBUTING.fr.md) | [Contributing](CONTRIBUTING.md) |
 
