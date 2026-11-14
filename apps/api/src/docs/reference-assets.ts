@@ -35,6 +35,15 @@ async function mount() {
     const response = await fetch(options.url);
     if (!response.ok) throw new Error('OpenAPI ' + response.status);
     options.content = await response.json(); delete options.url;
+    // Old category/operation anchors are redundant with the dedicated host URL.
+    // Normalize them before Scalar can interpret them as an initial scroll target.
+    const [path, methods] = Object.entries(options.content.paths)[0];
+    const tag = methods.get.tags[0].toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
+    let initialFragment;
+    try { initialFragment = decodeURIComponent(location.hash.slice(1)); } catch {}
+    if (['tag/' + tag, 'tag/' + tag + '/GET' + path, 'description/introduction'].includes(initialFragment)) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
     options.forceDarkModeState = document.body.classList.contains('light-mode') ? 'light' : 'dark';
     let positioned = false;
     options.onLoaded = slug => {
