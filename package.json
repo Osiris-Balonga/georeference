@@ -2,7 +2,8 @@
   "name": "242places",
   "version": "1.2.1",
   "workspaces": [
-    "apps/api"
+    "apps/api",
+    "apps/web"
   ],
   "description": "Generate source-backed Republic of Congo geographic files with auditable partial coverage.",
   "type": "module",
@@ -50,8 +51,13 @@
     "test:api": "npm run build && npm run test --workspace @242places/api",
     "typecheck:api": "npm run build && npm run typecheck --workspace @242places/api",
     "test:acceptance": "npm run build:api && node --test tests/acceptance/*.test.ts",
-    "check": "npm run data:check && npm run typecheck && npm test && npm run build && npm run typecheck --workspace @242places/api && npm run test --workspace @242places/api && npm run build --workspace @242places/api",
-    "prepack": "npm run build"
+    "check": "npm run data:check && npm run typecheck && npm test && npm run build && npm run typecheck --workspace @242places/api && npm run test --workspace @242places/api && npm run build --workspace @242places/api && npm run test:web && npm run typecheck --workspace @242places/web && npm run build --workspace @242places/web",
+    "prepack": "npm run build",
+    "dev:web": "npm run dev --workspace @242places/web",
+    "build:site": "npm run build:api && npm run build --workspace @242places/web",
+    "start:site": "node scripts/serve-site.mjs",
+    "test:web": "npm run test --workspace @242places/web",
+    "test:site": "node --test tests/site.test.mjs"
   },
   "dependencies": {
     "csv-parse": "^7.0.3",

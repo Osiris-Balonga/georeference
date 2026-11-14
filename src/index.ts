@@ -1,4 +1,6 @@
 export type * from './types.ts';
+export { discoverPlaces, placeSummary, placeAncestors } from './domain/discovery.ts';
+export type { PlaceSummary, DiscoveryQuery } from './domain/discovery.ts';
 export {exportResources,registerResourceAdapter} from './domain/export.ts';
 export type {ResourceAdapter} from './domain/export.ts';
 export {toResourceTables,validateResourceTables,RESOURCE_NAMES} from './domain/model.ts';

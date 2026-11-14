@@ -24,7 +24,7 @@ npm run start:api
 
 ## Interactive reference with Scalar
 
-Open `http://127.0.0.1:3000/` or `/docs` after starting the API. The site root leads to documentation. On first entry, a French primary browser language opens French; all other or unavailable languages open English. Explicit `/docs/fr/...` and `/docs/en/...` links remain authoritative. Choosing FR/EN keeps the chapter and stores a language cookie for later entry visits. The theme follows the system before the first paint, falling back to dark when unavailable. A manual theme choice is stored locally and takes precedence; without it, system theme changes are followed. Blocked storage does not prevent use.
+Open `http://127.0.0.1:3000/` or `/docs` after starting the API. In API-only mode, the root leads to documentation. With the combined Next.js site, the root opens the public website and /docs keeps the documentation. On first entry, a French primary browser language opens French; all other or unavailable languages open English. Explicit `/docs/fr/...` and `/docs/en/...` links remain authoritative. Choosing FR/EN keeps the chapter and stores a language cookie for later entry visits. The theme follows the system before the first paint, falling back to dark when unavailable. A manual theme choice is stored locally and takes precedence; without it, system theme changes are followed. Blocked storage does not prevent use.
 
 Guides and operations share one header, navigation, page filter and light/dark controls. Product chapters cover CLI generation, JSON/CSV/Excel, SQL/SQLite, database import and the optional SDK. API guides cover the first request, relationships and errors. Chapters have independent addresses, previous/next navigation, page-local contents and copy controls. Mobile navigation uses the menu button.
 
@@ -42,13 +42,19 @@ Fastify serves the reading shell, styles and small navigation script; Scalar's J
 
 See the official [Fastify integration](https://scalar.com/products/api-references/integrations/fastify) and [configuration reference](https://scalar.com/products/api-references/configuration). The UI comes from Scalar; this repository's usage guides remain available in English and French.
 
+## Congo discovery
+
+Start with `GET /v1/congo`, which returns the Republic of the Congo (CG/COG). `GET /v1/search?q=Bacongo&resource=arrondissements` searches across recorded places and includes ordered ancestor context. Optional `parent` scopes results to a territory; `direct=true` selects only its immediate children. Use `limit` and `offset` for pagination. `GET /v1/places/{id}` returns one typed place and its ancestors.
+
+Country collection/detail routes and country-parent relationships remain compatibility routes, marked deprecated in OpenAPI. They do not offer other countries and are omitted from primary documentation navigation. Prefer `/v1/congo` and the department collection for new integrations. See [the website guide](website.md) for the public explorer and shared data flow.
+
 ## Resources and filters
 
 Use `GET` to retrieve JSON or `HEAD` for the corresponding headers. Each resource has a list route and a detail route, for example `/v1/communes` and `/v1/communes/{id}`. IDs are persistent UUIDs, shared with JSON and database exports.
 
 | List route | Resource | Direct-parent filters |
 |---|---|---|
-| `/v1/countries` | Countries | None |
+| `/v1/countries` | Congo (deprecated compatibility collection) | None |
 | `/v1/departments` | Departments | `countryId` |
 | `/v1/communes` | Communes | `departmentId` |
 | `/v1/districts` | Districts | `departmentId` |
@@ -98,7 +104,7 @@ The commune neighborhood route returns all known descendant neighborhoods, inclu
 
 | Relationship route | Result |
 |---|---|
-| `/v1/countries/{id}/departments` | Departments in the country |
+| `/v1/countries/{id}/departments` | Deprecated compatibility route; prefer `/v1/departments` |
 | `/v1/departments/{id}/communes` | Communes in the department |
 | `/v1/departments/{id}/districts` | Districts in the department |
 | `/v1/communes/{id}/arrondissements` | Arrondissements in the commune |

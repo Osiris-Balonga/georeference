@@ -24,7 +24,7 @@ npm run start:api
 
 ## Documentation interactive avec Scalar
 
-Ouvrez `http://127.0.0.1:3000/` ou `/docs` après avoir démarré l’API. La racine du site mène à la documentation. À la première visite, une langue principale française dans le navigateur sélectionne le français ; toute autre langue ou information indisponible sélectionne l’anglais. Les adresses explicites `/docs/fr/...` et `/docs/en/...` gardent leur langue. Les liens FR/EN conservent le chapitre et mémorisent le choix dans un cookie pour les prochaines visites. Le thème suit le système dès le premier affichage, avec le sombre comme repli. Un choix manuel de thème est conservé localement et devient prioritaire ; sans choix manuel, les changements du système sont suivis. Un stockage bloqué n’empêche pas la lecture.
+Ouvrez `http://127.0.0.1:3000/` ou `/docs` après avoir démarré l’API. En mode API seule, la racine mène à la documentation. Avec le site combiné Next.js, la racine ouvre le site public et /docs conserve la documentation. À la première visite, une langue principale française dans le navigateur sélectionne le français ; toute autre langue ou information indisponible sélectionne l’anglais. Les adresses explicites `/docs/fr/...` et `/docs/en/...` gardent leur langue. Les liens FR/EN conservent le chapitre et mémorisent le choix dans un cookie pour les prochaines visites. Le thème suit le système dès le premier affichage, avec le sombre comme repli. Un choix manuel de thème est conservé localement et devient prioritaire ; sans choix manuel, les changements du système sont suivis. Un stockage bloqué n’empêche pas la lecture.
 
 Guides et opérations partagent le même en-tête, la navigation, le filtre et les contrôles de thème. Les pages produit présentent le CLI, JSON/CSV/Excel, SQL/SQLite, l’import en base et le SDK optionnel. Les guides API expliquent le premier appel, les relations et les erreurs. Chaque chapitre possède son adresse, une navigation précédent/suivant, un sommaire local et des boutons de copie. Sur mobile, utilisez le bouton de menu.
 
@@ -42,13 +42,19 @@ Fastify sert la structure de lecture, les styles et le petit script de navigatio
 
 Consultez l’[intégration Fastify officielle](https://scalar.com/products/api-references/integrations/fastify) et la [configuration de Scalar](https://scalar.com/products/api-references/configuration). L’interface provient de Scalar ; les guides d’utilisation du dépôt restent disponibles en français et en anglais.
 
+## Explorer le Congo
+
+L’entrée publique est `GET /v1/congo`, qui retourne la République du Congo (CG/COG). `GET /v1/search?q=Bacongo&resource=arrondissements` recherche dans les lieux répertoriés avec leurs ancêtres ordonnés. Le paramètre `parent` limite la recherche à un territoire ; `direct=true` sélectionne uniquement ses enfants immédiats. Utilisez `limit` et `offset` pour la pagination. `GET /v1/places/{id}` retourne un lieu typé et ses ancêtres.
+
+Les collections, détails et relations depuis un pays restent des routes de compatibilité, dépréciées dans OpenAPI et absentes de la navigation principale. Elles ne proposent aucun autre pays. Pour une nouvelle intégration, préférez `/v1/congo` et la collection des départements. Voir [le guide du site](website.fr.md) pour l’explorateur public et le partage du référentiel.
+
 ## Ressources et filtres
 
 Utilisez `GET` pour récupérer le JSON ou `HEAD` pour les en-têtes correspondants. Chaque ressource possède une liste et un accès au détail, par exemple `/v1/communes` et `/v1/communes/{id}`. Les identifiants sont des UUID persistants, communs aux exports JSON et de bases de données.
 
 | Route de liste | Ressource | Filtres de parent direct |
 |---|---|---|
-| `/v1/countries` | Pays | Aucun |
+| `/v1/countries` | Congo (collection de compatibilité dépréciée) | Aucun |
 | `/v1/departments` | Départements | `countryId` |
 | `/v1/communes` | Communes | `departmentId` |
 | `/v1/districts` | Districts | `departmentId` |
@@ -98,7 +104,7 @@ La route des quartiers d’une commune retourne tous ses quartiers descendants c
 
 | Route de relation | Résultat |
 |---|---|
-| `/v1/countries/{id}/departments` | Départements du pays |
+| `/v1/countries/{id}/departments` | Compatibilité dépréciée ; préférer `/v1/departments` |
 | `/v1/departments/{id}/communes` | Communes du département |
 | `/v1/departments/{id}/districts` | Districts du département |
 | `/v1/communes/{id}/arrondissements` | Arrondissements de la commune |

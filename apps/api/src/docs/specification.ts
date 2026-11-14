@@ -31,7 +31,9 @@ export function chapterSpecification(document: unknown, locale: Locale, slug: st
     const relationship = segments.includes('{id}') && !detail;
     const name = labels[detail ? segments.at(-2)! : child] ?? child;
     operation.tags = [result.info.title];
-    if (slug === 'reference') {
+    if (slug === 'congo') {
+      operation.summary = locale === 'fr' ? 'Consulter la République du Congo' : 'Read the Republic of the Congo';
+    } else if (slug === 'reference') {
       operation.summary = locale === 'fr' ? (child === 'dataset' ? 'Consulter la version et les sources' : 'Consulter la couverture connue')
         : (child === 'dataset' ? 'Read dataset version and sources' : 'Read known coverage');
     } else if (slug === 'health') {

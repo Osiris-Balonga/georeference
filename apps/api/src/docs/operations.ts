@@ -1,4 +1,4 @@
-import { getResource, queryRelated, queryResources, type GeographicCatalog, type ResourceName } from '242places';
+import { getResource, queryRelated, queryResources, discoverPlaces, placeAncestors, placeSummary, type GeographicCatalog, type ResourceName } from '242places';
 import { resourcePaths } from '../schemas/resources.ts';
 import { meta } from '../routes/resources.ts';
 import { coverageResponse, datasetResponse } from '../routes/reference.ts';
@@ -14,6 +14,7 @@ export interface ReferenceOperation {
 }
 
 const singular: Record<string, [string, string]> = {
+  discovery: ['un lieu', 'a place'],
   countries: ['un pays', 'a country'], departments: ['un département', 'a department'],
   communes: ['une commune', 'a commune'], districts: ['un district', 'a district'],
   arrondissements: ['un arrondissement', 'an arrondissement'],
@@ -36,7 +37,7 @@ export function referenceOperations(document: unknown, locale: Locale): Referenc
       const detail = parts.at(-1) === '{id}';
       const relation = path.includes('{id}') && !detail;
       const parent = parts[1]!;
-      const slug = detail ? 'get' : relation ? `by-${parent}` : singular[group] ? 'list' : parts.at(-1)!;
+      const slug = group === 'congo' ? 'list' : detail ? 'get' : relation ? `by-${parent}` : singular[group] ? 'list' : parts.at(-1)!;
       const title = detail ? (fr ? `Consulter ${singular[group]![0]}` : `Get ${singular[group]![1]}`)
         : relation ? (fr ? `Lister les ${label} d’${singular[parent]![0]}` : `List ${label} in ${singular[parent]![1]}`)
           : singular[group] ? (fr ? `Lister les ${label}` : `List ${label}`) : methods.get.summary!;
@@ -56,6 +57,12 @@ const resourceForPath = (path: string) => Object.entries(resourcePaths).find(([,
 
 /** Examples use the same queries/response builders as HTTP routes, never invented records. */
 function operationExample(catalog: GeographicCatalog, operation: ReferenceOperation): { response: unknown; id?: string | undefined } {
+  if (operation.path === '/v1/congo') return { response: { data: catalog.resources.countries[0], meta: meta(catalog) } };
+  if (operation.group === 'discovery') {
+    if (operation.slug === 'get') { const id = catalog.resources.communes.find(row => row.name === 'Brazzaville')!.id; return { id, response: { data: { ...placeSummary(catalog,id), ancestors: placeAncestors(catalog,id) }, meta: meta(catalog) } }; }
+    const result = discoverPlaces(catalog, { limit: 20 });
+    return { response: { data: result.data, meta: { ...meta(catalog), total: result.total, limit: result.limit, offset: result.offset } } };
+  }
   if (operation.group === 'health') return { response: { status: 'ok' } };
   if (operation.path === '/v1/dataset') return { response: datasetResponse(catalog) };
   if (operation.path === '/v1/coverage') return { response: coverageResponse(catalog) };
