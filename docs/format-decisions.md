@@ -12,7 +12,7 @@ Complexity includes generation and interoperability validation: **low**, **mediu
 
 ## Comparison
 
-| Format | Concrete uses | Relevance to GeoReference | Generation complexity | Dependencies | Main limits | Priority |
+| Format | Concrete uses | Relevance to 242Places | Generation complexity | Dependencies | Main limits | Priority |
 |---|---|---|---|---|---|---|
 | JSON | Application resources grouped by category | Very high for integrations | Low | Native JSON serialization and file streams | Pretty arrays improve navigation; large files can still require memory; old mixed hierarchical output is not the public contract | **V1**, `json` |
 | JSON Lines / NDJSON | Batch resource import and incremental reads | Very high for pipelines | Low | Native JSON serialization and streams | One object per line in each category; metadata stays separate; a large geometry remains a large record | **V1**, `ndjson` |
@@ -54,4 +54,4 @@ Use the [adapter architecture](architecture.md) to add encoding without moving s
 
 Before advertising a new format, identify its real recipient/reader, test versions, declared losses, geometry coverage, licensing, resource limits, and independent read-back. For GeoParquet, choose an interoperability profile from the actual reader matrix rather than assuming the newest specification is universally available; the current specification site includes version 2.0. GDAL's documented Parquet implementation describes specific supported GeoParquet profiles. References: [GeoParquet](https://geoparquet.org/), [GDAL Parquet driver](https://gdal.org/en/stable/drivers/vector/parquet.html).
 
-For a desktop GIS audience, GeoPackage can precede Parquet; for warehouse analytics, the order can reverse. Preserve GeoReference's stable string ID as an attribute even if the target format also uses its own technical row identifier. Validate GeoPackage's required tables/encoding with a conforming reader; consult the [GDAL GeoPackage driver](https://gdal.org/en/stable/drivers/vector/gpkg.html). None of these future evaluations enables an unsupported format in the shipped V1 CLI.
+For a desktop GIS audience, GeoPackage can precede Parquet; for warehouse analytics, the order can reverse. Preserve 242Places's stable string ID as an attribute even if the target format also uses its own technical row identifier. Validate GeoPackage's required tables/encoding with a conforming reader; consult the [GDAL GeoPackage driver](https://gdal.org/en/stable/drivers/vector/gpkg.html). None of these future evaluations enables an unsupported format in the shipped V1 CLI.

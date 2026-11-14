@@ -8,6 +8,20 @@ Le référentiel intégré concerne exclusivement la **République du Congo, CG/
 
 Le catalogue combine plusieurs dates. Les tableaux électoraux publics et municipaux fournissent des noms de quartiers datés ; des lois ultérieures établissent les changements de rattachement ; un tableau national de 2025 corrobore les départements. Consultez le `README.txt` généré pour le résumé de couverture ; ajoutez `--audit` pour le détail `coverage.json` et `provenance.json`. Une date de publication logicielle ne devient pas la nouvelle date d'observation des lieux.
 
+## Révision administrative actuelle `cg-reference-2026-11-14.1`
+
+La cascade reçue le 14 novembre 2026 provient d’un contact de l’administration publique, selon la confirmation du mainteneur. Elle enrichit le référentiel avec 4 353 entités, dont 782 quartiers et 3 285 villages. Les 398 UUID antérieurs sont tous conservés. Les noms canoniques existants conservent leurs accents ; les variantes et corrections reçues restent traçables dans les preuves.
+
+Les 4 385 lignes sont toutes comptabilisées : 4 335 importées, 3 doublons identiques, 10 niveaux de collection portant le nom de leur commune, et 37 lignes non résolues (26 parents absents, 9 noms absents, 2 centres non typés). Les 35 collisions entre codes et noms distincts conservent des lieux séparés, avec des UUID différents. Dix-sept quartiers historiques absents ou non résolus dans la cascade restent disponibles. Le pays est conservé séparément.
+
+Les libellés CU et CR sont transcrits comme communautés urbaines et rurales selon la source administrative fournie. Ses quartiers rattachés à une CR sont exposés via `ruralCommunityId`. Cela décrit les relations de cette source et ne constitue pas une certification juridique indépendante. Un niveau « Commune (Arrondissement) » n’entraîne pas la création automatique d’un arrondissement ; ses enfants restent rattachés à la commune.
+
+La transcription géographique sans métadonnées personnelles se trouve dans [la source normalisée](../reference/sources/administrative-cascade.json). [L’audit](../reference/cascade-audit.json) conserve la décision par ligne. `npm run data:check` vérifie une reproduction exacte avec le registre persistant. `observedAt: null` distingue une date d’observation inconnue de `receivedAt`, la date de réception. Les conditions de réutilisation amont ne sont pas renseignées ; la licence MIT du code ne les remplace pas.
+
+Pour une base SQL existante, ajoutez la colonne nullable `rural_community_id`, sa clé étrangère vers la table des communautés rurales et adaptez la contrainte « un seul parent » avant d’appliquer les nouvelles données. Les exports créent le schéma complet pour une nouvelle base et ne migrent pas silencieusement les tables existantes. Les anciens JSON sans ce champ restent lisibles.
+
+La révision documentaire précédente ci-dessous reste l’historique des sources antérieures.
+
 ### Révision vérifiée `cg-reference-2026-11-12.2`
 
 Cette révision contient **398 entités** : 1 pays, 15 départements, 16 communes, 23 arrondissements, 89 districts, 4 communautés urbaines et 250 quartiers nommés. Ce sont les effectifs du référentiel, **pas des totaux nationaux vérifiés** pour chaque type. Il conserve aussi 10 libellés juridictionnels non résolus et 29 observations historiques de quartiers codés restant sans nom après rapprochement avec 2024. Ces observations sont des lacunes, pas des entités nommées supplémentaires. Aucun inventaire exhaustif de villages nommés n'est annoncé.

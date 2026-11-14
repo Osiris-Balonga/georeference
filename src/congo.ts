@@ -2,10 +2,10 @@ import { readFile } from 'node:fs/promises';
 import type { Entity,SnapshotMetadata,GeographicKind } from './types.ts';
 import { validateEntity,validateMetadata,canonicalJson } from './validation.ts';
 import { UUID_PATTERN } from './domain/model.ts';
-export interface CongoEvidence {sourceId:string;observedAt:string;locator:string;pdfPage?:number|null;printedPage?:number|null;rawLabel:string}
+export interface CongoEvidence {sourceId:string;observedAt:string|null;receivedAt?:string;sourceCode?:string;locator:string;pdfPage?:number|null;printedPage?:number|null;rawLabel:string}
 export interface CongoReference {metadata:SnapshotMetadata;entities:Entity[];coverage:Record<string,unknown>;provenance:Record<string,CongoEvidence[]>;issues:Record<string,unknown[]>}
 function object(input:unknown):input is Record<string,unknown> {return typeof input==='object'&&input!==null&&!Array.isArray(input);}
-const parents:Partial<Record<GeographicKind,GeographicKind[]>>={department:['country'],commune:['department'],district:['department'],arrondissement:['commune'],'urban-community':['district'],'rural-community':['district'],neighborhood:['commune','arrondissement','urban-community'],village:['district','rural-community','urban-community']};
+const parents:Partial<Record<GeographicKind,GeographicKind[]>>={department:['country'],commune:['department'],district:['department'],arrondissement:['commune'],'urban-community':['district'],'rural-community':['district'],neighborhood:['commune','arrondissement','urban-community','rural-community'],village:['district','rural-community','urban-community']};
 /** Validate factual catalog integrity; this does not certify geographic completeness. */
 export function validateCongoReference(input:unknown):CongoReference {
   if(!object(input)||input.schemaVersion!=='1.0'||!Array.isArray(input.entries)||!Array.isArray(input.sources))throw new Error('Invalid Congo reference catalog');
@@ -23,7 +23,9 @@ export function validateCongoReference(input:unknown):CongoReference {
     if(!entity.kind||byId.has(entity.id)||!UUID_PATTERN.test(entity.id))throw new Error('Missing kind, invalid UUID or duplicate entity ID');
     if(!Array.isArray(entry.evidence)||!entry.evidence.length)throw new Error('Every entity requires source evidence');
     for(const proof of entry.evidence) {
-      if(!object(proof)||!sourceIds.has(proof.sourceId as string)||typeof proof.observedAt!=='string'||!/^\d{4}-\d{2}(?:-\d{2})?$/.test(proof.observedAt)||typeof proof.locator!=='string'||!proof.locator.trim()||typeof proof.rawLabel!=='string'||!proof.rawLabel.trim())throw new Error('Invalid source evidence');
+      if(!object(proof)||!sourceIds.has(proof.sourceId as string)||
+        !(typeof proof.observedAt==='string'&&/^\d{4}-\d{2}(?:-\d{2})?$/.test(proof.observedAt)||proof.observedAt===null&&typeof proof.receivedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(proof.receivedAt))||
+        typeof proof.locator!=='string'||!proof.locator.trim()||typeof proof.rawLabel!=='string'||!proof.rawLabel.trim())throw new Error('Invalid source evidence');
       for(const key of ['pdfPage','printedPage'])if(proof[key]!==undefined&&proof[key]!==null&&(!Number.isSafeInteger(proof[key])||(proof[key] as number)<1))throw new Error('Invalid source page');
     }
     if(!Array.isArray(entry.issues))throw new Error('Invalid entity issues');

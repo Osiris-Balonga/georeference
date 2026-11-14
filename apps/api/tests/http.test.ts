@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildApp } from '../src/app.ts';
-import { loadCatalog } from 'georeference';
+import { loadCatalog } from '242places';
 
 test('health checks report readiness and remain uncached', async t => {
   const app = await buildApp();
@@ -92,16 +92,16 @@ test('dataset and coverage endpoints expose concise source-backed summaries', as
   const dataset = await app.inject('/v1/dataset');
   assert.equal(dataset.statusCode, 200);
   assert.equal(dataset.json().data.apiVersion, 'v1');
-  assert.equal(dataset.json().data.serviceVersion, '1.0.0');
+  assert.equal(dataset.json().data.serviceVersion, '1.2.1');
   assert.equal(dataset.json().data.contractVersion, '1.0');
   assert.deepEqual(dataset.json().data.country, { iso2: 'CG', iso3: 'COG' });
   assert.ok(dataset.json().data.sources.every((source: {url:string;license:string}) => source.url && source.license));
   const coverage = await app.inject('/v1/coverage');
   assert.equal(coverage.statusCode, 200);
   assert.equal(coverage.json().data.completeGeographicInventory, false);
-  assert.equal(coverage.json().data.counts.neighborhoods, 250);
-  assert.equal(coverage.json().data.counts.villages, 0);
-  assert.equal(coverage.json().data.communes.find((row: {name:string}) => row.name === 'Brazzaville').namedNeighborhoods, 74);
+  assert.equal(coverage.json().data.counts.neighborhoods, 782);
+  assert.equal(coverage.json().data.counts.villages, 3285);
+  assert.equal(coverage.json().data.communes.find((row: {name:string}) => row.name === 'Brazzaville').namedNeighborhoods, 88);
   assert.doesNotMatch(coverage.body, /nationalAnomalies|unresolvedJurisdictions|codeConflicts/);
   assert.equal((await app.inject('/v1/coverage?unknown=true')).statusCode, 400);
 });
@@ -115,10 +115,10 @@ test('OpenAPI describes business routes and the interactive docs serve local ass
   assert.ok(schema.paths['/v1/communes/{id}/neighborhoods']);
   assert.ok(schema.paths['/v1/villages']);
   assert.ok(schema.paths['/v1/communes'].get.parameters.some((parameter: {name:string}) => parameter.name === 'departmentId'));
-  const docs = await app.inject('/docs/');
+  const docs = await app.inject('/docs/fr/communes/list');
   assert.equal(docs.statusCode, 200);
-  assert.match(docs.body, /swagger-ui/i);
-  const stylesheet = await app.inject('/docs/static/swagger-ui.css');
-  assert.equal(stylesheet.statusCode, 200);
-  assert.match(stylesheet.headers['content-type'] as string, /css/);
+  assert.match(docs.body, /operation-reference/);
+  const bundle = await app.inject('/docs/js/scalar.js');
+  assert.equal(bundle.statusCode, 200);
+  assert.match(bundle.headers['content-type'] as string, /javascript/);
 });

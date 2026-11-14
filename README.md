@@ -1,19 +1,19 @@
-# GeoReference — Republic of the Congo
+# 242Places — Republic of the Congo
 
 [Français](README.fr.md) · [Getting started](docs/getting-started.md) · [Formats](docs/formats.md) · [HTTP API](docs/api.md) · [Contributing](CONTRIBUTING.md)
 
 Get Republic of the Congo (CG/COG) geographic data as readable lists or application resources. Choose Excel category tabs, CSV files with place names, separate JSON collections, or database exports with stable UUIDs and configurable business tables. Generated files need no permanent project dependency.
 
-Version **1.1.0** provides the Congo resource exports. Use `npx georeference@1.1.0` to select this version explicitly. Version 1.0.0 used the previous country-list output.
+Version **1.2.1** provides the Congo resource exports. Use `npx 242places@1.2.1` to select this version explicitly. Earlier releases were published under the georeference package name.
 
 ## Try the data
 
 Use Node.js **24.18.x** and npm:
 
 ```sh
-npx georeference@1.1.0 generate --format xlsx --output ./exports/congo-excel
-npx georeference@1.1.0 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
-npx georeference@1.1.0 generate --format json --output ./exports/congo-json
+npx 242places@1.2.1 generate --format xlsx --output ./exports/congo-excel
+npx 242places@1.2.1 neighborhoods --city Brazzaville --format csv --output ./exports/brazzaville-csv
+npx 242places@1.2.1 generate --format json --output ./exports/congo-json
 ```
 
 Open `congo.xlsx` for category worksheets, CSV files for readable lists, or JSON arrays such as `communes.json`, `arrondissements.json` and `neighborhoods.json` for applications. Each new output directory includes a human coverage/date summary in `README.txt` and technical integrity metadata in `manifest.json`. Detailed evidence is optional with `--audit`. Existing destinations are refused.
@@ -33,7 +33,7 @@ A CSV contains one table, not tabs. Choose XLSX for a multi-sheet workbook. CSV/
 
 ## A dated, partial Congo reference
 
-The curated reference contains **398 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 89 districts, 4 urban communities and 250 named neighborhoods. These are covered records, not certified national totals for every category. Observations span 2022–2025; no exhaustive current village/neighborhood inventory or geometry is claimed.
+The enriched reference contains **4,353 records**: 1 country, 15 departments, 16 communes, 23 arrondissements, 92 districts, 47 urban communities, 92 rural communities, 782 neighborhoods and 3,285 villages. Existing UUIDs are retained. The maintainer-supplied administrative cascade was received on November 14, 2026; its observation dates are unknown. Coverage remains partial and geometry is not invented.
 
 Same-name communes/departments have distinct UUIDs. A neighborhood's documented parent can be a commune, arrondissement or urban community. Empty results mean missing observations, not proof that no places exist. See [the reference and sources](docs/congo-reference.md).
 
@@ -54,7 +54,7 @@ npm run dev:api
 
 Open `http://127.0.0.1:3000/docs` for interactive documentation. Routes include `/v1/communes`, `/v1/communes/{id}/arrondissements` and `/v1/arrondissements/{id}/neighborhoods`. The API is public and read-only, with paginated resources and explicit dataset/partial-coverage metadata. See the [API guide](docs/api.md) for configuration, examples and the difference between direct and descendant relationships.
 
-The API runs from this repository; this is not a public hosted-service announcement. The published `georeference@1.1.0` remains the CLI/optional SDK. Running `npx georeference` continues to generate standalone files and does not start a server.
+Read the [hosted product documentation and API reference](https://two42places.onrender.com/). It includes CLI, exports, SQL import and SDK guides in French and English. The npm package remains the CLI/optional SDK: `npx 242places` generates standalone files. See [deployment](docs/deployment.md) to host the API and documentation yourself.
 
 ## Documentation
 
@@ -67,6 +67,7 @@ The API runs from this repository; this is not a public hosted-service announcem
 | [Reference and sources](docs/congo-reference.md) | [Référentiel et sources](docs/congo-reference.fr.md) |
 | [Migration](docs/migration.md) | [Migration](docs/migration.fr.md) |
 | [HTTP API](docs/api.md) | [API HTTP](docs/api.fr.md) |
+| [Deployment](docs/deployment.md) | [Déploiement](docs/deployment.fr.md) |
 | [Architecture](docs/architecture.md) | [Architecture](docs/architecture.fr.md) |
 | [Contributing](CONTRIBUTING.md) | [Contribuer](CONTRIBUTING.fr.md) |
 

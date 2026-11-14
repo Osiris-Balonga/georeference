@@ -10,14 +10,14 @@ import { assertCongoEntities,loadCongoReference } from './congo.ts';
 import { toResourceTables } from './domain/model.ts';
 import type { Entity, ExportRequest, SnapshotMetadata,GeographicKind } from './types.ts';
 
-const HELP=`GeoReference — Republic of Congo geographic files in your project
+const HELP=`242Places — Republic of Congo geographic files in your project
 
 Quick start (no permanent project dependency):
-  npx georeference
-  npx georeference neighborhoods --city Brazzaville --arrondissement 6
-  npx georeference departments --format csv --output ./data/departments
+  npx 242places
+  npx 242places neighborhoods --city Brazzaville --arrondissement 6
+  npx 242places departments --format csv --output ./data/departments
 
-Without a command, generate separate category JSON files in ./data/georeference.
+Without a command, generate separate category JSON files in ./data/242places.
 No download is required. Coverage is PARTIAL and dated: see README.txt.
 Use --audit to include detailed coverage.json and provenance.json.
 Output is a NEW directory; existing destinations are never overwritten.
@@ -104,7 +104,7 @@ async function main():Promise<void> {
       if(string('sql-config'))request.sqlNames=await sqlNames();
       if(command==='countries') request.entityTypes=['country'];
       if(kindCommands[command])request.kinds=[kindCommands[command]!];
-      result=await generateFiles({output:string('output')??'data/georeference',request,
+      result=await generateFiles({output:string('output')??'data/242places',request,
         ...(string('city')?{city:string('city')!}:{}),...(string('arrondissement')?{arrondissement:string('arrondissement')!}:{}),
         ...(string('snapshot')?{snapshot:string('snapshot')!}:{}),...(string('source-file')?{sourceFile:string('source-file')!}:{}),signal:controller.signal});
     } else if(command==='snapshot') {

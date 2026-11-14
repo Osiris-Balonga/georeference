@@ -126,7 +126,7 @@ test('real Congo navigation preserves distinct Brazzaville identities and known 
   assert.notEqual(queryResources(catalog, 'departments', { q: 'brazzaville' }).data[0]!.id, commune.id);
   const arrondissements = queryRelated(catalog, 'communes', commune.id, 'arrondissements');
   assert.equal(arrondissements.total, 9);
-  assert.equal(queryRelated(catalog, 'communes', commune.id, 'neighborhoods', { limit: 100 }).total, 74);
+  assert.equal(queryRelated(catalog, 'communes', commune.id, 'neighborhoods', { limit: 100 }).total, 88);
   const talangai = arrondissements.data.find(row => row.name === 'Talangaï')!;
   const mpila = queryRelated(catalog, 'arrondissements', talangai.id, 'neighborhoods', { q: 'mpila' });
   assert.equal(mpila.data[0]!.id, '952458ea-c0ea-4ba8-9569-096d48c88048');

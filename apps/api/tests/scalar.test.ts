@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { buildApp } from '../src/app.ts';
+
+test('Scalar serves local documentation with a fresh CSP nonce and no remote client services', async t => {
+  const app = await buildApp({ rateLimitMax: 1000 });
+  t.after(() => app.close());
+  const one = await app.inject('/docs/fr/communes/list');
+  const two = await app.inject('/docs/fr/communes/list');
+  assert.equal(one.statusCode, 200);
+  assert.match(one.body, /operation-reference/);
+  assert.doesNotMatch(one.body, /swagger-ui|cdn\.jsdelivr|fonts\.scalar\.com/);
+  assert.match(one.body, /\/openapi\.json/);
+  const policy = String(one.headers['content-security-policy']);
+  const nonce = /nonce-([^']+)/.exec(policy)?.[1];
+  assert.ok(nonce);
+  assert.ok(one.body.includes(`nonce="${nonce}"`));
+  assert.notEqual(policy, two.headers['content-security-policy']);
+  assert.doesNotMatch(policy, /unsafe-eval/);
+  assert.match(one.body, /withDefaultFonts[^a-z]+false/);
+  assert.match(one.body, /telemetry[^a-z]+false/);
+  assert.match(one.body, /disabled[^a-z]+true/);
+  assert.match(one.body, /showDeveloperTools[^a-z]+never/);
+  const bare = await app.inject('/docs');
+  assert.equal(bare.statusCode, 302);
+  assert.equal(bare.headers.location, '/docs/en/introduction');
+  const spec = await app.inject('/openapi.json');
+  assert.equal(spec.statusCode, 200);
+  assert.ok(spec.json().paths['/v1/communes']);
+  assert.equal(spec.json().paths['/docs'], undefined);
+});
