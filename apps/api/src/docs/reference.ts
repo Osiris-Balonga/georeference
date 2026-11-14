@@ -11,7 +11,8 @@ export function renderReference(locale: Locale, operation: ReferenceOperation, o
     url: `${path}/openapi.json`, layout: 'modern', theme: 'default', showSidebar: false,
     hideModels: true, hideSearch: true, hideClientButton: true, hideDarkModeToggle: true,
     withDefaultFonts: false, telemetry: false, agent: { disabled: true }, proxyUrl: '',
-    showDeveloperTools: 'never', urlRouting: true, localization: { locale },
+    // Each operation already has a host URL; the client must not navigate to a tag on close.
+    showDeveloperTools: 'never', urlRouting: false, localization: { locale },
     documentDownloadType: 'none', defaultOpenAllTags: true,
     defaultHttpClient: { targetKey: 'shell', clientKey: 'curl' },
     featuredClients: ['shell/curl', 'js/fetch', 'python/requests'],

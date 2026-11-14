@@ -109,13 +109,23 @@ async function mount() {
     const response = await fetch(options.url);
     if (!response.ok) throw new Error('OpenAPI ' + response.status);
     options.content = await response.json(); delete options.url;
-    if (!location.hash) {
-      const [path, methods] = Object.entries(options.content.paths)[0];
-      const tag = methods.get.tags[0].toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
-      history.replaceState(null, '', location.pathname + '#tag/' + tag + '/GET' + path);
-    }
+    const [path, methods] = Object.entries(options.content.paths)[0];
+    const tag = methods.get.tags[0].toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
+    const operationFragment = 'tag/' + tag + '/GET' + path;
+    if (!location.hash) history.replaceState(null, '', location.pathname + '#' + operationFragment);
     options.forceDarkModeState = light ? 'light' : 'dark';
-    options.onLoaded = () => { skeleton.hidden = true; };
+    let positioned = false;
+    options.onLoaded = slug => {
+      skeleton.hidden = true;
+      if (positioned) return;
+      positioned = true;
+      requestAnimationFrame(() => {
+        let fragment = operationFragment;
+        try { fragment = decodeURIComponent(location.hash.slice(1)) || fragment; } catch {}
+        const target = document.getElementById(slug + '/' + fragment) ?? document.getElementById(slug + '/' + operationFragment);
+        if (target) window.scrollTo({top: scrollY + target.getBoundingClientRect().top - document.querySelector('.reference-header').clientHeight, behavior: 'instant'});
+      });
+    };
     reference = window.Scalar.createApiReference('#operation-reference', options);
   } catch { skeleton.hidden = true; error.hidden = false; }
 }
