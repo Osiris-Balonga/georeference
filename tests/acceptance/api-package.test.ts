@@ -81,7 +81,7 @@ test('the packed CLI stays standalone and API responses preserve source/export i
     await execute(process.execPath, ['--import', pathToFileURL(networkGuard).href,
       join(modules, 'georeference/dist/cli.js'), 'generate', '--output', offlineOutput,
       '--format', 'json', '--city', 'Brazzaville'], { cwd: directory });
-    assert.equal(JSON.parse(await readFile(join(offlineOutput, 'neighborhoods.json'), 'utf8')).length, 74);
+    assert.equal(JSON.parse(await readFile(join(offlineOutput, 'neighborhoods.json'), 'utf8')).length, 88);
 
     const { buildApp } = await import(pathToFileURL(join(repository, 'apps/api/dist/app.js')).href);
     const app = await buildApp({ logger: false, rateLimitMax: 1000 });

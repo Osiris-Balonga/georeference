@@ -8,7 +8,7 @@ test('JSON output is nine pretty category arrays with explicit UUID relationship
  const text=await readFile(join(out,'neighborhoods.json'),'utf8');assert.match(text,/\n  \{/);
  const quarters=JSON.parse(text);const mpila=quarters.find(e=>e.name==='Mpila');assert.ok(mpila);assert.ok(!('kind' in mpila));assert.ok(!('parentId' in mpila));assert.match(mpila.id,/^[\da-f-]{36}$/);
  const arrs=JSON.parse(await readFile(join(out,'arrondissements.json'),'utf8'));assert.equal(arrs.find(e=>e.id===mpila.arrondissementId).name,'Talangaï');
- assert.deepEqual(JSON.parse(await readFile(join(out,'villages.json'),'utf8')),[]);
+ assert.equal(JSON.parse(await readFile(join(out,'villages.json'),'utf8')).length,3285);
 });
 test('human CSV uses one category per file, readable ancestor names and optional UUIDs',async t=>{
  const {dir,snapshot}=await fixture(t);const out=join(dir,'csv');await exportResources(snapshot,out,{format:'csv'});

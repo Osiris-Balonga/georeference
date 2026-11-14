@@ -48,7 +48,7 @@ test('SQL configuration refuses injection, name collisions, unsupported names an
 });
 test('business seed failures roll back newly created tables and prior inserts together',async t=>{
  const db=new PGlite();t.after(()=>db.close());
- await db.exec('CREATE TABLE neighborhoods (id UUID PRIMARY KEY,name TEXT NOT NULL,commune_id UUID,arrondissement_id UUID,urban_community_id UUID,coordinates JSONB,boundary JSONB,business_required TEXT NOT NULL)');
+ await db.exec('CREATE TABLE neighborhoods (id UUID PRIMARY KEY,name TEXT NOT NULL,commune_id UUID,arrondissement_id UUID,urban_community_id UUID,rural_community_id UUID,coordinates JSONB,boundary JSONB,business_required TEXT NOT NULL)');
  await assert.rejects(seedResources(db,{manifest,tables:fixture()},{createSchema:true,dryRun:false}),/business_required|not-null/);
  assert.equal((await db.query("SELECT count(*)::int n FROM information_schema.tables WHERE table_schema='public' AND table_name='countries'")).rows[0]?.n,0);
  assert.equal((await db.query('SELECT count(*)::int n FROM neighborhoods')).rows[0]?.n,0);

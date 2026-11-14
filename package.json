@@ -36,6 +36,8 @@
     "reference"
   ],
   "scripts": {
+    "data:update": "node scripts/update-cascade.mjs",
+    "data:check": "node scripts/update-cascade.mjs --check",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --test --test-concurrency=2 tests/*.test.ts",
@@ -46,7 +48,7 @@
     "test:api": "npm run build && npm run test --workspace @georeference/api",
     "typecheck:api": "npm run build && npm run typecheck --workspace @georeference/api",
     "test:acceptance": "npm run build:api && node --test tests/acceptance/*.test.ts",
-    "check": "npm run typecheck && npm test && npm run build && npm run typecheck --workspace @georeference/api && npm run test --workspace @georeference/api && npm run build --workspace @georeference/api",
+    "check": "npm run data:check && npm run typecheck && npm test && npm run build && npm run typecheck --workspace @georeference/api && npm run test --workspace @georeference/api && npm run build --workspace @georeference/api",
     "prepack": "npm run build"
   },
   "dependencies": {

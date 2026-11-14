@@ -99,9 +99,9 @@ test('dataset and coverage endpoints expose concise source-backed summaries', as
   const coverage = await app.inject('/v1/coverage');
   assert.equal(coverage.statusCode, 200);
   assert.equal(coverage.json().data.completeGeographicInventory, false);
-  assert.equal(coverage.json().data.counts.neighborhoods, 250);
-  assert.equal(coverage.json().data.counts.villages, 0);
-  assert.equal(coverage.json().data.communes.find((row: {name:string}) => row.name === 'Brazzaville').namedNeighborhoods, 74);
+  assert.equal(coverage.json().data.counts.neighborhoods, 782);
+  assert.equal(coverage.json().data.counts.villages, 3285);
+  assert.equal(coverage.json().data.communes.find((row: {name:string}) => row.name === 'Brazzaville').namedNeighborhoods, 88);
   assert.doesNotMatch(coverage.body, /nationalAnomalies|unresolvedJurisdictions|codeConflicts/);
   assert.equal((await app.inject('/v1/coverage?unknown=true')).statusCode, 400);
 });

@@ -7,6 +7,7 @@ export function registerPlacesRoutes(app: FastifyInstance, catalog: GeographicCa
   const relations: [ResourceName, ResourceName][] = [
     ['communes', 'neighborhoods'], ['arrondissements', 'neighborhoods'], ['districts', 'villages'],
     ['urbanCommunities', 'neighborhoods'], ['urbanCommunities', 'villages'], ['ruralCommunities', 'villages'],
+    ['ruralCommunities', 'neighborhoods'],
   ];
   for (const [parent, child] of relations) registerRelationshipRoute(app, catalog, parent, child);
 }

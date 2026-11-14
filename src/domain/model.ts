@@ -14,7 +14,7 @@ export const definitions:Record<ResourceName,Definition>={
  arrondissements:{table:'arrondissements',fields:['id','name','communeId','number'],references:{communeId:'communes'},parentFields:['communeId']},
  urbanCommunities:{table:'urban_communities',fields:['id','name','districtId'],references:{districtId:'districts'},parentFields:['districtId']},
  ruralCommunities:{table:'rural_communities',fields:['id','name','districtId'],references:{districtId:'districts'},parentFields:['districtId']},
- neighborhoods:{table:'neighborhoods',fields:['id','name','communeId','arrondissementId','urbanCommunityId'],references:{communeId:'communes',arrondissementId:'arrondissements',urbanCommunityId:'urbanCommunities'},parentFields:['communeId','arrondissementId','urbanCommunityId']},
+ neighborhoods:{table:'neighborhoods',fields:['id','name','communeId','arrondissementId','urbanCommunityId','ruralCommunityId'],references:{communeId:'communes',arrondissementId:'arrondissements',urbanCommunityId:'urbanCommunities',ruralCommunityId:'ruralCommunities'},parentFields:['communeId','arrondissementId','urbanCommunityId','ruralCommunityId']},
  villages:{table:'villages',fields:['id','name','districtId','ruralCommunityId','urbanCommunityId'],references:{districtId:'districts',ruralCommunityId:'ruralCommunities',urbanCommunityId:'urbanCommunities'},parentFields:['districtId','ruralCommunityId','urbanCommunityId']}
 };
 export const kindResources:Record<string,ResourceName>={country:'countries',department:'departments',commune:'communes',district:'districts',arrondissement:'arrondissements','urban-community':'urbanCommunities','rural-community':'ruralCommunities',neighborhood:'neighborhoods',village:'villages'};
@@ -51,20 +51,21 @@ export function validateResourceTables(input:unknown):asserts input is ResourceT
   for(const row of tables[resource]){
    if(!row||typeof row!=='object'||Array.isArray(row)||typeof row.id!=='string'||!UUID_PATTERN.test(row.id)||typeof row.name!=='string'||!row.name.trim()||row.name.includes('\0')||index.has(row.id))throw new Error('Invalid resource UUID/name or duplicate identity');
    for(const key of Object.keys(row))if(![...definition.fields,'coordinates','boundary'].includes(key))throw new Error(`Unknown ${resource} field: ${key}`);
-   for(const key of definition.fields)if(!Object.hasOwn(row,key))throw new Error(`Missing ${resource} field: ${key}`);
+   for(const key of definition.fields)if(!Object.hasOwn(row,key)&&!(resource==='neighborhoods'&&key==='ruralCommunityId'))throw new Error(`Missing ${resource} field: ${key}`);
+   for(const key of definition.parentFields)if(row[key]===undefined&&Object.hasOwn(row,key))throw new Error('Parent references require an explicit UUID or null');
    if(resource==='countries'&&(typeof row.iso2!=='string'||!/^[A-Z]{2}$/.test(row.iso2)||typeof row.iso3!=='string'||!/^[A-Z]{3}$/.test(row.iso3)))throw new Error('Invalid country ISO codes');
    if(resource==='arrondissements'&&row.number!==null&&(!Number.isSafeInteger(row.number)||(row.number as number)<1))throw new Error('Invalid arrondissement number');
-   if(definition.parentFields.length&&definition.parentFields.filter(key=>row[key]!==null).length!==1)throw new Error('Exactly one domain parent is required');
+   if(definition.parentFields.length&&definition.parentFields.filter(key=>row[key]!=null).length!==1)throw new Error('Exactly one domain parent is required');
    index.set(row.id,{resource,row});
   }
  }
- for(const {resource,row} of index.values())for(const key of definitions[resource].parentFields){if(row[key]===null)continue;const parent=index.get(row[key] as string);if(!parent||parent.resource!==definitions[resource].references[key])throw new Error('Invalid or missing resource parent');}
+ for(const {resource,row} of index.values())for(const key of definitions[resource].parentFields){if(row[key]==null)continue;const parent=index.get(row[key] as string);if(!parent||parent.resource!==definitions[resource].references[key])throw new Error('Invalid or missing resource parent');}
  // Geometry uses the same validated longitude/latitude and polygon contract as snapshots.
  for(const {resource,row} of index.values()){
   let current={resource,row};const seen=new Set<string>();
-  while(current.resource!=='countries'){if(seen.has(current.row.id))throw new Error('Cyclic resource hierarchy');seen.add(current.row.id);const key=definitions[current.resource].parentFields.find(key=>current.row[key]!==null)!;current=index.get(current.row[key] as string)!;}
+  while(current.resource!=='countries'){if(seen.has(current.row.id))throw new Error('Cyclic resource hierarchy');seen.add(current.row.id);const key=definitions[current.resource].parentFields.find(key=>current.row[key]!=null)!;current=index.get(current.row[key] as string)!;}
   const kind=Object.keys(kindResources).find(key=>kindResources[key]===resource)!;
-  const entity:Entity={id:row.id,name:row.name,entityType:resource==='countries'?'country':['neighborhoods','villages'].includes(resource)?'locality':'subdivision',countryId:current.row.id,parentId:resource==='countries'?null:row[definitions[resource].parentFields.find(key=>row[key]!==null)!] as string,kind:kind as Entity['kind']&{}};
+  const entity:Entity={id:row.id,name:row.name,entityType:resource==='countries'?'country':['neighborhoods','villages'].includes(resource)?'locality':'subdivision',countryId:current.row.id,parentId:resource==='countries'?null:row[definitions[resource].parentFields.find(key=>row[key]!=null)!] as string,kind:kind as Entity['kind']&{}};
   for(const field of ['coordinates','boundary'] as const)if(Object.hasOwn(row,field))(entity as unknown as Record<string,unknown>)[field]=row[field];validateEntity(entity);
  }
 }

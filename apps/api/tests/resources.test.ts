@@ -9,14 +9,14 @@ const missing = '00000000-0000-4000-8000-000000000000';
 test('nine business collections expose known counts and explicit partial coverage', async t => {
   const app = await buildApp();
   t.after(() => app.close());
-  const expected = { countries: 1, departments: 15, communes: 16, districts: 89,
-    arrondissements: 23, 'urban-communities': 4, 'rural-communities': 0, neighborhoods: 250, villages: 0 };
+  const expected = { countries: 1, departments: 15, communes: 16, districts: 92,
+    arrondissements: 23, 'urban-communities': 47, 'rural-communities': 92, neighborhoods: 782, villages: 3285 };
   for (const [resource, total] of Object.entries(expected)) {
     const response = await app.inject(`/v1/${resource}?limit=100`);
     assert.equal(response.statusCode, 200, resource);
     const body = response.json();
     assert.deepEqual(body.meta, { total, limit: 100, offset: 0,
-      datasetVersion: 'cg-reference-2026-11-12.2', coverageStatus: 'partial' });
+      datasetVersion: 'cg-reference-2026-11-14.1', coverageStatus: 'partial' });
     assert.equal(body.data.length, Math.min(total, 100));
     for (const item of body.data) {
       assert.equal(typeof item.name, 'string');

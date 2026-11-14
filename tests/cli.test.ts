@@ -68,7 +68,7 @@ test('CLI defaults to the bundled Congo reference and offers scoped administrati
   const scoped=JSON.parse(await readFile(join(folder,'quarters/neighborhoods.json'),'utf8'));
   assert.ok(scoped.some(e=>e.name==='Mpila'));assert.ok(!scoped.some(e=>e.name==='Pointe-Noire'));
   await invoke(['snapshot','--output','reference.sqlite']);
-  const inspected=await invoke(['inspect','--snapshot','reference.sqlite']);assert.equal(JSON.parse(inspected.stdout).count,398);
+  const inspected=await invoke(['inspect','--snapshot','reference.sqlite']);assert.equal(JSON.parse(inspected.stdout).count,4353);
   for(const code of ['CD','COD','FR'])await assert.rejects(invoke(['countries','--country',code,'--output','bad']),/Congo|CG/);
   assert.deepEqual((await readdir(folder)).sort(),['data','quarters','reference.sqlite']);
 });

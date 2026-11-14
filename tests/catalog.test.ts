@@ -9,9 +9,9 @@ test('catalog preserves every bundled resource field and UUID used by exports', 
   const catalog = createCatalog(reference);
   assert.deepEqual(catalog.resources, toResourceTables(reference.entities));
   assert.equal(catalog.resources.communes.length, 16);
-  assert.equal(catalog.resources.neighborhoods.length, 250);
-  assert.equal(catalog.resources.villages.length, 0);
-  assert.equal(catalog.metadata.datasetVersion, 'cg-reference-2026-11-12.2');
+  assert.equal(catalog.resources.neighborhoods.length, 782);
+  assert.equal(catalog.resources.villages.length, 3285);
+  assert.equal(catalog.metadata.datasetVersion, 'cg-reference-2026-11-14.1');
   assert.equal(catalog.coverage.counts.arrondissements, 23);
 });
 
@@ -37,13 +37,13 @@ test('coverage summarizes known data without exposing raw audit anomalies', asyn
   ]);
   assert.equal(catalog.coverage.status, 'partial');
   assert.equal(catalog.coverage.completeGeographicInventory, false);
-  assert.equal(catalog.coverage.reviewedAt, '2026-11-12');
-  assert.equal(catalog.coverage.counts.ruralCommunities, 0);
+  assert.equal(catalog.coverage.reviewedAt, '2026-11-14');
+  assert.equal(catalog.coverage.counts.ruralCommunities, 92);
   const brazzaville = catalog.coverage.communes.find(row => row.name === 'Brazzaville');
-  assert.equal(brazzaville?.namedNeighborhoods, 74);
+  assert.equal(brazzaville?.namedNeighborhoods, 88);
   assert.equal(brazzaville?.arrondissements, 9);
   assert.deepEqual(brazzaville?.observationDates, ['2022-07-14', '2024-01']);
-  assert.equal(RESOURCE_NAMES.reduce((total, resource) => total + catalog.coverage.counts[resource], 0), 398);
+  assert.equal(RESOURCE_NAMES.reduce((total, resource) => total + catalog.coverage.counts[resource], 0), 4353);
 });
 
 test('invalid country scope, broken parents and misleading completeness fail before serving', async () => {
