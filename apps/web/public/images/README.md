@@ -14,6 +14,12 @@ Changes: resized, re-encoded as WebP and metadata removed; display containers ma
 
 ## Generated illustrations
 
-The decorative map and Brazzaville footer panorama are artistic illustrations, not surveyed geography or administrative boundaries. The skyline evokes the Corniche bridge, Nabemba, Sainte-Anne and Mpila towers without claiming measured positions or scale.
+The map backdrop, transparent Brazzaville skyline and matching day/night skies were generated for the approved website design. They are artistic illustrations, not surveyed geography or administrative boundaries. Their nature is explained on the Project page. The skyline evokes the Corniche bridge, Nabemba, Sainte-Anne and Mpila towers without claiming measured positions or scale.
+
+All four skyline files resize the **same wide composition**, preserving relative landmark positions: `skyline-mobile.webp` 640×214, `skyline.webp` 960×320, `skyline-1440.webp` 1440×480 and `skyline-desktop.webp` 2172×724. There is no separate compact mobile composition. Native `srcset` selects a resolution. The footer frame trims transparent sky; it does not squeeze or rearrange buildings.
+
+`footer-sky-day.webp` and `footer-sky-night.webp` share the same framing and cloud placement. CSS selects the blue daytime or starry nighttime sky according to the active theme. The skyline is the footer's last element. `map.webp` is decorative; the catalog still has no measured geometry.
+
+`skyline-og.png` is a 960×320 PNG encoding of the same skyline, used by the local Open Graph image renderer. It adds no new landmark composition. Social cards render text and the shared pin logo as vector/HTML content above it.
 
 Core labels, controls, statistics and relationships are accessible HTML from the versioned catalog, never baked into an image.

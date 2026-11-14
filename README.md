@@ -54,7 +54,7 @@ npm run dev:api
 
 Open `http://127.0.0.1:3000/docs` for interactive documentation. Routes include `/v1/communes`, `/v1/communes/{id}/arrondissements` and `/v1/arrondissements/{id}/neighborhoods`. The API is public and read-only, with paginated resources and explicit dataset/partial-coverage metadata. See the [API guide](docs/api.md) for configuration, examples and the difference between direct and descendant relationships.
 
-Read the [hosted product documentation and API reference](https://two42places.onrender.com/). It includes CLI, exports, SQL import and SDK guides in French and English. The npm package remains the CLI/optional SDK: `npx 242places` generates standalone files. See [deployment](docs/deployment.md) to host the API and documentation yourself.
+Explore the [public Congo directory](https://two42places.onrender.com/) or open the [product documentation and API reference](https://two42places.onrender.com/docs/en/introduction). Guides cover CLI, exports, SQL import and SDK usage in French and English. The npm package remains the CLI/optional SDK: `npx 242places` generates standalone files. See [deployment](docs/deployment.md) to host the combined website, API and documentation yourself.
 
 ## Documentation
 
