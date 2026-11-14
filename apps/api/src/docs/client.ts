@@ -1,7 +1,5 @@
 export const docsClient = String.raw`
 const root = document.documentElement;
-let apiReference;
-let apiOptions;
 const themeButton = document.querySelector('[data-theme-toggle]');
 let savedTheme;
 try { savedTheme = localStorage.getItem('georeference-theme'); } catch {}
@@ -17,7 +15,6 @@ themeButton?.addEventListener('click', () => {
   root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
   try { localStorage.setItem('georeference-theme', root.dataset.theme); } catch {}
   syncTheme();
-  if (apiReference) apiReference.updateConfiguration({...apiOptions, forceDarkModeState: root.dataset.theme});
 });
 const menu = document.querySelector('[data-menu]');
 const sidebar = document.querySelector('.sidebar');
@@ -52,22 +49,4 @@ const observer = new IntersectionObserver(entries => {
   }
 }, {rootMargin:'-90px 0px -55% 0px'});
 document.querySelectorAll('article > section[id]').forEach(section => observer.observe(section));
-const config = document.getElementById('scalar-config');
-if (config) {
-  const loading = document.querySelector('.api-loading');
-  const error = document.querySelector('.api-error');
-  const fail = () => { loading.hidden = true; error.hidden = false; };
-  async function mount() {
-    try {
-      const options = JSON.parse(config.textContent);
-      const response = await fetch(options.url);
-      if (!response.ok) throw new Error('OpenAPI ' + response.status);
-      options.content = await response.json();
-      delete options.url;
-      apiOptions = {...options, forceDarkModeState: root.dataset.theme, onLoaded: () => { loading.hidden = true; }};
-      apiReference = window.Scalar.createApiReference('#scalar-reference', apiOptions);
-    } catch { fail(); }
-  }
-  if (window.Scalar) mount(); else fail();
-}
 `;
