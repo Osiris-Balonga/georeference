@@ -117,8 +117,8 @@ test('OpenAPI describes business routes and the interactive docs serve local ass
   assert.ok(schema.paths['/v1/communes'].get.parameters.some((parameter: {name:string}) => parameter.name === 'departmentId'));
   const docs = await app.inject('/docs/');
   assert.equal(docs.statusCode, 200);
-  assert.match(docs.body, /swagger-ui/i);
-  const stylesheet = await app.inject('/docs/static/swagger-ui.css');
-  assert.equal(stylesheet.statusCode, 200);
-  assert.match(stylesheet.headers['content-type'] as string, /css/);
+  assert.match(docs.body, /Scalar/);
+  const bundle = await app.inject('/docs/js/scalar.js');
+  assert.equal(bundle.statusCode, 200);
+  assert.match(bundle.headers['content-type'] as string, /javascript/);
 });
