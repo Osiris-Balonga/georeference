@@ -34,7 +34,7 @@ export function nearbyCity(coords: {
   accuracy: number;
 }): CityKey | undefined {
   if (
-    !Object.values(coords).every(Number.isFinite) ||
+    ![coords.latitude, coords.longitude, coords.accuracy].every(Number.isFinite) ||
     coords.accuracy < 0 ||
     coords.accuracy > 20000 ||
     Math.abs(coords.latitude) > 90 ||

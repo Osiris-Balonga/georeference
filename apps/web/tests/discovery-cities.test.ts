@@ -27,3 +27,8 @@ test("coarse curated discovery anchors choose a nearby city, never a distant def
     undefined,
   );
 });
+
+test("unused nullable GPS fields do not reject a valid location", () => {
+  const coords = {latitude: -4.27, longitude: 15.28, accuracy: 100, altitude: null, heading: null};
+  assert.equal(nearbyCity(coords), "brazzaville");
+});
