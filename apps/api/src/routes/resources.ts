@@ -29,6 +29,7 @@ export function registerResourceRoutes(app: FastifyInstance, catalog: Geographic
   }, { additionalProperties: false });
   typedApp.get(path, { schema: {
     tags: [resourcePaths[resource]], summary: `List ${resourcePaths[resource]}`,
+    ...(resource === 'countries' ? { deprecated: true, description: 'Compatibility collection: only Republic of the Congo (CG). Prefer GET /v1/congo.' } : {}),
     querystring: query,
     response: { 200: Type.Object({ data: Type.Array(resourceSchemas[resource]), meta: listMetadata }), ...errorResponses },
   } }, request => {
@@ -37,6 +38,7 @@ export function registerResourceRoutes(app: FastifyInstance, catalog: Geographic
   });
   typedApp.get(`${path}/:id`, { schema: {
     tags: [resourcePaths[resource]], summary: `Get one ${resourcePaths[resource]} resource`,
+    ...(resource === 'countries' ? { deprecated: true, description: 'Compatibility route. Prefer GET /v1/congo.' } : {}),
     params: idParams, querystring: noQuery,
     response: { 200: Type.Object({ data: resourceSchemas[resource], meta: metadata }), ...errorResponses },
   } }, request => ({ data: getResource(catalog, resource, request.params.id), meta: meta(catalog) }));
@@ -47,6 +49,7 @@ export function registerRelationshipRoute(app: FastifyInstance, catalog: Geograp
   app.withTypeProvider<TypeBoxTypeProvider>().get(`/v1/${resourcePaths[parent]}/:id/${resourcePaths[child]}`, {
     schema: {
       tags: [resourcePaths[child]], summary: `List ${resourcePaths[child]} within one ${resourcePaths[parent]} resource`,
+      ...(parent === 'countries' ? { deprecated: true } : {}),
       description: 'Includes documented descendants, preserving each resource’s real direct parent fields.',
       params: idParams, querystring: paginationQuery,
       response: { 200: Type.Object({ data: Type.Array(resourceSchemas[child]), meta: listMetadata }), ...errorResponses },

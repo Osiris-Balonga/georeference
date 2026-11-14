@@ -1,4 +1,6 @@
 export const shellStyles = String.raw`
+.docs-brand{display:inline-flex;align-items:center;gap:8px}.docs-header .docs-brand svg{width:25px;height:25px;fill:none;stroke:#e76450;stroke-width:2}.docs-layout{animation:docs-arrive .25s cubic-bezier(.16,1,.3,1) both}@keyframes docs-arrive{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.docs-layout{animation:none}html{scroll-behavior:auto}}
+
 :root { --scalar-custom-header-height: 64px; color-scheme: dark; }
 body { margin: 0; background: #0f0f0f; --docs-fg: #e7e7e7; --docs-muted: #b4b4b4; --docs-surface: #1d1d1d; --docs-hover: #242424; --docs-line: #383838; --docs-focus: #43c4e9; }
 :root[data-theme="light"] { color-scheme: light; }
