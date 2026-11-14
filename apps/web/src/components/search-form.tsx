@@ -1,23 +1,37 @@
 "use client";
 import { Search, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { text, type Locale } from "@/lib/i18n";
-export function SearchForm({ locale }: { locale: Locale }) {
+import { PlaceAutocomplete } from "./place-autocomplete";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { resources } from "@/lib/search-state";
+import { label, text, type Locale } from "@/lib/i18n";
+export function SearchForm({
+  locale,
+  scope,
+}: {
+  locale: Locale;
+  scope?: "departments";
+}) {
   const router = useRouter();
+  const [query, setQuery] = useState(""),
+    [resource, setResource] = useState<string>(scope ?? "");
   return (
     <form
       action={"/" + locale + "/explore"}
       className="search-capsule"
       onSubmit={(e) => {
         e.preventDefault();
-        const data = new FormData(e.currentTarget);
         const params = new URLSearchParams();
-        for (const key of ["q", "resource"]) {
-          const value = String(data.get(key) ?? "").trim();
-          if (value) params.set(key, value);
-        }
+        if (query.trim()) params.set("q", query.trim());
+        if (resource) params.set("resource", resource);
         router.push(
           "/" +
             locale +
@@ -28,24 +42,36 @@ export function SearchForm({ locale }: { locale: Locale }) {
       role="search"
     >
       <Search size={20} aria-hidden="true" />
-      <Input
-        name="q"
-        maxLength={100}
-        placeholder={text(locale, "Rechercher un lieu…", "Search for a place…")}
-        aria-label={text(locale, "Rechercher un lieu", "Search for a place")}
+      <PlaceAutocomplete
+        locale={locale}
+        value={query}
+        onChange={setQuery}
+        resource={resource}
+        onSelect={(id) => router.push("/" + locale + "/places/" + id)}
       />
-      <select
-        name="resource"
-        aria-label={text(locale, "Type de lieu", "Place type")}
-        defaultValue=""
-      >
-        <option value="">{text(locale, "Tous les lieux", "All places")}</option>
-        <option value="communes">{text(locale, "Communes", "Communes")}</option>
-        <option value="neighborhoods">
-          {text(locale, "Quartiers", "Neighborhoods")}
-        </option>
-        <option value="villages">{text(locale, "Villages", "Villages")}</option>
-      </select>
+      {!scope && (
+        <Select
+          value={resource || "all"}
+          onValueChange={(value) => setResource(value === "all" ? "" : value)}
+        >
+          <SelectTrigger
+            className="home-category"
+            aria-label={text(locale, "Type de lieu", "Place type")}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              {text(locale, "Tous les lieux", "All places")}
+            </SelectItem>
+            {resources.map((resource) => (
+              <SelectItem key={resource} value={resource}>
+                {label(resource, locale)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <Button
         type="submit"
         size="icon"

@@ -1,0 +1,85 @@
+.place-autocomplete {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.place-autocomplete input {
+  width: 100%;
+}
+.suggestion-panel {
+  position: absolute;
+  inset: calc(100% + 18px) auto auto -44px;
+  width: min(610px, calc(100vw - 3rem));
+  max-height: min(380px, 55svh);
+  overflow-y: auto;
+  z-index: 30;
+  background: var(--background);
+  border-radius: 16px;
+  box-shadow:
+    0 12px 36px #00000020,
+    0 2px 6px #00000010;
+  padding: 8px;
+  text-align: left;
+}
+.suggestion-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.suggestion-panel li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+.suggestion-panel li:hover,
+.suggestion-panel li[aria-selected="true"] {
+  background: var(--surface);
+}
+.suggestion-panel li > div {
+  flex: 1;
+  min-width: 0;
+}
+.suggestion-panel strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.suggestion-panel span:not(.sr-only) {
+  display: block;
+  color: var(--muted);
+  font-size: 0.73rem;
+}
+.suggestion-panel svg {
+  color: var(--muted);
+}
+.suggestion-panel p {
+  font-size: 0.8rem;
+  margin: 0.6rem;
+}
+.suggestion-panel .suggestion-hint {
+  font-size: 0.65rem;
+  padding-inline: 4px;
+}
+@media (max-width: 600px) {
+  .search-capsule {
+    column-gap: 0.5rem;
+  }
+  .search-capsule .home-category {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: auto;
+    min-height: 34px;
+    padding: 4px 12px;
+    background: var(--surface);
+    border-radius: 99px;
+    font-size: 0.75rem;
+  }
+  .suggestion-panel {
+    inset: calc(100% + 62px) auto auto -34px;
+    width: calc(100vw - 2.5rem);
+  }
+}

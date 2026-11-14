@@ -27,6 +27,7 @@
   font-size: 1rem;
 }
 .search-capsule {
+  position: relative;
   background: var(--background);
   border-radius: 100px;
   box-shadow:
@@ -45,18 +46,20 @@
 }
 .search-capsule input {
   border: 0;
-  box-shadow: none !important;
+  box-shadow: none;
   background: transparent;
   min-width: 0;
   flex: 1;
 }
-.search-capsule select {
+.search-capsule .home-category {
   border: 0;
   background: transparent;
   color: var(--muted);
-  max-width: 145px;
+  width: 165px;
+  flex-shrink: 0;
   font-size: 0.8rem;
   padding: 8px;
+  box-shadow: none;
 }
 .round-button {
   border-radius: 100%;
