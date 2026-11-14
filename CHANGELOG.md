@@ -1,5 +1,19 @@
 # Changelog / Historique
 
+## 1.2.0 — 2026-11-14
+
+### English
+
+Rename the product and npm CLI to **242Places** (`npx 242places`), retaining stable geographic UUIDs and existing resource contracts. Earlier `georeference` installations remain available. Include the administrative cascade reconciliation: 4,353 known places, including 88 Brazzaville neighborhoods; coverage remains partial and source-dated.
+
+Add a read-only Fastify API with native Scalar operation pages and a shared bilingual documentation shell. Product guides now cover CLI generation, JSON/CSV/Excel, SQL/SQLite, controlled database import and the optional SDK. The site root opens documentation; language and theme follow browser/system preferences with English/dark fallbacks and persistent manual choices. Deploy the API and documentation together on Render.
+
+### Français
+
+Le produit et la CLI npm deviennent **242Places** (`npx 242places`), en conservant les UUID géographiques et les contrats de ressources. Les installations précédentes de `georeference` restent disponibles. Le rapprochement de la cascade administrative porte le référentiel à 4 353 lieux connus, dont 88 quartiers de Brazzaville ; la couverture reste partielle et datée selon les sources.
+
+Ajout de l’API Fastify en lecture seule, des pages d’opération natives Scalar et d’une documentation bilingue commune. Les guides produit couvrent le CLI, JSON/CSV/Excel, SQL/SQLite, l’import contrôlé en base et le SDK optionnel. La racine du site ouvre la documentation ; langue et thème suivent le navigateur et le système, avec l’anglais et le sombre comme replis et mémorisation des choix manuels. API et documentation sont déployées ensemble sur Render.
+
 ## 1.1.0 — 2026-11-12
 
 ### English

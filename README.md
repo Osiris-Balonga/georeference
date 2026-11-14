@@ -54,7 +54,7 @@ npm run dev:api
 
 Open `http://127.0.0.1:3000/docs` for interactive documentation. Routes include `/v1/communes`, `/v1/communes/{id}/arrondissements` and `/v1/arrondissements/{id}/neighborhoods`. The API is public and read-only, with paginated resources and explicit dataset/partial-coverage metadata. See the [API guide](docs/api.md) for configuration, examples and the difference between direct and descendant relationships.
 
-The API runs from this repository; this is not a public hosted-service announcement. The published `242places@1.2.0` remains the CLI/optional SDK. Running `npx 242places` continues to generate standalone files and does not start a server.
+Read the [hosted product documentation and API reference](https://two42places.onrender.com/). It includes CLI, exports, SQL import and SDK guides in French and English. The npm package remains the CLI/optional SDK: `npx 242places` generates standalone files. See [deployment](docs/deployment.md) to host the API and documentation yourself.
 
 ## Documentation
 
@@ -67,6 +67,7 @@ The API runs from this repository; this is not a public hosted-service announcem
 | [Reference and sources](docs/congo-reference.md) | [Référentiel et sources](docs/congo-reference.fr.md) |
 | [Migration](docs/migration.md) | [Migration](docs/migration.fr.md) |
 | [HTTP API](docs/api.md) | [API HTTP](docs/api.fr.md) |
+| [Deployment](docs/deployment.md) | [Déploiement](docs/deployment.fr.md) |
 | [Architecture](docs/architecture.md) | [Architecture](docs/architecture.fr.md) |
 | [Contributing](CONTRIBUTING.md) | [Contribuer](CONTRIBUTING.fr.md) |
 

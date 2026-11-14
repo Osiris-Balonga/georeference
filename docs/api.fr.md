@@ -2,7 +2,7 @@
 
 [English](api.md) · [Accueil](../README.fr.md) · [Architecture](architecture.fr.md)
 
-Le dépôt contient une API Fastify publique en lecture seule pour les ressources de la République du Congo (CG/COG). Elle se lance depuis le code source. Le paquet publié `242places@1.2.0` reste le générateur de fichiers autonomes et le SDK local optionnel ; `npx 242places` ne démarre pas ce serveur. Ce guide décrit un fonctionnement local, pas un service public déjà déployé.
+Le dépôt contient une API Fastify publique en lecture seule pour les ressources de la République du Congo (CG/COG). Utilisez la [documentation et l’API hébergées](https://two42places.onrender.com/) ou lancez-les depuis les sources. Le paquet npm `242places@1.2.0` reste le générateur de fichiers autonomes et le SDK local optionnel ; `npx 242places` ne démarre pas ce serveur. Voir [le déploiement](deployment.fr.md) pour la configuration d’hébergement.
 
 ## Lancer en local
 

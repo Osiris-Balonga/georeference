@@ -54,7 +54,7 @@ npm run dev:api
 
 Ouvrez `http://127.0.0.1:3000/docs` pour la documentation interactive. Les routes comprennent `/v1/communes`, `/v1/communes/{id}/arrondissements` et `/v1/arrondissements/{id}/neighborhoods`. L’API est publique en lecture seule, avec des ressources paginées et des métadonnées explicites de version/couverture partielle. Voir [le guide API](docs/api.fr.md) pour la configuration, les exemples et la distinction entre relations directes et descendantes.
 
-L’API se lance depuis ce dépôt ; il ne s’agit pas de l’annonce d’un service public hébergé. Le paquet publié `242places@1.2.0` reste la CLI et le SDK optionnel. `npx 242places` continue de générer des fichiers autonomes et ne démarre pas de serveur.
+Consultez la [documentation produit et la référence API hébergées](https://two42places.onrender.com/). Elles présentent le CLI, les exports, l’import SQL et le SDK en français et en anglais. Le paquet npm reste la CLI et le SDK optionnel : `npx 242places` génère des fichiers autonomes. Voir [le déploiement](docs/deployment.fr.md) pour héberger vous-même l’API et la documentation.
 
 ## Documentation
 
@@ -67,6 +67,7 @@ L’API se lance depuis ce dépôt ; il ne s’agit pas de l’annonce d’un se
 | [Référentiel et sources](docs/congo-reference.fr.md) | [Reference and sources](docs/congo-reference.md) |
 | [Migration](docs/migration.fr.md) | [Migration](docs/migration.md) |
 | [API HTTP](docs/api.fr.md) | [HTTP API](docs/api.md) |
+| [Deployment](docs/deployment.md) | [Déploiement](docs/deployment.fr.md) |
 | [Architecture](docs/architecture.fr.md) | [Architecture](docs/architecture.md) |
 | [Contribuer](CONTRIBUTING.fr.md) | [Contributing](CONTRIBUTING.md) |
 
