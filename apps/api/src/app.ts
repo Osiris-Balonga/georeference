@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import { registerDiscoveryRoutes } from './routes/discovery.ts';
 import { loadCatalog, type GeographicCatalog } from '242places';
 import { registerErrors } from './plugins/errors.ts';
 import { registerOpenApi } from './plugins/openapi.ts';
@@ -38,5 +39,6 @@ export async function buildApp(options: AppOptions = {}) {
   registerAdministrationRoutes(app, catalog);
   registerPlacesRoutes(app, catalog);
   registerReferenceRoutes(app, catalog);
+  registerDiscoveryRoutes(app, catalog);
   return app;
 }
